@@ -163,7 +163,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 400 checks / 31 files**: the seam batteries (auth,
+- **Unit — Vitest, 406 checks / 32 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
@@ -198,15 +198,22 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   initial-load loading face, both error faces, both empty faces, the
   recovery/busy/refresh contracts) at the source level, closing the
   state-face class the pre-ship checklist prescribes but no gate had
-  run) —
+  run) — and landing-images — the round-12 battery that pins the
+  landing's image set (the six DISTINCT project photographs, the
+  hero/about/avatars, the alt faces) plus the reuse-class census (no
+  project photo may reappear — the class that shipped five of six
+  portfolio photos as silent reuses of the hero/about/other-project
+  frames, invisible to the style and text probes) —
   comment-stripped source reads; a literal pinned by a comment alone is
   vacuous.
-- **E2E — Playwright, 71 checks / 8 specs**: the standalone artifact on
+- **E2E — Playwright, 72 checks / 8 specs**: the standalone artifact on
   :3100 with `db/e2e.db`; ONE shared login (`auth.setup.ts` →
   storageState — the auth endpoints are rate-limited 10/IP/15-min); one
   worker; alphabetical file order → every spec SELF-SUFFICIENT (its own
   probe rows on an isolated `x-forwarded-for` bucket). The specs:
-  landing, mobile-navigation (THE operator's standing emphasis — the full
+  landing (round-12 gains the image-census check — the landing's full
+  rendered img set pinned against the reference's live photographs),
+  mobile-navigation (THE operator's standing emphasis — the full
   390×844 battery), auth, reset-password, dashboard-inbox, keyboard
   (the round-10 keyboard-operability battery — the keyboard rides plus
   the focus-visible computed faces), inbox-states (the round-11

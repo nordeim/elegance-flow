@@ -79,6 +79,36 @@ test.describe("the EleganceFlow landing (desktop 1280)", () => {
     await expect(grid.locator(".group")).toHaveCount(6);
   });
 
+  test("the landing's image census is the reference's live set (the round-12 catch: 5 of 6 portfolio photos had drifted)", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+    // every img on the page, src + alt in DOM order — the same face the
+    // drift probe reads. The reference ships SIX DISTINCT project
+    // photographs (One: 1634942537034 · Two: 1467232004584 · Three:
+    // 1596462502278 · Four: 1618005198919 · Five: 1558618666 · Six:
+    // 1509909756405); ours had reused the hero/about/other-project photos.
+    const census = await page.evaluate(() =>
+      Array.from(document.querySelectorAll("img")).map(
+        (i) => `${i.getAttribute("src")} -> ${i.getAttribute("alt")}`,
+      ),
+    );
+    const U = "https://images.unsplash.com/photo-";
+    expect(census).toEqual([
+      `${U}1618005182384-a83a8bd57fbe?w=1600&q=80 -> Hero`,
+      `${U}1542744173-8e7e53415bb0?w=900&q=80 -> About`,
+      `${U}1634942537034-2531766767d1?w=700&q=80 -> Project One`,
+      `${U}1467232004584-a241de8bcf5d?w=700&q=80 -> Project Two`,
+      `${U}1596462502278-27bfdc403348?w=700&q=80 -> Project Three`,
+      `${U}1618005198919-d3d4b5a92ead?w=700&q=80 -> Project Four`,
+      `${U}1558618666-fcd25c85cd64?w=700&q=80 -> Project Five`,
+      `${U}1509909756405-be0199881695?w=700&q=80 -> Project Six`,
+      `${U}1494790108377-be9c29b29330?w=100&q=80 -> Client Name`,
+      `${U}1494790108377-be9c29b29330?w=100&q=80 -> Client Name`,
+      `${U}1507003211169-0a1dd7228f2d?w=100&q=80 -> Client Name`,
+      `${U}1438761681033-6461ffad8d80?w=100&q=80 -> Client Name`,
+    ]);
+  });
+
   test("the testimonial carousel rotates REAL content across the three quotes", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto("/");

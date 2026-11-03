@@ -1,7 +1,10 @@
 // Session-199 round-4 drift probe: the reference's CONTENT face —
 // text landmarks + the mobile menu's open DOM (aria-expanded, panel
-// structure, link order) — beyond the parity script's computed-style
-// face. Diffs the live reference against OUR dev build (:3000).
+// structure, link order) + the round-12 IMAGE census (every img's src
+// + alt in DOM order — the class that let 5 of 6 portfolio images
+// drift invisibly: an img's src changes no computed style and no text
+// face) — beyond the parity script's computed-style face. Diffs the
+// live reference against OUR dev build (:3000).
 //
 // Run: bun scripts/drift-199.ts   (expects our dev server on :3000)
 import { chromium } from "@playwright/test";
@@ -19,6 +22,7 @@ type Face = {
   serviceTitles: string[];   // the four service cards
   stats: string[];           // the three stat numbers
   filterChips: string[];     // work filters in DOM order
+  imgs: string[];            // round-12: every img "src -> alt" in DOM order
   mobileToggle: { expanded: boolean | null; label: string | null };
   mobilePanel: { visible: boolean; links: string[]; cta: string | null } | null;
 };
@@ -38,6 +42,7 @@ async function face(url: string, w: number, h: number): Promise<Face> {
     const serviceTitles = [...document.querySelectorAll("section h3")].map((s) => txt(s));
     const stats = [...document.querySelectorAll("span,div,p")].filter((e) => /^(50\+|5|100%)$/.test(txt(e))).map((e) => txt(e));
     const chips = [...document.querySelectorAll("button")].filter((b) => /tracking-widest/.test(b.className) && txt(b).length > 0 && txt(b).length < 20).map((b) => txt(b));
+    const imgs = [...document.querySelectorAll("img")].map((i) => `${i.getAttribute("src")} -> ${i.getAttribute("alt")}`);
     const toggle = document.querySelector('header button[aria-label], header button');
     return {
       title: document.title,
@@ -49,6 +54,7 @@ async function face(url: string, w: number, h: number): Promise<Face> {
       serviceTitles,
       stats,
       filterChips: chips,
+      imgs,
       mobileToggle: {
         expanded: toggle ? toggle.getAttribute("aria-expanded") === "true" : null,
         label: toggle ? toggle.getAttribute("aria-label") : null,
@@ -101,6 +107,7 @@ diff("[390]", ref.h2s, ours.h2s, "h2s", out);
 diff("[390]", ref.serviceTitles, ours.serviceTitles, "serviceTitles", out);
 diff("[390]", ref.stats, ours.stats, "stats", out);
 diff("[390]", ref.filterChips, ours.filterChips, "filterChips", out);
+diff("[390]", ref.imgs, ours.imgs, "imgs (src -> alt, DOM order)", out);
 diff("[390]", ref.mobileToggle, ours.mobileToggle, "mobileToggle", out);
 diff("[390]", ref.mobilePanel, ours.mobilePanel, "mobilePanel(open)", out);
 

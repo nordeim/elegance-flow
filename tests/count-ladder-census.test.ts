@@ -161,6 +161,7 @@ const SOURCE_CONTRACTS = [
   "dead-code-census",
   "focus-contract",
   "inbox-states",
+  "landing-images",
 ];
 
 const fileOf = (family: string) => `${family}.test.ts`;

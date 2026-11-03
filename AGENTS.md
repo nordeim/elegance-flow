@@ -24,8 +24,8 @@ bun run start                    # the standalone server (production)
 
 bun run lint                     # eslint --max-warnings 0 (the 0/0 standard)
 bun run typecheck                # tsc --noEmit
-bun run test                     # vitest run  (400 checks / 31 files)
-bun run test:e2e                 # playwright (71 checks / 8 specs; needs build)
+bun run test                     # vitest run  (406 checks / 32 files)
+bun run test:e2e                 # playwright (72 checks / 8 specs; needs build)
 CI=1 bun run test:e2e            # force a fresh server (never reuse stale)
 
 bun run db:push                  # prisma db push (SQLite at repo/db/custom.db)

@@ -158,7 +158,9 @@ export const WORK_HEADER = {
 export interface Project {
   title: string;
   category: ProjectCategory;
-  /** Unsplash, byte-verified URLs from the reference's DOM. */
+  /** Unsplash, byte-verified URLs from the reference's DOM (the six
+   *  project photographs re-verified live at round-12 — the image
+   *  census battery tests/landing-images.test.ts pins the set). */
   image: string;
 }
 
@@ -173,31 +175,31 @@ export const PROJECTS: Project[] = [
     title: "Project Two",
     category: "Web",
     image:
-      "https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?w=700&q=80",
+      "https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?w=700&q=80",
   },
   {
     title: "Project Three",
     category: "Photography",
     image:
-      "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=700&q=80",
+      "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=700&q=80",
   },
   {
     title: "Project Four",
     category: "Branding",
     image:
-      "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=700&q=80",
+      "https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?w=700&q=80",
   },
   {
     title: "Project Five",
     category: "Web",
     image:
-      "https://images.unsplash.com/photo-1634942537034-2531766767d1?w=700&q=80",
+      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=700&q=80",
   },
   {
     title: "Project Six",
     category: "Photography",
     image:
-      "https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?w=700&q=80",
+      "https://images.unsplash.com/photo-1509909756405-be0199881695?w=700&q=80",
   },
 ];
 
