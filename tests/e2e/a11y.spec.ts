@@ -60,16 +60,18 @@ const SANCTIONED: Record<string, Array<{ any: string[]; cite: string }>> = {
     {
       // the INACTIVE filter chips (zinc-500 on zinc-100 — the reference's
       // own inactive face, probe-2's computed styles: rgb(113,113,122) on
-      // rgb(244,244,245) = 4.47:1, a hair under the 4.5 small-text floor;
-      // repainting it would change the reference's designed chip pair)
+      // rgb(244,244,245) = 4.39:1 per axe's live report (a hair under the
+      // 4.5 small-text floor; repainting it would change the reference's
+      // designed chip pair)
       any: ["bg-zinc-100.py-2.px-5"],
-      cite: "the inactive filter chips (zinc-500 on zinc-100) — the reference's own face at 4.47:1",
+      cite: "the inactive filter chips (zinc-500 on zinc-100) — the reference's own face at 4.39:1",
     },
     {
       // the FEATURED Design & Web card's body ink (zinc-900/70 on the
       // amber-500 background — probe-9's byte extraction: the reference's
-      // own featured-card body, blended ≈4.0:1, under the 4.5 small-text
-      // floor; fixing it would repaint the reference's designed face)
+      // own featured-card body, blended #5a4016 on #f59e0b = 4.48:1 per
+      // axe's live report, under the 4.5 small-text floor; fixing it would
+      // repaint the reference's designed face)
       any: ["text-zinc-900\\/70"],
       cite: "the featured service card's body ink (zinc-900/70 on amber) — the reference's own face",
     },

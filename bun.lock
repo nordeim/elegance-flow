@@ -3,7 +3,7 @@
   "configVersion": 0,
   "workspaces": {
     "": {
-      "name": "activity-map",
+      "name": "elegance-flow",
       "dependencies": {
         "@prisma/client": "^6.19.3",
         "clsx": "^2.1.1",

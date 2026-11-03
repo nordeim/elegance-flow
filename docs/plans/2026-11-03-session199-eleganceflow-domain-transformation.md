@@ -301,6 +301,65 @@ app). Surface census:
   — this sandbox has no OpenSSH binary): push 1 the remediated codebase,
   push 2 the documents + worklog. No new branches.
 
-## Phase 5 — The execution record
+## Phase 5 — The execution record (ship)
 
-(Filled at ship time.)
+**The domain layer** — `prisma/schema.prisma` swapped to User (carried) + Inquiry
+(new; status `new|read|archived`, indexed on status + createdAt); the seed rebuilt
+(3 inquiries — one per status — + 4 users incl. the operator mirror); census
+re-anchored (3 + 4) — MATCH. `src/lib/site-content.ts` carries every reference
+string (DOM-case: "Start a Project", "What We Do"; the caps ride CSS uppercase),
+the heading line-break spans, the avatar order (the online-Founder testimonial
+rides avatar 1494790108377), and `filterProjects()`; `src/lib/schemas.ts` carries
+INQUIRY_SERVICES (the select's five options) + inquiryCreateSchema (≤120/≤2000)
++ inquiryStatusSchema; `globals.css` gained the zinc re-pin (the sixth @theme
+re-pin member, v3 literals) and `page-layout.ts` slimmed to LOGIN_LAYOUT +
+NOT_FOUND_LAYOUT.
+
+**The surfaces** — the landing byte-mirrored from nine live Playwright probes:
+the dual-state header (transparent → `bg-zinc-950/95` + shadow-sm), the hero
+(amber eyebrow, double-span h1, gradient, accent bar, SCROLL), the about offset
+frame + 3 stats, the services with the FEATURED `bg-amber-500` card (zinc-950
+ink, black/10 price line), the work filters (active chip amber, hover-only
+overlays), the testimonial carousel (amber Quote 40px, border-l-4 selector),
+the contact (mail/tel links, the chevron-over-select construction, the 5-row
+textarea), the footer, and the INLINE mobile disclosure menu (`md:hidden
+bg-zinc-950 border-t border-white/10`, link-ride closes, aria-expanded) — the
+operator's standing emphasis, pinned at 390×844. The login card rebranded
+("Welcome to EleganceFlow", the DOM-case "or" divider); POST_LOGIN → /dashboard.
+The superset inbox at /dashboard: 4 tabs, search, mark read, archive/unarchive,
+two-step delete, explicit loading/error/empty, AA-honest inks (no zinc-400).
+
+**The retirement** — 16 CRM page families, 15 API route families (12 CRM +
+uploads), 12 orphan ui primitives (toast kept), crm-store, ~20 lib modules,
+~90 sweep scripts, 11 dependencies (radix family, recharts, zustand, jspdf,
+cva, html2canvas-pro).
+
+**The gate at ship** — lint 0/0 · tsc 0 · 339 unit / 23 files · build 22 routes
+· smoke 14/14 · e2e 53/53 (6 specs). The a11y two-gate: structural zero; the
+sanctioned register cites the reference's own faces at axe's LIVE-REPORTED
+ratios (the inactive chip zinc-500-on-zinc-100 = 4.39:1; the featured card's
+zinc-900/70-on-amber = 4.48:1; zinc-400 labels 2.56:1; amber-500 eyebrows
+2.14:1) — the citations re-anchored post-ship by a fresh axe probe after the
+hand-computed drafts (4.47/≈4.0/2.3) failed recomputation.
+
+**The parity bar** — `scripts/parity-199.ts` diffs computed styles against the
+live reference at 1280 + 390: every probed face IDENTICAL after the leading
+double-breakpoint decode (the reference's `leading-[0.9]`/`[0.95]` never takes
+effect at md+ under its own text-Nxl line-height rules — ported as
+`leading-[0.9] md:leading-none` h1 / `leading-[0.95] md:leading-none` h2s; the
+s11 computed-face doctrine) and the body bg → white. The one accepted delta is
+the s18 serialization class: the scrolled header's `oklab(… /0.95)` vs
+`rgba(9,9,11,0.95)` — numerically the same paint (oklabToSrgb proven in the
+script's filter).
+
+**The doc lockstep** — the four root docs rewritten for the new domain
+(AGENTS.md 140 · CLAUDE.md 167 · README.md 153 · PAD 548) per their four
+skills; `elegance-flow_SKILL.md` v1.199.0 written (the budget-wiser precedent:
+`neo-crm_SKILL.md` stays as the lineage record); every numeric claim
+re-verified against the live tree at ship (the e2e spec-count 5→6, the vitest
+^3→^5, the session TTL 30-day-sliding→7-day-fixed, the package count 526, the
+key-files line counts, the Layer-1 16-module inventory); the stale
+`bun.lock` workspace name corrected (activity-map → elegance-flow, bun-accepted).
+Captures: `docs/screenshots/` — 6 ours (landing fullpage ×2 axes, login,
+inbox, the menu closed + open at 390) + 4 ref. Push 1 (84be411): the codebase.
+Push 2: the documents + worklog.
