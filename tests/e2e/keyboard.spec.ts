@@ -93,6 +93,58 @@ test.describe("the keyboard-operability battery (logged-out surfaces)", () => {
     // 2026-11-04): the zinc-950 --color-ring re-pin's computed face.
     expect(ring).toContain("rgb(9, 9, 11) 0px 0px 0px 4px");
   });
+
+  test("round-13: the landing's focused filter chip computes the reference's universal outline color (rgba(10, 10, 10, 0.5))", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+    // Keyboard-ride to the "All" filter chip (the chips sit after the
+    // header links and the hero CTAs in tab order; the bounded loop
+    // keys on the ACTIVE ELEMENT, never a fixed Tab count).
+    let found = false;
+    for (let i = 0; i < 24 && !found; i++) {
+      await page.keyboard.press("Tab");
+      await page.waitForTimeout(60);
+      found = await page.evaluate(() => {
+        const el = document.activeElement as HTMLElement | null;
+        return !!el && el.tagName === "BUTTON" && (el.textContent ?? "").trim() === "All";
+      });
+    }
+    expect(found, "the All filter chip was never reached by Tab").toBe(true);
+    // F-1's gate-level face: the universal outline-color decoupled from
+    // --color-ring — the LIVE reference's landing bundle computes
+    // rgba(10, 10, 10, 0.5) (neutral-950 @ 50%) on every UA-outline-
+    // painting control; ours had computed zinc-950@50% (the round-10
+    // cure-collision). Settled read (the transition discipline).
+    await page.waitForTimeout(300);
+    const outline = await page.evaluate(() => {
+      const el = document.activeElement as HTMLElement;
+      const s = getComputedStyle(el);
+      return { color: s.outlineColor, style: s.outlineStyle };
+    });
+    expect(outline.color).toBe("rgba(10, 10, 10, 0.5)");
+    expect(outline.style).toBe("auto");
+  });
+
+  test("round-13: the auth card's focused input computes the reference's v3 outline-none face (2px transparent + offset 2px)", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/login");
+    // Text inputs match :focus-visible on ANY focus (per spec) — a
+    // click into the field is a true focus ride.
+    await page.getByLabel("Email").click();
+    await page.waitForTimeout(300);
+    const face = await page
+      .getByLabel("Email")
+      .evaluate((el) => {
+        const s = getComputedStyle(el);
+        return { outline: `${s.outlineStyle} ${s.outlineWidth} ${s.outlineColor}`, offset: s.outlineOffset };
+      });
+    // F-2's gate-level face: the reference's v3 `outline-none` computes
+    // `outline: 2px solid transparent; outline-offset: 2px` (verified
+    // live via CSSOM + CDP); v4's outline-none computes style:none —
+    // the seventh re-pin trap, ported via outline-hidden.
+    expect(face.outline).toBe("solid 2px rgba(0, 0, 0, 0)");
+    expect(face.offset).toBe("2px");
+  });
 });
 
 test.describe("the keyboard-operability battery (the authenticated inbox)", () => {

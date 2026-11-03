@@ -533,7 +533,7 @@ export function LoginCard({ mode = "signin" }: { mode?: Mode }) {
                                   value={digit}
                                   onChange={(e) => onCodeDigit(idx, e.target.value)}
                                   onKeyDown={(e) => onCodeKeyDown(idx, e)}
-                                  className={`flex rounded-lg border border-input bg-white px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${LOGIN_VERIFY_LAYOUT.codeInput}`}
+                                  className={`flex rounded-lg border border-input bg-white px-3 py-2 focus-visible:outline-2 focus-visible:outline-transparent focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-ring ${LOGIN_VERIFY_LAYOUT.codeInput}`}
                                 />
                               ))}
                             </div>

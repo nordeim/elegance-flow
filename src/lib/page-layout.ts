@@ -33,12 +33,12 @@ export const LOGIN_LAYOUT = {
   title: "text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight",
   subtitle: "text-slate-500 text-sm sm:text-base font-medium",
   google:
-    "flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-5 py-3.5 font-medium text-slate-700 text-[16px] transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 hover:shadow-sm",
+    "flex w-full items-center justify-center gap-3 rounded-xl border border-[#e9e6e0] bg-white px-5 py-3.5 font-medium text-[#0f0e0e] text-[16px] transition-all duration-200 hover:border-[#ddd8d2] hover:bg-[#f1eeea] hover:shadow-sm",
   googleIcon: "-ml-4 transition-transform duration-200",
   divider: "relative my-6",
   dividerLine: "shrink-0 h-[1px] w-full bg-slate-200",
   dividerLabel: "relative flex justify-center text-xs uppercase",
-  dividerLabelSpan: "bg-white px-3 font-medium tracking-wider text-slate-500",
+  dividerLabelSpan: "bg-white px-3 font-medium tracking-wider text-[#5d5d5d]",
   form: "w-full space-y-4 sm:space-y-5",
   fields: "space-y-3 sm:space-y-4",
   // Session-96 (S96-P0, the 96-c form-family walk): the v3 class string
@@ -56,15 +56,23 @@ export const LOGIN_LAYOUT = {
   inputWrap: "relative",
   inputIcon: "absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500",
   input:
-    "h-11 w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-10 pr-3 placeholder:text-slate-600 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 text-base md:text-sm sm:h-12",
+    "h-11 w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 pl-10 pr-3 placeholder:text-slate-600 focus:border-slate-400 focus:outline-2 focus:outline-transparent focus:outline-offset-2 focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 text-base md:text-sm sm:h-12",
   // Session-79 (M-79c1/M-79c4, live-probed on the reference): the auth
   // inputs carry the stock text-base md:text-sm pair (16px <768, 14px at
   // desktop — LIVE: 14px at 1440) and focus to a SOLID slate-400 2px ring
   // + a 2px WHITE offset (computed rgb(148,163,184) 0 0 0 4px over
   // rgb(255,255,255) 0 0 0 2px) — the 30%-opacity ringless-offset arm
   // we shipped since s7 computed oklab(… / 0.3) 0 0 0 2px.
+  // Round-13: py-2 + the focus:outline-2/transparent/offset-2
+  // composition port the reference's LIVE computed faces (8px vertical
+  // padding; the v3 outline-none = solid 2px transparent + offset 2px —
+  // the seventh v4 trap: v4's outline-none is style:none, and v4.3's
+  // outline-hidden is ALSO style:none with the transparent outline
+  // forced-colors-only — only the composition computes the v3 face).
+  // The reference's auth inputs compute exactly these on /login (the
+  // drift probe's login census).
   submit:
-    "flex h-11 w-full items-center justify-center gap-1 rounded-xl bg-slate-900 font-medium text-white shadow-sm transition-all duration-200 hover:bg-slate-800 disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 text-sm sm:h-12",
+    "flex h-11 w-full items-center justify-center gap-1 px-3 py-2 rounded-xl bg-slate-900 font-medium text-white shadow-sm transition-all duration-200 hover:bg-slate-800 disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-transparent focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 text-sm sm:h-12",
   footer: "flex flex-col items-center justify-between gap-2 sm:flex-row sm:gap-0",
   footerLink: "text-sm text-slate-500 transition-colors hover:text-slate-700",
   footerLinkStrong: "font-medium text-slate-700",

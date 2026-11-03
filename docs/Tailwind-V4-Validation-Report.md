@@ -438,3 +438,57 @@ the rendering is identical. In THIS domain the counterpart pin is the
 s18 serialization filter inside `scripts/parity-199.ts` (the one accepted
 delta: the scrolled header's oklab/rgba forms — numerically the same
 paint, proven in the script).
+
+## Appendix: Project Trap Log — Trap 7: The `outline-none` Semantic Rename (round 13)
+
+**The bug class.** The EleganceFlow reference (v3-era CSS) ships
+`.outline-none { outline-offset: 2px; outline: rgba(0, 0, 0, 0) solid 2px }`
+— verified live on its compiled bundle via the CSSOM walk AND the CDP
+matched-rules dump (`:focus-visible { outline-color:
+-webkit-focus-ring-color; outline-style: auto; outline-width: 1px }` is the
+UA baseline its utilities override). The v3 utility is NOT
+`outline-style: none` — it is a TRANSPARENT 2px outline that stays
+invisible in normal mode and becomes the focus indicator under
+forced-colors mode.
+
+v4 renamed the semantics in TWO layers:
+
+1. **v4's `outline-none`** spells `outline-style: none` (the outline is
+   gone entirely, forced-colors included).
+2. **v4.3's `outline-hidden`** — the documented "v3 outline-none alias" —
+   is ALSO `outline-style: none` in normal mode; only inside
+   `@media (forced-colors: active)` does it add
+   `outline-offset: 2px; outline: 2px solid #0000`:
+
+```css
+.outline-hidden { --tw-outline-style: none; outline-style: none; }
+@media (forced-colors: active) {
+  .outline-hidden { outline-offset: 2px; outline: 2px solid #0000; }
+}
+```
+
+**Found live (the round-13 harness lesson).** The first cure attempt
+shipped `outline-hidden` on the reference-mirrored form controls and the
+computed face STILL read `none 1px …` — the live re-read of the computed
+face is what caught it (the unit pin alone would have "proven" the
+renamed class present while the face stayed wrong). Only the COMPOSITION
+computes the v3 face in normal mode:
+
+```
+outline-2 outline-transparent outline-offset-2
+  → outline-style: var(--tw-outline-style)   /* initial-value: solid */
+  → outline-width: 2px · outline-color: transparent · outline-offset: 2px
+```
+
+**Where it shipped.** The landing's four form controls (unprefixed, with
+`focus:border-zinc-950` — the reference's own visible cue), the auth
+card's inputs (`focus:`), and the submit/verify family (`focus-visible:`).
+OUR superset surfaces (inbox/shell/error/404/toast) keep `outline-none`
+as the designed suppress+ring idiom — the retired-form pins in
+`tests/focus-outline.test.ts` are scoped to the reference-mirrored
+members exactly for this reason.
+
+**Pinned by** `tests/focus-outline.test.ts` ④ (the composed-form census +
+the scoped retired forms) and `tests/e2e/keyboard.spec.ts`'s round-13
+computed pin (the focused auth input computes `solid 2px rgba(0, 0, 0, 0)`
++ offset 2px on the standalone artifact).

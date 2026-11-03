@@ -162,6 +162,7 @@ const SOURCE_CONTRACTS = [
   "focus-contract",
   "inbox-states",
   "landing-images",
+  "focus-outline",
 ];
 
 const fileOf = (family: string) => `${family}.test.ts`;

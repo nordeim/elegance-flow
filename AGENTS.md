@@ -24,8 +24,8 @@ bun run start                    # the standalone server (production)
 
 bun run lint                     # eslint --max-warnings 0 (the 0/0 standard)
 bun run typecheck                # tsc --noEmit
-bun run test                     # vitest run  (406 checks / 32 files)
-bun run test:e2e                 # playwright (72 checks / 8 specs; needs build)
+bun run test                     # vitest run  (425 checks / 33 files)
+bun run test:e2e                 # playwright (74 checks / 8 specs; needs build)
 CI=1 bun run test:e2e            # force a fresh server (never reuse stale)
 
 bun run db:push                  # prisma db push (SQLite at repo/db/custom.db)
@@ -78,9 +78,9 @@ the declared-length 16KB pre-gate, and the schema. A bare `req.json()`
 anywhere in `src/app/api` fails the body-pregate unit gate. DB writes
 wrap in try/catch → `ERR.INTERNAL()`.
 
-**Tailwind v4 — six re-pin traps (all live in `src/app/globals.css`
-@theme).** The reference compiles v3-era CSS; our v4 build diverges
-unless pinned: ① the v3 literal palette (zinc/amber/etc. re-pinned to
+**Tailwind v4 — seven re-pin traps (all live in `src/app/globals.css`
+@theme + the class-spelling sites).** The reference compiles v3-era CSS;
+our v4 build diverges unless pinned: ① the v3 literal palette (zinc/amber/etc. re-pinned to
 v3 hex — v4's oklch re-derivation differs at every step); ②
 `--shadow-sm` (v4 renamed the scale one step heavier); ③ `--blur-sm`
 (same rename family); ④ `space-y` puts margin-bottom on the preceding

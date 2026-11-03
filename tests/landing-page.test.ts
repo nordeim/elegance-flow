@@ -111,7 +111,7 @@ describe("session-199: the landing construction (the byte-extracted reference cl
   it("the contact form: the byte-extracted input/select/textarea classes + the label bindings", () => {
     const src = landing();
     expect(src).toContain(
-      "w-full border border-zinc-200 px-4 py-3 text-sm text-zinc-950 outline-none focus:border-zinc-950 transition-colors",
+      "w-full border border-zinc-200 px-4 py-3 text-sm text-zinc-950 outline-2 outline-transparent outline-offset-2 focus:border-zinc-950 transition-colors",
     );
     expect(src).toContain("bg-white appearance-none pr-10");
     expect(src).toContain("resize-none");

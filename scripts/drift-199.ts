@@ -3,8 +3,11 @@
 // structure, link order) + the round-12 IMAGE census (every img's src
 // + alt in DOM order — the class that let 5 of 6 portfolio images
 // drift invisibly: an img's src changes no computed style and no text
-// face) — beyond the parity script's computed-style face. Diffs the
-// live reference against OUR dev build (:3000).
+// face) + the round-13 LOGIN-FACE census (the auth card's at-rest
+// computed faces — the class that let the base44 semantic-token
+// refresh drift invisibly: no probe read /login since the 2026-11-03
+// byte-verification) — beyond the parity script's computed-style face.
+// Diffs the live reference against OUR dev build (:3000).
 //
 // Run: bun scripts/drift-199.ts   (expects our dev server on :3000)
 import { chromium } from "@playwright/test";
@@ -96,6 +99,66 @@ function diff(label: string, a: unknown, b: unknown, path: string, out: string[]
   if (ja !== jb) out.push(`${label} ${path}:\n  REF : ${ja}\n  OURS: ${jb}`);
 }
 
+// The round-13 LOGIN-FACE census: the auth card's at-rest computed faces
+// at 1280 — the family the base44 semantic-token refresh moved while no
+// probe read /login (the foreground, the Google button's ink/border +
+// hover pair, the divider ink, the input/submit pads). The hover pair
+// rides a real .hover() + settle (the transition-all duration-200
+// lesson — a mid-transition read is a false face).
+type LoginFace = {
+  cardColor: string;
+  google: { color: string; border: string };
+  googleHover: { bg: string; border: string };
+  dividerColor: string;
+  inputPad: string;
+  submitPad: string;
+};
+
+async function loginFace(url: string): Promise<LoginFace> {
+  const browser = await chromium.launch();
+  const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+  await page.goto(`${url}/login`, { waitUntil: "networkidle" });
+  await page.waitForTimeout(1200);
+  // The permissive annotation widens the evaluate's inferred literal so
+  // the dynamic googleHover addition below type-checks (the parity
+  // script's Face pattern).
+  const base: LoginFace = await page.evaluate(() => {
+    const cs = (el: Element | null | undefined) => (el ? getComputedStyle(el as HTMLElement) : null);
+    const h1 = document.querySelector("h1");
+    const card = h1?.closest("form")?.parentElement ?? h1?.closest("div[class*='rounded']");
+    const email = document.querySelector('input[type="email"], input[name="email"]');
+    const google = Array.from(document.querySelectorAll("button")).find((b) => /google/i.test(b.textContent ?? ""));
+    const btn = Array.from(document.querySelectorAll("button")).find((b) => /sign in|log in/i.test(b.textContent ?? ""));
+    const divider = Array.from(document.querySelectorAll("*")).find((el) => /^or$/i.test((el.textContent ?? "").trim()) && el.children.length === 0);
+    return {
+      cardColor: cs(card)?.color ?? "",
+      google: {
+        color: cs(google)?.color ?? "",
+        border: cs(google)?.borderTopColor ?? "",
+      },
+      googleHover: { bg: "", border: "" },
+      dividerColor: cs(divider)?.color ?? "",
+      inputPad: cs(email)?.padding ?? "",
+      submitPad: cs(btn)?.padding ?? "",
+    };
+  });
+  // The hover pair: a real hover ride + settle (the transition lesson)
+  const googleLoc = page.locator("button", { hasText: /google/i }).first();
+  if (await googleLoc.count()) {
+    await googleLoc.hover();
+    await page.waitForTimeout(400);
+    const hover = await page.evaluate(() => {
+      const google = Array.from(document.querySelectorAll("button")).find((b) => /google/i.test(b.textContent ?? ""));
+      if (!google) return null;
+      const s = getComputedStyle(google as HTMLElement);
+      return { bg: s.backgroundColor, border: s.borderTopColor };
+    });
+    if (hover) base.googleHover = hover;
+  }
+  await browser.close();
+  return base;
+}
+
 const [ref, ours] = await Promise.all([face(REF, 390, 844), face(OURS, 390, 844)]);
 const out: string[] = [];
 diff("[390]", ref.title, ours.title, "title", out);
@@ -111,9 +174,19 @@ diff("[390]", ref.imgs, ours.imgs, "imgs (src -> alt, DOM order)", out);
 diff("[390]", ref.mobileToggle, ours.mobileToggle, "mobileToggle", out);
 diff("[390]", ref.mobilePanel, ours.mobilePanel, "mobilePanel(open)", out);
 
+// The round-13 login-face leg (the auth card at 1280, at-rest + hover)
+const [refLogin, oursLogin] = await Promise.all([loginFace(REF), loginFace(OURS)]);
+diff("[login]", refLogin.cardColor, oursLogin.cardColor, "cardColor", out);
+diff("[login]", refLogin.google, oursLogin.google, "google (ink/border)", out);
+diff("[login]", refLogin.googleHover, oursLogin.googleHover, "googleHover (bg/border)", out);
+diff("[login]", refLogin.dividerColor, oursLogin.dividerColor, "dividerColor", out);
+diff("[login]", refLogin.inputPad, oursLogin.inputPad, "inputPad", out);
+diff("[login]", refLogin.submitPad, oursLogin.submitPad, "submitPad", out);
+
 if (out.length === 0) {
   console.log("[390] CONTENT + MOBILE-MENU FACE: NO DRIFT — the reference matches our byte-mirror");
+  console.log("[login] AUTH-CARD FACE: NO DRIFT — the reference matches our login mirror");
 } else {
-  console.log(`[390] DRIFT DETECTED — ${out.length} field(s):`);
+  console.log(`[390 + login] DRIFT DETECTED — ${out.length} field(s):`);
   for (const line of out) console.log(line);
 }

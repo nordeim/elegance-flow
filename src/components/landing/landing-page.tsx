@@ -52,9 +52,15 @@
 // Tailwind v4 discipline (docs/Tailwind-V4-Validation-Report.md): the
 // zinc palette rides the session-199 @theme re-pin (v3 values — v4's
 // oklch re-derivation diverges on every step); `bg-gradient-to-r`
-// keeps compiling as the v4 alias of bg-linear-to-r; `outline-none`
-// rides the v4 genus on the form controls (focus:border-zinc-950 is the
-// reference's own focus face).
+// keeps compiling as the v4 alias of bg-linear-to-r; the
+// `outline-2 outline-transparent outline-offset-2` composition on the
+// form controls ports the reference's v3 `outline-none` COMPUTED face
+// (solid 2px transparent + offset 2px — the round-13 seventh trap:
+// v4 renamed outline-none to style:none, and v4.3's outline-hidden is
+// ALSO style:none with the transparent outline reserved for
+// forced-colors mode — only the composition computes the v3 face in
+// normal mode; focus:border-zinc-950 is the reference's own focus
+// face).
 
 import * as React from "react";
 import {
@@ -550,7 +556,7 @@ export function LandingPage() {
                   id="inquiry-name"
                   type="text"
                   required
-                  className="w-full border border-zinc-200 px-4 py-3 text-sm text-zinc-950 outline-none focus:border-zinc-950 transition-colors"
+                  className="w-full border border-zinc-200 px-4 py-3 text-sm text-zinc-950 outline-2 outline-transparent outline-offset-2 focus:border-zinc-950 transition-colors"
                   placeholder={CONTACT.namePlaceholder}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -567,7 +573,7 @@ export function LandingPage() {
                   id="inquiry-email"
                   type="email"
                   required
-                  className="w-full border border-zinc-200 px-4 py-3 text-sm text-zinc-950 outline-none focus:border-zinc-950 transition-colors"
+                  className="w-full border border-zinc-200 px-4 py-3 text-sm text-zinc-950 outline-2 outline-transparent outline-offset-2 focus:border-zinc-950 transition-colors"
                   placeholder={CONTACT.emailPlaceholder}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -583,7 +589,7 @@ export function LandingPage() {
               </label>
               <select
                 id="inquiry-service"
-                className="w-full border border-zinc-200 px-4 py-3 text-sm text-zinc-950 outline-none focus:border-zinc-950 transition-colors bg-white appearance-none pr-10"
+                className="w-full border border-zinc-200 px-4 py-3 text-sm text-zinc-950 outline-2 outline-transparent outline-offset-2 focus:border-zinc-950 transition-colors bg-white appearance-none pr-10"
                 value={service}
                 onChange={(e) => setService(e.target.value)}
               >
@@ -610,7 +616,7 @@ export function LandingPage() {
                 id="inquiry-message"
                 required
                 rows={5}
-                className="w-full border border-zinc-200 px-4 py-3 text-sm text-zinc-950 outline-none focus:border-zinc-950 transition-colors resize-none"
+                className="w-full border border-zinc-200 px-4 py-3 text-sm text-zinc-950 outline-2 outline-transparent outline-offset-2 focus:border-zinc-950 transition-colors resize-none"
                 placeholder={CONTACT.messagePlaceholder}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}

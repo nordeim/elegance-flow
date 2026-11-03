@@ -78,7 +78,7 @@ script's filter.
 
 ## 3. The Tailwind v4 re-pin traps (all live in globals.css @theme)
 
-The reference ships v3-era CSS; v4 diverges unless pinned. Six re-pin
+The reference ships v3-era CSS; v4 diverges unless pinned. Seven re-pin
 members (see `docs/Tailwind-V4-Validation-Report.md`, required reading):
 
 1. **Palette**: every (family, step) pair used in `src/` re-pinned to the v3
@@ -94,6 +94,12 @@ members (see `docs/Tailwind-V4-Validation-Report.md`, required reading):
 6. **The computed-face re-derivations**: the leading family (§2) — a class
    that never takes effect in the reference's own build ports as the face it
    actually renders.
+7. **The `outline-none` rename (round-13)**: the reference's v3
+   `.outline-none` computes `outline: 2px solid transparent;
+   outline-offset: 2px`; v4's spells `outline-style: none` — and v4.3's
+   `outline-hidden` is ALSO style:none (the transparent outline
+   forced-colors-only). Only the `outline-2 outline-transparent
+   outline-offset-2` composition computes the v3 face.
 
 New colors must join the re-pin block (or be verified byte-equal); the
 landing unit battery pins the zinc family.
@@ -163,7 +169,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 406 checks / 32 files**: the seam batteries (auth,
+- **Unit — Vitest, 425 checks / 33 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
@@ -203,10 +209,21 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   hero/about/avatars, the alt faces) plus the reuse-class census (no
   project photo may reappear — the class that shipped five of six
   portfolio photos as silent reuses of the hero/about/other-project
-  frames, invisible to the style and text probes) —
+  frames, invisible to the style and text probes) — and focus-outline —
+  the round-13 battery that pins the landing's focus-outline family
+  (the universal outline-color decoupled from --color-ring — the
+  reference's landing bundle computes rgba(10,10,10,.5) while its auth
+  ring computes zinc-950; our one-token collapse dragged the face at
+  round-10), the --color-foreground re-pin, the outline-none rename's
+  composed v3 face (the SEVENTH v4 trap: v4's outline-none is
+  style:none and v4.3's outline-hidden is TOO — the transparent
+  outline forced-colors-only — only the outline-2/transparent/offset-2
+  composition computes the reference's face), and the auth-card ink
+  re-pins (the base44 semantic-token refresh: the Google button's
+  #0f0e0e/#e9e6e0 + hover pair, the divider's #5d5d5d) —
   comment-stripped source reads; a literal pinned by a comment alone is
   vacuous.
-- **E2E — Playwright, 72 checks / 8 specs**: the standalone artifact on
+- **E2E — Playwright, 74 checks / 8 specs**: the standalone artifact on
   :3100 with `db/e2e.db`; ONE shared login (`auth.setup.ts` →
   storageState — the auth endpoints are rate-limited 10/IP/15-min); one
   worker; alphabetical file order → every spec SELF-SUFFICIENT (its own
