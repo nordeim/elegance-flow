@@ -46,7 +46,7 @@ re-pinned to the reference's v3 palette).
    seams in `src/lib/` rather than inlining logic. Keep lint green as
    you go.
 5. **VERIFY** — Run the full gate: `bun run lint` → `bun run typecheck`
-   → `bun run test` (351) → `bun run build` → `./scripts/smoke-test.sh`
+   → `bun run test` (358) → `bun run build` → `./scripts/smoke-test.sh`
    (14) → `CI=1 bun run test:e2e` (53). The `gate` script chains them.
 6. **DOCUMENT** — Update the touched docs (`README.md`, this file, the
    PAD, `worklog.md`) in the same change; the counts in the docs must
@@ -78,7 +78,7 @@ SEO metadata family (the reference ships none), deep-linkable
 
 ```bash
 bun run dev        # :3000
-bun run test       # vitest (351 checks / 25 files)
+bun run test       # vitest (358 checks / 26 files)
 bun run test:e2e   # playwright (53 checks / 6 specs) — build first
 bun run gate       # the full chain, in order
 bun run db:census  # MUST print "pristine: MATCH" before you trust any db read
@@ -115,13 +115,14 @@ in production — the boot gate refuses to serve without it),
 
 ## Testing Strategy
 
-- **Unit (Vitest, 25 files / 351 checks)** — the seam batteries (auth,
+- **Unit (Vitest, 26 files / 358 checks)** — the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (`site-content`,
   `inquiry-schemas`, `landing-page`, `auth-surfaces`, `auth-contract`,
   `auth-reset`, `body-pregate`, `gate-script`, `error-boundaries`,
-  `toast-anatomy`, `sitemap-routes`, `deployment-doc-census`) —
+  `toast-anatomy`, `sitemap-routes`, `deployment-doc-census`,
+  `count-ladder-census`) —
   comment-stripped source reads; a literal pinned by a comment alone is
   vacuous.
 - **E2E (Playwright, `tests/e2e/*.spec.ts`)** — the standalone

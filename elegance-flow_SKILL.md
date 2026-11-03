@@ -160,7 +160,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 351 checks / 25 files**: the seam batteries (auth,
+- **Unit — Vitest, 358 checks / 26 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
@@ -170,7 +170,9 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   pins the sitemap to the live public-route census — and
   deployment-doc-census — the round-6 battery that pins
   DEPLOYMENT.md's counts/contracts to the live tree census, closing
-  the unpinned-doc class) — comment-stripped
+  the unpinned-doc class — and count-ladder-census — the round-7
+  battery that pins the root docs' count-ladder claims to the live
+  tree census, the class closed at the root level) — comment-stripped
   source reads; a literal pinned by a comment alone is vacuous.
 - **E2E — Playwright, 53 checks / 6 specs**: the standalone artifact on
   :3100 with `db/e2e.db`; ONE shared login (`auth.setup.ts` →

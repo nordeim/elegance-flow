@@ -209,7 +209,7 @@ elegance-flow/
 │   ├── lib/                    # see §3.1 Layer 1
 │   ├── types/index.ts          # User · Inquiry wire shapes · Result
 │   └── instrumentation.ts     # the boot gate (boot-env)
-├── tests/                     # 23 *.test.ts + e2e/ (6 specs + setups)
+├── tests/                     # 26 *.test.ts + e2e/ (6 specs + setups)
 ├── scripts/                   # census · smoke ladder · parity probe · captures · probes
 ├── docs/                      # plans · screenshots · Tailwind report · skills
 ├── skills/                    # the catalog + 100+ skills (agent tooling)
@@ -422,8 +422,8 @@ The reference's mount-time reveal animations (inline opacity/translateY) are tra
 
 | Category | Files | Checks | Location | Framework |
 | --- | --- | --- | --- | --- |
-| Unit — seam batteries | 10 | 169 | `tests/*.test.ts` | Vitest (node, imports the seams) |
-| Unit — source contracts | 15 | 182 | `tests/*.test.ts` | Vitest (module contracts + comment-stripped reads) |
+| Unit — seam batteries | 13 | 196 | `tests/*.test.ts` | Vitest (node, imports the seams) |
+| Unit — source contracts | 13 | 162 | `tests/*.test.ts` | Vitest (module contracts + comment-stripped reads) |
 | E2E | 6 specs | 53 | `tests/e2e/*.spec.ts` | Playwright (standalone artifact, 1 worker) |
 | Smoke | 1 ladder | 14 rungs | `scripts/smoke-test.sh` | curl + the artifact on :3210 |
 | Live parity | 1 probe | ~80 faces | `scripts/parity-199.ts` | Playwright (both apps) |
@@ -441,7 +441,7 @@ The reference's mount-time reveal animations (inline opacity/translateY) are tra
 ```
 bun run lint        # 0/0 (--max-warnings 0)
 bun run typecheck   # 0 errors
-bun run test        # 351/351
+bun run test        # 358/358
 bun run build       # 22 routes, standalone artifact
 ./scripts/smoke-test.sh   # 14/14
 CI=1 bun run test:e2e     # 53/53
@@ -509,7 +509,7 @@ Enforced: `eslint --max-warnings 0` (flat config, strict TS rules), `tsc --noEmi
 | LOW | The `styles` for the designed 404 carry `focus:outline-none` (v4 genus) | Keyboard focus face on the 404's home button | The reference's own 404 ships none; ours is a superset surface — acceptable, documented |
 | CLOSED | The sitemap shipped the retired CRM route list for one cycle (the post-ship audit catch — 10 of its 11 locs were 404s) | SEO: crawlers fetched dead URLs; the superset's own surface lied about the app | Closed in-round: re-derived to the public surface (landing + the auth family); the census battery `tests/sitemap-routes.test.ts` now pins the list to the live `src/app` census |
 
-No CRITICAL or HIGH issues are open. The gate (351 unit / 53 e2e / 14 smoke / parity probe) is green at ship and re-proven at the post-ship audit close, the round-4 fresh-context re-audit, the round-5 re-validation (the DEPLOYMENT.md doc cure + the advisory re-triage), and the round-6 re-validation (the deployment-doc census pin — DEPLOYMENT.md's claims now census-pinned by `tests/deployment-doc-census.test.ts`, closing the unpinned-doc class that let both stragglers ship).
+No CRITICAL or HIGH issues are open. The gate (358 unit / 53 e2e / 14 smoke / parity probe) is green at ship and re-proven at the post-ship audit close, the round-4 fresh-context re-audit, the round-5 re-validation (the DEPLOYMENT.md doc cure + the advisory re-triage), the round-6 re-validation (the deployment-doc census pin — DEPLOYMENT.md's claims now census-pinned by `tests/deployment-doc-census.test.ts`, closing the unpinned-doc class that let both stragglers ship), and the round-7 re-validation (the root-docs count-ladder census pin — `tests/count-ladder-census.test.ts` pins the five root docs' ladder claims to the live tree census, closing the class at the root level after three stale sites drifted through four re-anchors).
 
 ---
 
