@@ -209,7 +209,7 @@ elegance-flow/
 │   ├── lib/                    # see §3.1 Layer 1
 │   ├── types/index.ts          # User · Inquiry wire shapes · Result
 │   └── instrumentation.ts     # the boot gate (boot-env)
-├── tests/                     # 30 *.test.ts + e2e/ (7 specs + setups)
+├── tests/                     # 31 *.test.ts + e2e/ (8 specs + setups)
 ├── scripts/                   # census · smoke ladder · parity probe · captures · probes
 ├── docs/                      # plans · screenshots · Tailwind report · skills
 ├── skills/                    # the catalog + 100+ skills (agent tooling)
@@ -423,8 +423,8 @@ The reference's mount-time reveal animations (inline opacity/translateY) are tra
 | Category | Files | Checks | Location | Framework |
 | --- | --- | --- | --- | --- |
 | Unit — seam batteries | 13 | 196 | `tests/*.test.ts` | Vitest (node, imports the seams) |
-| Unit — source contracts | 17 | 184 | `tests/*.test.ts` | Vitest (module contracts + comment-stripped reads) |
-| E2E | 7 specs | 61 | `tests/e2e/*.spec.ts` | Playwright (standalone artifact, 1 worker) |
+| Unit — source contracts | 18 | 204 | `tests/*.test.ts` | Vitest (module contracts + comment-stripped reads) |
+| E2E | 8 specs | 71 | `tests/e2e/*.spec.ts` | Playwright (standalone artifact, 1 worker) |
 | Smoke | 1 ladder | 14 rungs | `scripts/smoke-test.sh` | curl + the artifact on :3210 |
 | Live parity | 1 probe | ~80 faces | `scripts/parity-199.ts` | Playwright (both apps) |
 | A11y | 6 scans | 2 gates | `tests/e2e/a11y.spec.ts` | axe-core 4.13 |
@@ -441,10 +441,10 @@ The reference's mount-time reveal animations (inline opacity/translateY) are tra
 ```
 bun run lint        # 0/0 (--max-warnings 0)
 bun run typecheck   # 0 errors
-bun run test        # 380/380
+bun run test        # 400/400
 bun run build       # 22 routes, standalone artifact
 ./scripts/smoke-test.sh   # 14/14
-CI=1 bun run test:e2e     # 61/61
+CI=1 bun run test:e2e     # 71/71
 bun scripts/parity-199.ts # COMPUTE IDENTICAL (dev server on :3000)
 ```
 
@@ -509,7 +509,7 @@ Enforced: `eslint --max-warnings 0` (flat config, strict TS rules), `tsc --noEmi
 | LOW | The `styles` for the designed 404 carry `focus:outline-none` (v4 genus) | Keyboard focus face on the 404's home button | The reference's own 404 ships none; ours is a superset surface — acceptable, documented |
 | CLOSED | The sitemap shipped the retired CRM route list for one cycle (the post-ship audit catch — 10 of its 11 locs were 404s) | SEO: crawlers fetched dead URLs; the superset's own surface lied about the app | Closed in-round: re-derived to the public surface (landing + the auth family); the census battery `tests/sitemap-routes.test.ts` now pins the list to the live `src/app` census |
 
-No CRITICAL or HIGH issues are open. The gate (380 unit / 61 e2e / 14 smoke / parity probe) is green at ship and re-proven at the post-ship audit close, the round-4 fresh-context re-audit, the round-5 re-validation (the DEPLOYMENT.md doc cure + the advisory re-triage), the round-6 re-validation (the deployment-doc census pin — DEPLOYMENT.md's claims now census-pinned by `tests/deployment-doc-census.test.ts`, closing the unpinned-doc class that let both stragglers ship), the round-7 re-validation (the root-docs count-ladder census pin — `tests/count-ladder-census.test.ts` pins the five root docs' ladder claims to the live tree census, closing the class at the root level after three stale sites drifted through four re-anchors), the round-8 re-validation (the six v4 re-pin traps' token family unit-pinned by `tests/re-pin-tokens.test.ts` + the doc-pointer census — `tests/doc-pointer-census.test.ts` pins every load-bearing doc's file references to the live tree, closing the dangling-pointer class that shipped the lineage spec citations), the round-9 re-validation (the dead-code census — `tests/dead-code-census.test.ts` pins the manifest ↔ recovery-script lockstep, the live-import discipline, and the @utility consumer census, closing the dead-code class that shipped the CRM-era install list, the two dead devDeps, and the three dead @utility blocks), and the round-10 re-validation (the keyboard/focus census — `tests/focus-contract.test.ts` pins the `--color-ring` re-pin to #09090b (the LIVE reference's computed sign-in ring; the session-9 stock #0a0a0a retired) and the superset's focus-visible source contract, while `tests/e2e/keyboard.spec.ts` pins the keyboard rides and the focus-visible computed faces, closing the WCAG 2.4.7 class that shipped invisible focus on the inbox/shell controls and the ring-color divergence on the auth card).
+No CRITICAL or HIGH issues are open. The gate (400 unit / 71 e2e / 14 smoke / parity probe) is green at ship and re-proven at the post-ship audit close, the round-4 fresh-context re-audit, the round-5 re-validation (the DEPLOYMENT.md doc cure + the advisory re-triage), the round-6 re-validation (the deployment-doc census pin — DEPLOYMENT.md's claims now census-pinned by `tests/deployment-doc-census.test.ts`, closing the unpinned-doc class that let both stragglers ship), the round-7 re-validation (the root-docs count-ladder census pin — `tests/count-ladder-census.test.ts` pins the five root docs' ladder claims to the live tree census, closing the class at the root level after three stale sites drifted through four re-anchors), the round-8 re-validation (the six v4 re-pin traps' token family unit-pinned by `tests/re-pin-tokens.test.ts` + the doc-pointer census — `tests/doc-pointer-census.test.ts` pins every load-bearing doc's file references to the live tree, closing the dangling-pointer class that shipped the lineage spec citations), the round-9 re-validation (the dead-code census — `tests/dead-code-census.test.ts` pins the manifest ↔ recovery-script lockstep, the live-import discipline, and the @utility consumer census, closing the dead-code class that shipped the CRM-era install list, the two dead devDeps, and the three dead @utility blocks), the round-10 re-validation (the keyboard/focus census — `tests/focus-contract.test.ts` pins the `--color-ring` re-pin to #09090b (the LIVE reference's computed sign-in ring; the session-9 stock #0a0a0a retired) and the superset's focus-visible source contract, while `tests/e2e/keyboard.spec.ts` pins the keyboard rides and the focus-visible computed faces, closing the WCAG 2.4.7 class that shipped invisible focus on the inbox/shell controls and the ring-color divergence on the auth card), and the round-11 re-validation (the inbox-state + client-error census — `tests/inbox-states.test.ts` pins the inbox's five state faces at the source level while `tests/e2e/inbox-states.spec.ts` rides them against the real UI via route interception and pins the client-error census (zero console/page errors on the clean surfaces, the designed 404's sanctioned register), closing the state-face class AND catching its first live bug: the designed 404 shipped a React #418 hydration text mismatch on every real 404 of the standalone artifact (the prerendered `/_not-found` interpolates the build-time pathname while the client rendered the real one — cured by the two-phase decode, the visible face unchanged).
 
 ---
 

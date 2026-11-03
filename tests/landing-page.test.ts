@@ -176,3 +176,109 @@ describe("session-199: the landing's Tailwind v4 state (the re-pin family)", () 
     expect(css).toMatch(/button,\s*\[role="button"\]\s*\{\s*cursor: pointer;/);
   });
 });
+
+describe("round-11: the designed 404's hydration decode (the client-error census's catch)", () => {
+  // The /_not-found route is PRERENDERED at build — the baked HTML
+  // interpolates the build-time pathname "_not-found". Before round-11
+  // the client's first render interpolated the REAL unmatched path →
+  // React #418 (text mismatch) on every real 404 of the standalone
+  // artifact, invisible to every gate (the smoke ladder curls the
+  // status; the e2e 404 pin read the settled face AFTER React's
+  // recovery re-render). The e2e client-error census
+  // (tests/e2e/inbox-states.spec.ts) pins the zero-page-error bar; this
+  // source contract pins the decode.
+  //
+  // HARNESS NOTE (the round-10 extractor lesson, next member): the
+  // battery's naive `//` stripper eats the regex literal inside
+  // `replace(/^\//, "")` — the code-aware stripper below skips line
+  // comments inside quotes and regex literals, local to this block
+  // (the battery's existing pins keep their proven harness).
+  function stripCommentsCodeAware(src: string): string {
+    let out = "";
+    let i = 0;
+    while (i < src.length) {
+      const c = src[i];
+      const next = src[i + 1];
+      if (c === "/" && next === "*") {
+        const end = src.indexOf("*/", i + 2);
+        i = end === -1 ? src.length : end + 2;
+        continue;
+      }
+      // a regex literal: a `/` in value position (after ( , = : [ ! & | ? { ; or start)
+      // NB: .match, never .test — the count-ladder census regex counts
+      // a bare `.test(` as a test block (the recorded lesson).
+      if (c === "/" && i > 0 && src[i - 1].match(/[(,=:[!&|?;{.\n]/)) {
+        let j = i + 1;
+        let re = "";
+        while (j < src.length && src[j] !== "\n") {
+          if (src[j] === "\\") {
+            re += src[j] + (src[j + 1] ?? "");
+            j += 2;
+            continue;
+          }
+          if (src[j] === "/") break;
+          if (src[j] === "[" ) {
+            // a character class may contain an unescaped /
+            const clsEnd = src.indexOf("]", j);
+            if (clsEnd !== -1) {
+              re += src.slice(j, clsEnd + 1);
+              j = clsEnd + 1;
+              continue;
+            }
+          }
+          re += src[j];
+          j += 1;
+        }
+        // keep the flags arm if present
+        if (src[j] === "/") {
+          let k = j + 1;
+          while (k < src.length && src[k].match(/[a-z]/)) k += 1;
+          out += `${src.slice(i, j + 1)}${src.slice(j + 1, k)}`;
+          i = k;
+          continue;
+        }
+        // not a regex after all (no closing / before EOL) — emit as-is
+        out += c;
+        i += 1;
+        continue;
+      }
+      if (c === "/" && next === "/") {
+        const end = src.indexOf("\n", i);
+        i = end === -1 ? src.length : end;
+        continue;
+      }
+      if (c === '"' || c === "'" || c === "`") {
+        const quote = c;
+        let j = i + 1;
+        while (j < src.length && src[j] !== quote) {
+          if (src[j] === "\\") j += 1;
+          j += 1;
+        }
+        out += src.slice(i, j + 1);
+        i = j + 1;
+        continue;
+      }
+      out += c;
+      i += 1;
+    }
+    return out;
+  }
+  const notFound = () => stripCommentsCodeAware(read("src/app/not-found-body.tsx"));
+
+  it("hydrates with the baked literal (the exact value the prerendered HTML carries)", () => {
+    const src = notFound();
+    // the two-phase decode: mounted gates the real path; the initial
+    // render carries the baked "_not-found" so hydration compares
+    // equal — the mismatch class is dead at the source.
+    expect(src).toContain('mounted ? pathname.replace(/^\\//, "") : "_not-found"');
+    expect(src).toContain("React.useState(false)");
+    expect(src).toContain("setMounted(true)");
+  });
+
+  it("keeps the reference's decode (the leading-slash strip on the real path)", () => {
+    const src = notFound();
+    expect(src).toContain('pathname.replace(/^\\//, "")');
+    // the real path rides the mounted arm — never the initial render
+    expect(src).not.toContain('"{pathname.replace(');
+  });
+});

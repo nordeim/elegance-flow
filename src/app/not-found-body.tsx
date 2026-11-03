@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { NOT_FOUND_LAYOUT } from "@/lib/page-layout";
@@ -45,6 +46,27 @@ import { NOT_FOUND_LAYOUT } from "@/lib/page-layout";
  */
 export function NotFoundBody() {
   const pathname = usePathname();
+  // Round-11 (the client-error census's catch): the /_not-found route is
+  // PRERENDERED at build time — the baked HTML interpolates the
+  // build-time pathname "_not-found", while the client's first render
+  // would interpolate the REAL unmatched path → React #418 (text
+  // mismatch) on every real 404 of the standalone artifact (the dev
+  // server renders per-request and never showed it). The two-phase
+  // decode (the landing scroll-state idiom): hydrate with the baked
+  // literal — the exact value the server HTML carries, so hydration
+  // compares equal — then fill the real path after mount. The visible
+  // face settles to the reference's face (the real path); the e2e
+  // client-error census pins the zero-page-error bar, and landing.spec's
+  // 404 pin holds the visible face.
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => {
+    // The deferred flip (the inbox's loader idiom): setState rides a
+    // zero-tick timer, never the effect's synchronous pass — the
+    // react-hooks/set-state-in-effect contract.
+    const t = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(t);
+  }, []);
+  const shownPath = mounted ? pathname.replace(/^\//, "") : "_not-found";
   return (
     <div className={NOT_FOUND_LAYOUT.page}>
       <div className={NOT_FOUND_LAYOUT.card}>
@@ -57,7 +79,7 @@ export function NotFoundBody() {
             <h2 className={NOT_FOUND_LAYOUT.h2}>Page Not Found</h2>
             <p className={NOT_FOUND_LAYOUT.p}>
               The page{" "}
-              <span className={NOT_FOUND_LAYOUT.pathSpan}>&quot;{pathname.replace(/^\//, "")}&quot;</span> could not be
+              <span className={NOT_FOUND_LAYOUT.pathSpan}>&quot;{shownPath}&quot;</span> could not be
               found in this application.
             </p>
           </div>

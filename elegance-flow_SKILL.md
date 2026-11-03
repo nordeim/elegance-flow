@@ -163,14 +163,16 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 380 checks / 30 files**: the seam batteries (auth,
+- **Unit — Vitest, 400 checks / 31 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
-  inquiry-schemas, landing-page, auth-surfaces, auth-contract,
-  auth-reset, body-pregate, gate-script, error-boundaries,
-  toast-anatomy, sitemap-routes — the post-ship audit battery that
-  pins the sitemap to the live public-route census —
+  inquiry-schemas, landing-page (round-11 gains the designed 404's
+  hydration-decode contract — the two-phase pathname fill that killed
+  the React #418 mismatch on the standalone artifact), auth-surfaces,
+  auth-contract, auth-reset, body-pregate, gate-script,
+  error-boundaries, toast-anatomy, sitemap-routes — the post-ship
+  audit battery that pins the sitemap to the live public-route census —
   deployment-doc-census — the round-6 battery that pins
   DEPLOYMENT.md's counts/contracts to the live tree census, closing
   the unpinned-doc class — count-ladder-census — the round-7
@@ -187,14 +189,19 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   declared dependency carries a consumer citation), and the @utility
   consumer census, closing the dead-code class that shipped the
   CRM-era install list, the dead devDeps, and the dead @utility
-  blocks — and focus-contract — the round-10 battery that pins the
+  blocks — focus-contract — the round-10 battery that pins the
   --color-ring re-pin (#09090b, the LIVE reference's computed
   sign-in ring) and the superset's focus-visible source contract
   (every interactive control on OUR surfaces carries a visible
-  focus ring), closing the WCAG 2.4.7 class) —
+  focus ring), closing the WCAG 2.4.7 class — and inbox-states — the
+  round-11 battery that pins the inbox's five state faces (the
+  initial-load loading face, both error faces, both empty faces, the
+  recovery/busy/refresh contracts) at the source level, closing the
+  state-face class the pre-ship checklist prescribes but no gate had
+  run) —
   comment-stripped source reads; a literal pinned by a comment alone is
   vacuous.
-- **E2E — Playwright, 61 checks / 7 specs**: the standalone artifact on
+- **E2E — Playwright, 71 checks / 8 specs**: the standalone artifact on
   :3100 with `db/e2e.db`; ONE shared login (`auth.setup.ts` →
   storageState — the auth endpoints are rate-limited 10/IP/15-min); one
   worker; alphabetical file order → every spec SELF-SUFFICIENT (its own
@@ -202,7 +209,11 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   landing, mobile-navigation (THE operator's standing emphasis — the full
   390×844 battery), auth, reset-password, dashboard-inbox, keyboard
   (the round-10 keyboard-operability battery — the keyboard rides plus
-  the focus-visible computed faces), a11y two-gate.
+  the focus-visible computed faces), inbox-states (the round-11
+  state-face + client-error battery — the five state faces ridden via
+  route interception plus the zero-console/page-error census on the
+  clean surfaces, with the designed 404's sanctioned register), a11y
+  two-gate.
 - **Smoke — `scripts/smoke-test.sh`, 14 rungs**: the artifact on :3210 with
   `db/smoke.db` — health, the 401 walls, SSR faces, the login round-trip,
   Zod 400, public inquiry 201, logout, 429, the SEO family, the
