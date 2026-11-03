@@ -160,21 +160,28 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 358 checks / 26 files**: the seam batteries (auth,
+- **Unit — Vitest, 367 checks / 28 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
   inquiry-schemas, landing-page, auth-surfaces, auth-contract,
   auth-reset, body-pregate, gate-script, error-boundaries,
   toast-anatomy, sitemap-routes — the post-ship audit battery that
-  pins the sitemap to the live public-route census — and
+  pins the sitemap to the live public-route census —
   deployment-doc-census — the round-6 battery that pins
   DEPLOYMENT.md's counts/contracts to the live tree census, closing
-  the unpinned-doc class — and count-ladder-census — the round-7
+  the unpinned-doc class — count-ladder-census — the round-7
   battery that pins the root docs' count-ladder claims to the live
-  tree census, the class closed at the root level) — comment-stripped
-  source reads; a literal pinned by a comment alone is vacuous.
-- **E2E — Playwright, 53 checks / 6 specs**: the standalone artifact on
+  tree census, the class closed at the root level — re-pin-tokens —
+  the round-8 battery that puts the six v4 re-pin traps' token
+  family (the full 29-token palette block, --shadow-sm, --blur-sm,
+  the space-y flip class, the hover unwrap, the leading
+  re-derivations) under the unit gate — and doc-pointer-census —
+  the round-8 battery that pins every load-bearing doc's file
+  references to the live tree, closing the dangling-pointer class) —
+  comment-stripped source reads; a literal pinned by a comment alone is
+  vacuous.
+- **E2E — Playwright, 54 checks / 6 specs**: the standalone artifact on
   :3100 with `db/e2e.db`; ONE shared login (`auth.setup.ts` →
   storageState — the auth endpoints are rate-limited 10/IP/15-min); one
   worker; alphabetical file order → every spec SELF-SUFFICIENT (its own

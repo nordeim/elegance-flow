@@ -27,6 +27,21 @@ test.describe("the EleganceFlow login card (logged-out)", () => {
     await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
   });
 
+  // Round-8 (the trap-③ computed pin, restored from the lineage
+  // session-7 spec): the glass card's backdrop-blur-sm must compute
+  // blur(4px) — the --blur-sm: 4px @theme re-pin's computed face. If the
+  // token pin ever drops, v4's renamed scale renders blur(8px) and this
+  // check goes RED. The radius row (rounded-2xl = 16px) guards the same
+  // token-scale family (v4's defaults happen to match v3 here — this
+  // pins the coincidence, so a future engine change cannot drift it).
+  test("the glass card computes the re-pinned token faces (blur(4px) + 16px radius)", async ({ page }) => {
+    await page.goto("/login");
+    const card = page.locator("div.rounded-2xl.backdrop-blur-sm").first();
+    await expect(card).toBeVisible();
+    await expect(card).toHaveCSS("backdrop-filter", "blur(4px)");
+    await expect(card).toHaveCSS("border-radius", "16px");
+  });
+
   test("rejects wrong credentials with the visible banner — zero toasts", async ({ page }) => {
     await page.goto("/login");
     await page.getByLabel("Email").fill("sepnetflix2023@outlook.com");

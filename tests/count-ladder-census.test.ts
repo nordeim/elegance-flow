@@ -140,7 +140,8 @@ const SEAM_BATTERIES = [
 ];
 
 // The source contracts — comment-stripped source reads + module pins +
-// the doc/route census batteries (this file is the newest member).
+// the doc/route census batteries (round-8's re-pin-tokens +
+// doc-pointer-census are the newest members).
 const SOURCE_CONTRACTS = [
   "site-content",
   "inquiry-schemas",
@@ -155,6 +156,8 @@ const SOURCE_CONTRACTS = [
   "sitemap-routes",
   "deployment-doc-census",
   "count-ladder-census",
+  "re-pin-tokens",
+  "doc-pointer-census",
 ];
 
 const fileOf = (family: string) => `${family}.test.ts`;

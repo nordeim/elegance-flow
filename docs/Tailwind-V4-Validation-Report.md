@@ -224,10 +224,24 @@ The text you provided is a meticulously researched and factually sound summary o
 
 ---
 
-## Appendix — Project Trap Log (bugs found in THIS codebase)
+## Appendix — Project Trap Log (bugs found in the PRIOR-domain build; the lineage record)
+
+> **Lineage note (round-8):** the trap log below records the v3→v4 finds
+> of the PRIOR domain (the pre-EleganceFlow app; retired at
+> session-199 — git history preserves it). The consumers and parity
+> specs it names (CourseCatalog, MyCourses, the p_ panels, the streak
+> cells, the Dashboard CTA, `session7-parity.spec.ts`,
+> `session8-parity.spec.ts`) are THAT domain's — retired with it; only
+> `tests/e2e/mobile-navigation.spec.ts` and `tests/e2e/auth.spec.ts`
+> carry forward under the same names. The TOKEN-LEVEL lessons all
+> carry: the current domain's six re-pin members are enumerated in
+> `AGENTS.md` (all live in `src/app/globals.css` `@theme`), the token
+> pins + the leading/space-y re-derivations are unit-gated by
+> `tests/re-pin-tokens.test.ts`, and the auth card's computed faces
+> (blur(4px) + 16px radius) are e2e-gated by `tests/e2e/auth.spec.ts`.
 
 Three engine-level v3→v4 differences were found and fixed during the build (see
-`AGENTS.md` gotchas + `Project_Architecture_Document.md` ADR-004/005 and §4.4):
+`AGENTS.md` gotchas + `Project_Architecture_Document.md` ADR-005 and §5):
 
 1. **Bare-HSL transparent theme** — under `@theme inline`, `--background: 0 0% 100%`
    (a bare triplet) silently resolves to *transparent*; theme vars must be full
@@ -345,9 +359,10 @@ Fix: pin BOTH tokens in `globals.css` `@theme` (the ADR-005 token-pin precedent)
 --radius-xl: 0.75rem; /* 12px — menu items, streak cells, lesson rows, form controls */
 ```
 
-Pinned by the session-7 e2e specs (computed border-radius assertions on the
-Course-Lessons rows, the p_ All-Courses tile, and the mobile menu items —
-`tests/e2e/session7-parity.spec.ts` + `mobile-navigation.spec.ts`).
+Pinned by the session-7 e2e specs (the LINEAGE parity spec
+`tests/e2e/session7-parity.spec.ts`, retired with the prior domain at
+session-199 + `mobile-navigation.spec.ts`, which carries forward under
+the same name).
 
 ---
 
@@ -368,9 +383,11 @@ Fix: pin the token (the `--shadow-sm` precedent, one line):
 --blur-sm: 4px;
 ```
 
-Pinned by the session-7 e2e spec (`auth.spec.ts`: the login card must compute
-`backdrop-filter: blur(4px)` + `border-radius: 16px`). No other blur consumer
-exists in the codebase, so the pin is collision-free.
+Pinned in THIS domain by the round-8 computed-face check in `tests/e2e/auth.spec.ts`
+(the login card must compute `backdrop-filter: blur(4px)` +
+`border-radius: 16px` — the `--blur-sm` token's computed face on the live
+artifact; the lineage session-7 spec carried the identical assertion).
+No other blur consumer exists in the current tree, so the pin is collision-free.
 
 **Session-7 methodology corollary (recorded for future audits):** the app-wide
 base `font-weight` is ALSO a computed-style-only signal — the live's `body`
@@ -413,7 +430,11 @@ style={{ color: "rgba(0, 0, 0, 0.4)" }}        // streak weekday letters
 style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }} // challenge modal overlay
 ```
 
-Pinned by `tests/e2e/session8-parity.spec.ts` (the letters compute
-`rgba(0, 0, 0, 0.4)`; the overlay computes `rgba(0, 0, 0, 0.5)` with
+Pinned by the LINEAGE parity spec `tests/e2e/session8-parity.spec.ts`
+(retired with the prior domain at session-199; the letters computed
+`rgba(0, 0, 0, 0.4)`; the overlay computed `rgba(0, 0, 0, 0.5)` with
 `backdrop-filter: none`). Unpinned surfaces may keep the utility classes —
-the rendering is identical.
+the rendering is identical. In THIS domain the counterpart pin is the
+s18 serialization filter inside `scripts/parity-199.ts` (the one accepted
+delta: the scrolled header's oklab/rgba forms — numerically the same
+paint, proven in the script).
