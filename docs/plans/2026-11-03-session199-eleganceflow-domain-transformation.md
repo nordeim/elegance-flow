@@ -363,3 +363,22 @@ key-files line counts, the Layer-1 16-module inventory); the stale
 Captures: `docs/screenshots/` — 6 ours (landing fullpage ×2 axes, login,
 inbox, the menu closed + open at 390) + 4 ref. Push 1 (84be411): the codebase.
 Push 2: the documents + worklog.
+
+**The post-ship audit addendum** (the fresh-context re-validation round):
+the sitemap still carried the retired CRM route list — the manifest was
+rebranded at the transformation but `sitemap.xml/route.ts`'s ROUTES literal
+was missed; the smoke rung and the e2e SEO family only assert the 200s, so
+no test pinned the content. Cure (TDD, born RED on the real bug):
+`tests/sitemap-routes.test.ts` — the census battery, +4 checks (the ROUTES
+literal must equal the live public page census of `src/app`; the 1.0/0.8
+scheme; the retired CRM names never return; the gated `(app)` group never
+listed) — plus the list re-derived to `/` + `/login` + `/signup` +
+`/reset-password`, and the stale comment carriers closed (vitest.config.ts's
+CRM-era enumeration; site.ts's retired test-file references and its
+app/sitemap.ts · app/robots.ts naming; README's false ".env is committed"
+claim — .env is git-ignored and the db-path seam defaults to the contract;
+.env.example's neo_crm postgres example → elegance_flow). The count ladder
+re-anchored 339/23 → 343/24 at every live-tense site; the PAD §10 ledger
+records the CLOSED row. Gate after the fix: lint 0/0 · tsc 0 · 343/343 ·
+build (22 routes) · smoke 14/14 · e2e 53/53 (parity untouched — no styling
+surface in the round).

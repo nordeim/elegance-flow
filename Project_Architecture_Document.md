@@ -423,7 +423,7 @@ The reference's mount-time reveal animations (inline opacity/translateY) are tra
 | Category | Files | Checks | Location | Framework |
 | --- | --- | --- | --- | --- |
 | Unit — seam batteries | 10 | 169 | `tests/*.test.ts` | Vitest (node, imports the seams) |
-| Unit — source contracts | 13 | 170 | `tests/*.test.ts` | Vitest (module contracts + comment-stripped reads) |
+| Unit — source contracts | 14 | 174 | `tests/*.test.ts` | Vitest (module contracts + comment-stripped reads) |
 | E2E | 6 specs | 53 | `tests/e2e/*.spec.ts` | Playwright (standalone artifact, 1 worker) |
 | Smoke | 1 ladder | 14 rungs | `scripts/smoke-test.sh` | curl + the artifact on :3210 |
 | Live parity | 1 probe | ~80 faces | `scripts/parity-199.ts` | Playwright (both apps) |
@@ -441,7 +441,7 @@ The reference's mount-time reveal animations (inline opacity/translateY) are tra
 ```
 bun run lint        # 0/0 (--max-warnings 0)
 bun run typecheck   # 0 errors
-bun run test        # 339/339
+bun run test        # 343/343
 bun run build       # 22 routes, standalone artifact
 ./scripts/smoke-test.sh   # 14/14
 CI=1 bun run test:e2e     # 53/53
@@ -506,8 +506,9 @@ Enforced: `eslint --max-warnings 0` (flat config, strict TS rules), `tsc --noEmi
 | LOW | The reference's mount-time reveal animations are not reproduced | Visual (transient) difference on first paint | Deliberate, documented (at-rest parity holds) |
 | LOW | Mail delivery for OTP/reset is in-app only (demo mode) | Production needs a mail transport + the `NEO_DISABLE_*` knobs | Knobs shipped; transport out of scope |
 | LOW | The `styles` for the designed 404 carry `focus:outline-none` (v4 genus) | Keyboard focus face on the 404's home button | The reference's own 404 ships none; ours is a superset surface — acceptable, documented |
+| CLOSED | The sitemap shipped the retired CRM route list for one cycle (the post-ship audit catch — 10 of its 11 locs were 404s) | SEO: crawlers fetched dead URLs; the superset's own surface lied about the app | Closed in-round: re-derived to the public surface (landing + the auth family); the census battery `tests/sitemap-routes.test.ts` now pins the list to the live `src/app` census |
 
-No CRITICAL or HIGH issues are open. The gate (339 unit / 53 e2e / 14 smoke / parity probe) is green at ship.
+No CRITICAL or HIGH issues are open. The gate (343 unit / 53 e2e / 14 smoke / parity probe) is green at ship and re-proven at the post-ship audit close.
 
 ---
 

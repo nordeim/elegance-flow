@@ -46,7 +46,7 @@ re-pinned to the reference's v3 palette).
    seams in `src/lib/` rather than inlining logic. Keep lint green as
    you go.
 5. **VERIFY** — Run the full gate: `bun run lint` → `bun run typecheck`
-   → `bun run test` (339) → `bun run build` → `./scripts/smoke-test.sh`
+   → `bun run test` (343) → `bun run build` → `./scripts/smoke-test.sh`
    (14) → `CI=1 bun run test:e2e` (53). The `gate` script chains them.
 6. **DOCUMENT** — Update the touched docs (`README.md`, this file, the
    PAD, `worklog.md`) in the same change; the counts in the docs must
@@ -78,7 +78,7 @@ SEO metadata family (the reference ships none), deep-linkable
 
 ```bash
 bun run dev        # :3000
-bun run test       # vitest (339 checks / 23 files)
+bun run test       # vitest (343 checks / 24 files)
 bun run test:e2e   # playwright (53 checks / 6 specs) — build first
 bun run gate       # the full chain, in order
 bun run db:census  # MUST print "pristine: MATCH" before you trust any db read
@@ -115,14 +115,14 @@ in production — the boot gate refuses to serve without it),
 
 ## Testing Strategy
 
-- **Unit (Vitest, 23 files / 339 checks)** — the seam batteries (auth,
+- **Unit (Vitest, 24 files / 343 checks)** — the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (`site-content`,
   `inquiry-schemas`, `landing-page`, `auth-surfaces`, `auth-contract`,
   `auth-reset`, `body-pregate`, `gate-script`, `error-boundaries`,
-  `toast-anatomy`) — comment-stripped source reads; a literal pinned by
-  a comment alone is vacuous.
+  `toast-anatomy`, `sitemap-routes`) — comment-stripped source reads; a
+  literal pinned by a comment alone is vacuous.
 - **E2E (Playwright, `tests/e2e/*.spec.ts`)** — the standalone
   artifact on :3100 with `db/e2e.db`; ONE shared login
   (`auth.setup.ts` → storageState); one worker; alphabetical file

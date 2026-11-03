@@ -1,10 +1,12 @@
-// Canonical site origin seam (contract pinned by tests/metadata.test.ts
-// and tests/pwa-metadata.test.ts).
+// Canonical site origin seam (its consumers are pinned: the root layout
+// head by tests/landing-page.test.ts; the pageMetadata call family by
+// tests/auth-surfaces.test.ts; the SEO route handlers by
+// tests/http-headers.test.ts + tests/sitemap-routes.test.ts).
 //
 // NEXT_PUBLIC_SITE_URL is consumed by every metadata surface (the root
-// layout's metadataBase + OG/Twitter cards, app/sitemap.ts, app/robots.ts)
-// — the documented contract since session-18, carried through the
-// session-199 domain transformation.
+// layout's metadataBase + OG/Twitter cards, /sitemap.xml, /robots.txt,
+// /manifest.json) — the documented contract since session-18, carried
+// through the session-199 domain transformation.
 //
 // Session-199 (the rebrand): the reference app is EleganceFlow
 // (colossal-elevate-service-flow.base44.app) — its <title> is the

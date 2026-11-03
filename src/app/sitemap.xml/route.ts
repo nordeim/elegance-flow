@@ -1,35 +1,32 @@
 import { siteUrl } from "@/lib/site";
 
-// Session-18 (S18-P4): /sitemap.xml — the reference's exact format
-// (byte-verified 2026-10-01: LF-only, no trailing newline, 4-space URL
-// indent, changefreq weekly on every entry, priority "1.0" for the
-// dashboard and "0.8" for the rest). Served through an explicit route
-// handler because Next's sitemap.ts serializer DROPS the number
-// formatting ("1.0" serializes as "1") — and its MetadataRoute type
-// spells the field changeFrequency, easy to mis-pin. One deliberate fix:
-// the reference's locs are CAPITALIZED (/Accounts…) — its platform routes
-// case-insensitively; our router is case-sensitive (the documented s14
-// decision, /Profile as the one aliased casing), so this sitemap lists
-// the real lowercase routes the router actually serves.
-// Session-142 (D-142a3): + /about + /contact (the reference's two new
-// marketing-layer app pages — its URL surface now includes them; ours
-// mirrors at the lowercase canonicals). `/` stays 1.0 — it is now the
-// PUBLIC landing page (the reference's own root), still the highest-
-// priority crawlable route.
+// /sitemap.xml — OUR SEO superset surface (the EleganceFlow reference
+// ships none — the documented session-199 superset family). Served
+// through an explicit route handler because Next's sitemap.ts serializer
+// DROPS the number formatting ("1.0" serializes as "1") and its
+// MetadataRoute type spells the field changeFrequency (the s18 decision,
+// carried). The XML shape carries from the s18/s20 byte-format contracts:
+// LF-only, no trailing newline, 4-space URL indent, changefreq weekly on
+// every entry, the "1.0"/"0.8" priority STRINGS, bare application/xml.
+//
+// The session-199 POST-SHIP AUDIT CATCH: this ROUTES literal still
+// carried the RETIRED CRM surface (/accounts, /contacts, /leads,
+// /calendar, /activities, /reports, /settings, /profile, /about,
+// /contact — every one a 404 after the domain transformation; the
+// manifest was rebranded but the sitemap was missed). The list is now
+// derived from the router's real public page surface: the landing at
+// "1.0", the auth card family at "0.8". The session-guarded (app) group
+// (/dashboard) and the api/ family are NEVER sitemap material — a
+// crawler meets the login redirect or envelope JSON, not content.
+// tests/sitemap-routes.test.ts pins the list against the live src/app
+// directory census (the pin whose absence let the straggler ship).
 export const dynamic = "force-static";
 
 const ROUTES: Array<{ path: string; priority: string }> = [
   { path: "/", priority: "1.0" },
-  { path: "/accounts", priority: "0.8" },
-  { path: "/contacts", priority: "0.8" },
-  { path: "/leads", priority: "0.8" },
-  { path: "/calendar", priority: "0.8" },
-  { path: "/activities", priority: "0.8" },
-  { path: "/reports", priority: "0.8" },
-  { path: "/settings", priority: "0.8" },
-  { path: "/profile", priority: "0.8" },
-  { path: "/about", priority: "0.8" },
-  { path: "/contact", priority: "0.8" },
+  { path: "/login", priority: "0.8" },
+  { path: "/signup", priority: "0.8" },
+  { path: "/reset-password", priority: "0.8" },
 ];
 
 export function GET(): Response {
@@ -46,9 +43,9 @@ export function GET(): Response {
 ${urls}
 </urlset>`;
   return new Response(xml, {
-    // Session-20 (S20-P4): bare `application/xml` — the reference's exact
-    // content-type (GET-verified 2026-10-01; ours had shipped a charset
-    // suffix, the s18 "viewport 1 vs 1.0" cosmetic-serialization class).
+    // Session-20 (S20-P4): bare `application/xml` — no charset suffix
+    // (the cosmetic-serialization class; pinned by
+    // tests/http-headers.test.ts).
     headers: { "content-type": "application/xml" },
   });
 }

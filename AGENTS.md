@@ -21,7 +21,7 @@ bun run start                    # the standalone server (production)
 
 bun run lint                     # eslint --max-warnings 0 (the 0/0 standard)
 bun run typecheck                # tsc --noEmit
-bun run test                     # vitest run  (339 checks / 23 files)
+bun run test                     # vitest run  (343 checks / 24 files)
 bun run test:e2e                 # playwright (53 checks / 6 specs; needs build)
 CI=1 bun run test:e2e            # force a fresh server (never reuse stale)
 
