@@ -160,7 +160,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 367 checks / 28 files**: the seam batteries (auth,
+- **Unit — Vitest, 372 checks / 29 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
@@ -176,9 +176,15 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   the round-8 battery that puts the six v4 re-pin traps' token
   family (the full 29-token palette block, --shadow-sm, --blur-sm,
   the space-y flip class, the hover unwrap, the leading
-  re-derivations) under the unit gate — and doc-pointer-census —
+  re-derivations) under the unit gate — doc-pointer-census —
   the round-8 battery that pins every load-bearing doc's file
-  references to the live tree, closing the dangling-pointer class) —
+  references to the live tree, closing the dangling-pointer class —
+  and dead-code-census — the round-9 battery that pins the manifest
+  ↔ recovery-script lockstep, the live-import discipline (every
+  declared dependency carries a consumer citation), and the @utility
+  consumer census, closing the dead-code class that shipped the
+  CRM-era install list, the dead devDeps, and the dead @utility
+  blocks) —
   comment-stripped source reads; a literal pinned by a comment alone is
   vacuous.
 - **E2E — Playwright, 54 checks / 6 specs**: the standalone artifact on

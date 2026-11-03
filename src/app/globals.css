@@ -403,59 +403,14 @@
 
 /* ---------------------------------------------------------------------------
    Custom utilities (v4 native @utility — NOT @layer utilities)
+
+   Round-9: the three CRM-era @utility blocks that retired with the
+   domain (scrollbar-thin · chart-no-outline — whose selectors targeted
+   the retired recharts library · input-base) were removed here — all
+   three had zero consumers in src/ (tree-shaken from the build; the
+   dead-CSS census in tests/dead-code-census.test.ts now pins that
+   every @utility must carry a live consumer).
 --------------------------------------------------------------------------- */
-
-@utility scrollbar-thin {
-  scrollbar-width: thin;
-  scrollbar-color: #d1d5db transparent;
-
-  &::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background-color: #d1d5db;
-    border-radius: 9999px;
-  }
-}
-
-/* Recharts focus outlines are noisy in dialogs */
-@utility chart-no-outline {
-  & .recharts-wrapper:focus,
-  & .recharts-surface:focus {
-    outline: none;
-  }
-}
-
-/* Native date/datetime inputs inherit the app control look */
-@utility input-base {
-  width: 100%;
-  border-radius: 0.5rem;
-  border: 1px solid var(--color-line);
-  background-color: transparent;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.875rem;
-  color: var(--color-ink);
-  outline: none;
-
-  &:focus-visible {
-    box-shadow: 0 0 0 1px var(--color-ring);
-  }
-
-  &::placeholder {
-    color: var(--color-muted-ink);
-  }
-
-  &:disabled {
-    background-color: var(--color-line-soft);
-    color: var(--color-muted);
-  }
-}
 
 @media (prefers-reduced-motion: reduce) {
   *,
