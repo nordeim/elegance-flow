@@ -95,10 +95,14 @@
      tracks, outline/ghost hovers, select/menu focus washes, row hovers. */
   --color-line-soft: #f5f5f5;
 
-  /* Focus ring (session-9 S9-16): the reference's --ring is the stock
-     shadcn `0 0% 3.9%` (#0a0a0a) — focused controls render a 1px
-     near-black ring, not the app blue. Consumed by `ring-ring` utilities. */
-  --color-ring: #0a0a0a;
+  /* Focus ring (session-9 S9-16, re-pinned round-10): the LIVE
+     reference's focused sign-in button computes a
+     rgb(9, 9, 11) 0 0 0 4px ring arm — zinc-950 (#09090b), NOT the
+     session-9 stock shadcn `0 0% 3.9%` near-black (#0a0a0a =
+     neutral-950, which computed rgb(10,10,10) — a focus-face
+     divergence the at-rest parity probe could never see). Consumed by
+     `ring-ring` utilities; live-probed settled 2026-11-04. */
+  --color-ring: #09090b;
 
   /* Stock-primitive inks (session-10 S10-2): the reference's stock
      Input/Select carry NO text color class — typed text inherits its

@@ -140,7 +140,7 @@ const SEAM_BATTERIES = [
 ];
 
 // The source contracts — comment-stripped source reads + module pins +
-// the doc/route census batteries (round-9's dead-code-census is the
+// the doc/route census batteries (round-10's focus-contract is the
 // newest member).
 const SOURCE_CONTRACTS = [
   "site-content",
@@ -159,6 +159,7 @@ const SOURCE_CONTRACTS = [
   "re-pin-tokens",
   "doc-pointer-census",
   "dead-code-census",
+  "focus-contract",
 ];
 
 const fileOf = (family: string) => `${family}.test.ts`;

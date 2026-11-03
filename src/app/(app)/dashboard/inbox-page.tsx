@@ -183,7 +183,7 @@ export function InboxPage() {
             void load();
           }}
           disabled={loading}
-          className="inline-flex w-fit items-center gap-2 border border-zinc-300 px-4 py-2 text-xs font-bold uppercase tracking-widest text-zinc-700 transition-colors hover:border-zinc-950 hover:text-zinc-950 disabled:opacity-50"
+          className="inline-flex w-fit items-center gap-2 border border-zinc-300 px-4 py-2 text-xs font-bold uppercase tracking-widest text-zinc-700 transition-colors hover:border-zinc-950 hover:text-zinc-950 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           data-testid="refresh-inquiries"
         >
           <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
@@ -200,7 +200,7 @@ export function InboxPage() {
               type="button"
               role="tab"
               aria-selected={tab === t.key}
-              className={`px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors ${
+              className={`px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                 tab === t.key
                   ? "bg-zinc-950 text-white"
                   : "bg-zinc-200/70 text-zinc-600 hover:text-zinc-950"
@@ -295,7 +295,7 @@ export function InboxPage() {
                       type="button"
                       disabled={busyId === row.id}
                       onClick={() => void transition(row, "read", "Marked as read")}
-                      className="inline-flex items-center gap-1.5 border border-zinc-200 px-3 py-2 text-xs font-bold uppercase tracking-wider text-zinc-600 transition-colors hover:border-zinc-950 hover:text-zinc-950 disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 border border-zinc-200 px-3 py-2 text-xs font-bold uppercase tracking-wider text-zinc-600 transition-colors hover:border-zinc-950 hover:text-zinc-950 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                       data-testid="mark-read"
                     >
                       <Check size={14} />
@@ -307,7 +307,7 @@ export function InboxPage() {
                       type="button"
                       disabled={busyId === row.id}
                       onClick={() => void transition(row, "read", "Restored to the active list")}
-                      className="inline-flex items-center gap-1.5 border border-zinc-200 px-3 py-2 text-xs font-bold uppercase tracking-wider text-zinc-600 transition-colors hover:border-zinc-950 hover:text-zinc-950 disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 border border-zinc-200 px-3 py-2 text-xs font-bold uppercase tracking-wider text-zinc-600 transition-colors hover:border-zinc-950 hover:text-zinc-950 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                       data-testid="unarchive"
                     >
                       <ArchiveRestore size={14} />
@@ -318,7 +318,7 @@ export function InboxPage() {
                       type="button"
                       disabled={busyId === row.id}
                       onClick={() => void transition(row, "archived", "Inquiry archived")}
-                      className="inline-flex items-center gap-1.5 border border-zinc-200 px-3 py-2 text-xs font-bold uppercase tracking-wider text-zinc-600 transition-colors hover:border-zinc-950 hover:text-zinc-950 disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 border border-zinc-200 px-3 py-2 text-xs font-bold uppercase tracking-wider text-zinc-600 transition-colors hover:border-zinc-950 hover:text-zinc-950 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                       data-testid="archive"
                     >
                       <Archive size={14} />
@@ -331,7 +331,7 @@ export function InboxPage() {
                         type="button"
                         disabled={busyId === row.id}
                         onClick={() => void remove(row)}
-                        className="inline-flex items-center gap-1.5 bg-red-600 px-3 py-2 text-xs font-bold uppercase tracking-wider text-white transition-colors hover:bg-red-700 disabled:opacity-50"
+                        className="inline-flex items-center gap-1.5 bg-red-600 px-3 py-2 text-xs font-bold uppercase tracking-wider text-white transition-colors hover:bg-red-700 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         data-testid="confirm-delete"
                       >
                         <Trash2 size={14} />
@@ -340,7 +340,7 @@ export function InboxPage() {
                       <button
                         type="button"
                         onClick={() => setConfirmId(null)}
-                        className="px-2 text-xs font-bold uppercase tracking-wider text-zinc-500 transition-colors hover:text-zinc-950"
+                        className="px-2 text-xs font-bold uppercase tracking-wider text-zinc-500 transition-colors hover:text-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                       >
                         Cancel
                       </button>
@@ -351,7 +351,7 @@ export function InboxPage() {
                       disabled={busyId === row.id}
                       onClick={() => setConfirmId(row.id)}
                       aria-label={`Delete inquiry from ${row.name}`}
-                      className="inline-flex items-center border border-zinc-200 p-2 text-zinc-500 transition-colors hover:border-red-600 hover:text-red-600 disabled:opacity-50"
+                      className="inline-flex items-center border border-zinc-200 p-2 text-zinc-500 transition-colors hover:border-red-600 hover:text-red-600 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                       data-testid="delete"
                     >
                       <Trash2 size={14} />

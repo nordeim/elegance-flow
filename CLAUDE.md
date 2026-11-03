@@ -46,8 +46,8 @@ re-pinned to the reference's v3 palette).
    seams in `src/lib/` rather than inlining logic. Keep lint green as
    you go.
 5. **VERIFY** — Run the full gate: `bun run lint` → `bun run typecheck`
-   → `bun run test` (372) → `bun run build` → `./scripts/smoke-test.sh`
-   (14) → `CI=1 bun run test:e2e` (54). The `gate` script chains them.
+   → `bun run test` (380) → `bun run build` → `./scripts/smoke-test.sh`
+   (14) → `CI=1 bun run test:e2e` (61). The `gate` script chains them.
 6. **DOCUMENT** — Update the touched docs (`README.md`, this file, the
    PAD, `worklog.md`) in the same change; the counts in the docs must
    match the suites (the lockstep doctrine — doc claims about the tree
@@ -78,8 +78,8 @@ SEO metadata family (the reference ships none), deep-linkable
 
 ```bash
 bun run dev        # :3000
-bun run test       # vitest (372 checks / 29 files)
-bun run test:e2e   # playwright (54 checks / 6 specs) — build first
+bun run test       # vitest (380 checks / 30 files)
+bun run test:e2e   # playwright (61 checks / 7 specs) — build first
 bun run gate       # the full chain, in order
 bun run db:census  # MUST print "pristine: MATCH" before you trust any db read
 ```
@@ -115,7 +115,7 @@ in production — the boot gate refuses to serve without it),
 
 ## Testing Strategy
 
-- **Unit (Vitest, 29 files / 372 checks)** — the seam batteries (auth,
+- **Unit (Vitest, 30 files / 380 checks)** — the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (`site-content`,
@@ -123,7 +123,7 @@ in production — the boot gate refuses to serve without it),
   `auth-reset`, `body-pregate`, `gate-script`, `error-boundaries`,
   `toast-anatomy`, `sitemap-routes`, `deployment-doc-census`,
   `count-ladder-census`, `re-pin-tokens`, `doc-pointer-census`,
-  `dead-code-census`) —
+  `dead-code-census`, `focus-contract`) —
   comment-stripped source reads; a literal pinned by a comment alone is
   vacuous.
 - **E2E (Playwright, `tests/e2e/*.spec.ts`)** — the standalone
@@ -131,7 +131,9 @@ in production — the boot gate refuses to serve without it),
   (`auth.setup.ts` → storageState); one worker; alphabetical file
   order → every spec is SELF-SUFFICIENT (its own probe rows on an
   isolated `x-forwarded-for` bucket). The mobile-navigation battery is
-  the operator's standing emphasis.
+  the operator's standing emphasis; the keyboard-operability battery
+  (round-10) pins the keyboard rides + the focus-visible computed
+  faces.
 - **Smoke (`scripts/smoke-test.sh`)** — 14 rungs against the
   standalone artifact on :3210 with `db/smoke.db`: health, auth walls,
   the SSR faces, the login round-trip, the Zod 400, the public inquiry

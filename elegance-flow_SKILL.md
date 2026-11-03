@@ -116,7 +116,10 @@ The reference's contact form answers a toast and DISCARDS the submission
   `/signup` and `/reset-password`.
 
 Superset surfaces pass WCAG AA OUTRIGHT (zinc-600/zinc-500 honest inks, no
-zinc-400) and cite no sanctioned matchers — only the reference-mirrored
+zinc-400; every interactive control carries a visible focus-visible ring
+since round-10 — the inbox/shell family rides `focus-visible:ring-*`,
+pinned by `tests/focus-contract.test.ts` + the keyboard e2e battery) and
+cite no sanctioned matchers — only the reference-mirrored
 landing colors carry the a11y spec's sanctioned register (the reference's
 own byte-parity palette: the amber eyebrow, the white/20–40 ladder, the
 featured card's zinc-900/70 at 4.48:1, the inactive filter chip at 4.39:1).
@@ -160,7 +163,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 372 checks / 29 files**: the seam batteries (auth,
+- **Unit — Vitest, 380 checks / 30 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
@@ -179,21 +182,27 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   re-derivations) under the unit gate — doc-pointer-census —
   the round-8 battery that pins every load-bearing doc's file
   references to the live tree, closing the dangling-pointer class —
-  and dead-code-census — the round-9 battery that pins the manifest
+  dead-code-census — the round-9 battery that pins the manifest
   ↔ recovery-script lockstep, the live-import discipline (every
   declared dependency carries a consumer citation), and the @utility
   consumer census, closing the dead-code class that shipped the
   CRM-era install list, the dead devDeps, and the dead @utility
-  blocks) —
+  blocks — and focus-contract — the round-10 battery that pins the
+  --color-ring re-pin (#09090b, the LIVE reference's computed
+  sign-in ring) and the superset's focus-visible source contract
+  (every interactive control on OUR surfaces carries a visible
+  focus ring), closing the WCAG 2.4.7 class) —
   comment-stripped source reads; a literal pinned by a comment alone is
   vacuous.
-- **E2E — Playwright, 54 checks / 6 specs**: the standalone artifact on
+- **E2E — Playwright, 61 checks / 7 specs**: the standalone artifact on
   :3100 with `db/e2e.db`; ONE shared login (`auth.setup.ts` →
   storageState — the auth endpoints are rate-limited 10/IP/15-min); one
   worker; alphabetical file order → every spec SELF-SUFFICIENT (its own
   probe rows on an isolated `x-forwarded-for` bucket). The specs:
   landing, mobile-navigation (THE operator's standing emphasis — the full
-  390×844 battery), auth, reset-password, dashboard-inbox, a11y two-gate.
+  390×844 battery), auth, reset-password, dashboard-inbox, keyboard
+  (the round-10 keyboard-operability battery — the keyboard rides plus
+  the focus-visible computed faces), a11y two-gate.
 - **Smoke — `scripts/smoke-test.sh`, 14 rungs**: the artifact on :3210 with
   `db/smoke.db` — health, the 401 walls, SSR faces, the login round-trip,
   Zod 400, public inquiry 201, logout, 429, the SEO family, the

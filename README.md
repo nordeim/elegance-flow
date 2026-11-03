@@ -15,8 +15,8 @@ A production-grade clone of [the EleganceFlow reference site](https://colossal-e
 | 📥 Inquiry inbox (superset) | Every contact-form submission persists; the authenticated `/dashboard` lists, searches, and triages (mark read / archive / unarchive / two-step delete) |
 | 🔐 Email + password auth | Hand-rolled scrypt + HMAC cookie sessions, email-verification funnel, hashed single-use password-reset funnel, session revocation via `tokenVersion` |
 | 🛡️ Hardened API | Zod validation at every body-parsing seam, per-IP rate limits with `Retry-After`, CSRF content-type gate, bounded body reads, honest `{ ok, error }` envelopes |
-| ♿ WCAG 2.2 AA | Structural axe violations zero; reference-byte-parity colors cite a sanctioned register; the superset's own surfaces pass AA outright |
-| 🧪 Full test pyramid | 372 unit checks (29 files), 54 e2e checks (6 specs), a 14-rung smoke ladder against the production artifact, and the live parity probe |
+| ♿ WCAG 2.2 AA | Structural axe violations zero; every interactive control renders a visible focus ring (keyboard-operability e2e battery); reference-byte-parity colors cite a sanctioned register; the superset's own surfaces pass AA outright |
+| 🧪 Full test pyramid | 380 unit checks (30 files), 61 e2e checks (7 specs), a 14-rung smoke ladder against the production artifact, and the live parity probe |
 
 ## Quick start
 
@@ -44,7 +44,7 @@ inbox.
 ### The full gate
 
 ```bash
-bun run gate   # lint → typecheck → test (372) → build → smoke (14) → e2e (54)
+bun run gate   # lint → typecheck → test (380) → build → smoke (14) → e2e (61)
 ```
 
 ## Architecture
@@ -100,7 +100,7 @@ elegance-flow/
 │   ├── 📄 api.ts                      # the envelope + parseBody seam
 │   └── 📄 db-path.ts                  # the repo-root db resolution
 ├── 📂 prisma/                         # schema (User · Inquiry) + seed
-├── 📂 tests/                          # 29 unit files + e2e/ (6 specs)
+├── 📂 tests/                          # 30 unit files + e2e/ (7 specs)
 ├── 📂 scripts/                        # smoke ladder · parity probe · captures
 └── 📂 docs/                           # plans · screenshots · skills · the Tailwind v4 report
 ```
@@ -116,8 +116,8 @@ NEXT_PUBLIC_SITE_URL="http://localhost:3000"  # canonical origin; INLINED AT BUI
 ## Testing
 
 ```bash
-bun run test                     # 372 checks — pure seams + source contracts
-bun run test:e2e                 # 54 checks — standalone artifact, seeded db/e2e.db
+bun run test                     # 380 checks — pure seams + source contracts
+bun run test:e2e                 # 61 checks — standalone artifact, seeded db/e2e.db
 ./scripts/smoke-test.sh          # 14 rungs — artifact on :3210 with db/smoke.db
 bun scripts/parity-199.ts        # live parity vs the reference (dev server on :3000)
 ```

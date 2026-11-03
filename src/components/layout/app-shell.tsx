@@ -39,7 +39,10 @@ export function AppShell({ user, children }: { user: AppUser; children: React.Re
     <div className="flex min-h-screen flex-col bg-zinc-50">
       <header className="sticky top-0 z-40 border-b border-white/5 bg-zinc-950">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <a href="/" className="text-white font-black text-lg tracking-widest">
+          <a
+            href="/"
+            className="text-white font-black text-lg tracking-widest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
+          >
             {STUDIO_WORDMARK}
           </a>
           <div className="flex items-center gap-4">
@@ -50,7 +53,7 @@ export function AppShell({ user, children }: { user: AppUser; children: React.Re
               type="button"
               onClick={onSignOut}
               disabled={signingOut}
-              className="inline-flex items-center gap-2 border border-white/20 px-4 py-2 text-xs font-bold tracking-widest uppercase text-white transition-colors hover:border-white/50 disabled:opacity-50"
+              className="inline-flex items-center gap-2 border border-white/20 px-4 py-2 text-xs font-bold tracking-widest uppercase text-white transition-colors hover:border-white/50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
               data-testid="sign-out"
             >
               <LogOut size={14} />
@@ -67,7 +70,10 @@ export function AppShell({ user, children }: { user: AppUser; children: React.Re
           <span>
             © 2026 Your Studio. All rights reserved. — the {SITE_NAME} inquiries workspace
           </span>
-          <a href="/" className="text-white/50 transition-colors hover:text-white">
+          <a
+            href="/"
+            className="text-white/50 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
+          >
             Back to the site
           </a>
         </div>

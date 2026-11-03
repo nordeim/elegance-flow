@@ -14,15 +14,18 @@ live DOM probes of the reference. Git history preserves the CRM.
 ## Commands
 
 ```bash
-bun install                      # 522 packages (bun.lock; bun 1.3.x)
+bun install                      # the lockfile's 526 entries (bun.lock; bun's
+                                 # install REPORT varies by platform — 425–522
+                                 # observed; the lockfile entry count is the
+                                 # stable claim)
 bun run dev                      # dev server on :3000 (tee dev.log)
 bun run build                    # standalone artifact (.next/standalone)
 bun run start                    # the standalone server (production)
 
 bun run lint                     # eslint --max-warnings 0 (the 0/0 standard)
 bun run typecheck                # tsc --noEmit
-bun run test                     # vitest run  (372 checks / 29 files)
-bun run test:e2e                 # playwright (54 checks / 6 specs; needs build)
+bun run test                     # vitest run  (380 checks / 30 files)
+bun run test:e2e                 # playwright (61 checks / 7 specs; needs build)
 CI=1 bun run test:e2e            # force a fresh server (never reuse stale)
 
 bun run db:push                  # prisma db push (SQLite at repo/db/custom.db)
