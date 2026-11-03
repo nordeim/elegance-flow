@@ -27,14 +27,10 @@
 import { db } from "../src/lib/db";
 import { runtimeDatabaseUrl } from "../src/lib/db-path";
 
-// The seed contract — prisma/seed.ts's row counts (contacts / leads /
-// accounts / activities / events + users). Keep in sync with the seed.
+// The seed contract — prisma/seed.ts's row counts (inquiries + users).
+// Keep in sync with the seed.
 const EXPECTED = {
-  contacts: 15,
-  leads: 24,
-  accounts: 10,
-  activities: 23,
-  events: 12,
+  inquiries: 3,
   users: 4,
 } as const;
 
@@ -42,20 +38,15 @@ type Counts = Record<keyof typeof EXPECTED, number>;
 
 async function main(): Promise<void> {
   const url = runtimeDatabaseUrl();
-  const [contacts, leads, accounts, activities, events, users] = await Promise.all([
-    db.contact.count(),
-    db.lead.count(),
-    db.account.count(),
-    db.activity.count(),
-    db.event.count(),
+  const [inquiries, users] = await Promise.all([
+    db.inquiry.count(),
     db.user.count(),
   ]);
-  const counts: Counts = { contacts, leads, accounts, activities, events, users };
+  const counts: Counts = { inquiries, users };
 
   console.log(`database: ${url}`);
   console.log(
-    `counts: contacts=${contacts} leads=${leads} accounts=${accounts} ` +
-      `activities=${activities} events=${events} users=${users}`,
+    `counts: inquiries=${inquiries} users=${users}`,
   );
 
   const drift = (Object.keys(EXPECTED) as Array<keyof typeof EXPECTED>).filter(
@@ -68,9 +59,7 @@ async function main(): Promise<void> {
     await db.$disconnect();
     process.exit(1);
   }
-  // Session-54 (S54-P3, N-54d): the banner DERIVES from EXPECTED — the
-  // s53 form hardcoded "15/24/10/23/12 + 4 users", so a future EXPECTED
-  // re-sync would have left the printed contract silently stale.
+  // Session-54 (S54-P3, N-54d) carried: the banner DERIVES from EXPECTED.
   const contract =
     (Object.keys(EXPECTED) as Array<keyof typeof EXPECTED>)
       .filter((k) => k !== "users")

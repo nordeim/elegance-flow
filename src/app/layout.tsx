@@ -14,40 +14,32 @@ import "./globals.css";
 // default is the v4.0 -apple-system list and NOT byte-identical).
 
 export const metadata: Metadata = {
-  // Session-18: the document metadata layer — the reference's 405-char
-  // description paragraph + the full OG/Twitter card family + the
-  // build-time-inlined canonical origin (NEXT_PUBLIC_SITE_URL, consumed
-  // through src/lib/site.ts since that session).
-  // Session-19: + the PWA/installable family (the manifest link, the
-  // apple-touch-icon, the mobile-web-app-capable/apple metas, the
-  // #000000 theme-color — all live-verified on the reference) + the root
-  // canonical link (the reference ships link[rel=canonical] per-route).
-  // The apple-touch-icon rides the src/app/apple-icon.png FILE
-  // CONVENTION (180x180 BrandMark tile) — declaring metadata.icons would
-  // REPLACE the file-convention link[rel=icon] (gate-caught: the s18
-  // favicon test failed with icons present), so both icons ship as file
-  // conventions and this object declares NEITHER.
+  // Session-199 (the domain transformation): the reference app is
+  // EleganceFlow — its <title> is the bare "EleganceFlow" on / and
+  // /login (live-verified) with the "%s | EleganceFlow" template on
+  // named routes. The OG/Twitter card family + PWA metas carry over
+  // from the session-18/19 contracts (the platform family, rebranded);
+  // the description is OUR documented SEO superset (the reference ships
+  // none).
   metadataBase: new URL(siteUrl()),
   manifest: `${siteUrl()}/manifest.json`,
   title: {
-    default: "NEO CRM",
-    // Session-10 (S10-10): the reference's separator is a pipe
-    // ("Accounts | NEO CRM" — document.title probes on all 10 routes).
-    template: "%s | NEO CRM",
+    default: "EleganceFlow",
+    // The reference's separator is a pipe ("Sign up | EleganceFlow").
+    template: "%s | EleganceFlow",
   },
   description: SITE_DESCRIPTION,
-  // The reference's canonical link: origin + route (the dashboard's is
+  // The reference's canonical link: origin + route (the landing's is
   // the bare origin). Next's URL resolution strips the root's trailing
-  // slash (verified live: `${siteUrl()}/` emits the same slashless href —
-  // the s18 "viewport 1 vs 1.0" cosmetic-serialization class). Inner
-  // pages override this through pageMetadata().
+  // slash (verified live — the s18 serialization class). Inner pages
+  // override this through pageMetadata().
   alternates: { canonical: "/" },
   openGraph: {
-    title: "NEO CRM",
+    title: "EleganceFlow",
     description: SITE_DESCRIPTION,
     url: siteUrl(),
     type: "website",
-    siteName: "NEO CRM",
+    siteName: "EleganceFlow",
     images: [
       {
         url: "/og-image.png",
@@ -58,7 +50,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "NEO CRM",
+    title: "EleganceFlow",
     description: SITE_DESCRIPTION,
     images: ["/og-image.png"],
   },

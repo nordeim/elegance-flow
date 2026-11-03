@@ -18,10 +18,29 @@ import { describe, expect, it } from "vitest";
 // `reuseExistingServer: false`: the gate ALWAYS boots a fresh server
 // from the just-built tree and kills it on exit. Plain `bun run
 // test:e2e` keeps the reuse ergonomics for iteration.
+//
+// Session-199 (the domain transformation): the CRM drift-sweep gates
+// (sweep / sweep:fullpage / census:interior / gate:full) RETIRED with
+// the CRM surfaces they photographed — their scripts walked the CRM
+// page families and pinned the OLD reference's screenshots. The plain
+// `gate` chain carries forward verbatim; the E2E_PORT single-source
+// doctrine re-anchors onto the session-199 spec family (the
+// dashboard-inbox spec's direct-API wall probe consumes e2e-port).
 
 const pkg = JSON.parse(
   readFileSync(path.resolve(import.meta.dirname, "..", "package.json"), "utf-8"),
 ) as { scripts?: Record<string, string> };
+
+function stripComments(src: string): string {
+  return src
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/\/\/[^\n]*/g, "");
+}
+
+function read(rel: string): string {
+  const p = path.resolve(import.meta.dirname, "..", rel);
+  return existsSync(p) ? readFileSync(p, "utf-8") : "";
+}
 
 describe("session-38: the gate umbrella script (S38-P6)", () => {
   it("package.json ships a `gate` script", () => {
@@ -76,88 +95,34 @@ describe("session-39: the lint warning enforcement (S39-P6)", () => {
   });
 });
 
-describe("session-69: the E2E_PORT single source (N-69g)", () => {
+describe("session-69 → session-199: the E2E_PORT single source (N-69g)", () => {
   // The 69-c rotation's find: the "3100" default was hardcoded TWICE —
-  // playwright.config.ts (Number(process.env.E2E_PORT ?? 3100)) and the
-  // crm.spec 401 probe (process.env.E2E_PORT ?? "3100") — so a default
+  // playwright.config.ts and the e2e spec's 401 probe — so a default
   // change in one place silently sends the probe at a dead port. The
   // fix: tests/e2e/e2e-port.ts owns the default + the env resolution;
-  // both consumers import it (the S68-P4 constant-wiring class).
-  function stripComments(src: string): string {
-    return src
-      .replace(/\/\*[\s\S]*?\*\//g, "")
-      .replace(/\/\/[^\n]*/g, "");
-  }
-  function read(rel: string): string {
-    const p = path.resolve(import.meta.dirname, "..", rel);
-    return existsSync(p) ? readFileSync(p, "utf-8") : "";
-  }
-
-  it("the 3100 default lives exactly once (in e2e-port.ts) and both consumers import it", () => {
+  // every consumer imports it (the S68-P4 constant-wiring class).
+  it("the 3100 default lives exactly once (in e2e-port.ts) and every consumer imports it", () => {
     const port = stripComments(read("tests/e2e/e2e-port.ts"));
     expect(port).toContain('"3100"');
     const config = stripComments(read("playwright.config.ts"));
-    const spec = stripComments(read("tests/e2e/crm.spec.ts"));
-    // neither consumer carries the literal anymore
+    // the config carries no literal default anymore
     expect(config).not.toContain("?? 3100");
-    expect(spec).not.toContain('?? "3100"');
-    // both consume the shared module
     expect(config).toMatch(/e2e-port/);
+    // the spec family's direct-API consumer(s) import it too (the
+    // s199 re-anchor: the dashboard-inbox spec's 401 wall probe)
+    const spec = stripComments(read("tests/e2e/dashboard-inbox.spec.ts"));
+    expect(spec).not.toContain('?? "3100"');
     expect(spec).toMatch(/e2e-port/);
   });
 });
 
-describe("session-97 (S97-P3): the gate:full composite — the drift gate promoted into the CI chain", () => {
-  // The s96 suggested next #3: the standing `gate` chain proves the
-  // code, but the PARITY regression (a page drifting from its standing
-  // screenshot genus) only fails inside `bun run sweep -- --fail-on-drift`.
-  // `gate:full` chains the standing gate + the three walked viewport
-  // classes so the one command proves code AND parity.
-  it("package.json ships a `gate:full` script", () => {
-    expect(typeof pkg.scripts?.["gate:full"]).toBe("string");
-    expect(pkg.scripts!["gate:full"].length).toBeGreaterThan(0);
-  });
-
-  it("gate:full = the standing gate chain (with the s170 smoke leg) + the SIX drift gates (desktop, phone 390, tablet 768, landscape 1024 — the s99 fourth sweep — + the s149 FULLPAGE landing gate + the s152 INTERIOR census gate)", () => {
-    const steps = pkg.scripts!["gate:full"].split("&&").map((s) => s.trim());
-    expect(steps).toEqual([
-      "bun run lint",
-      "bun run typecheck",
-      "bun run test",
-      "bun run build",
-      "./scripts/smoke-test.sh",
-      "CI=1 bun run test:e2e",
-      "bun run sweep -- --fail-on-drift",
-      "bun run sweep -- --width 390 --height 844 --fail-on-drift",
-      "bun run sweep -- --width 768 --height 1024 --fail-on-drift",
-      "bun run sweep -- --width 1024 --height 768 --fail-on-drift",
-      // s149 (F-149c3): the FIFTH gate — the below-the-fold landing axis
-      // (the full-page capture pair the owner's skill motivated; the
-      // four viewport sweeps structurally clip at y≈900)
-      "bun run sweep:fullpage -- --fail-on-drift",
-      // s152 (the 152-c rotation): the SIXTH gate — the interior
-      // full-geometry census (the L-151c2 dead-zone cure: the five
-      // pixel gates clip at their capture height; the census walks
-      // every element inside main.overflow-auto at 390×844)
-      // s158 (the 158-c rotation): the census leg runs the probe-validated
-      // concurrency — the four axis walks CONCURRENTLY (logins staggered);
-      // the six-gate chain stays six commands
-      "bun run census:interior -- --fail-on-drift --parallel 4",
-    ]);
-  });
-
-  it("the plain `gate` carries the smoke leg (session-170: the §14 order — build → smoke → e2e)", () => {
-    expect(pkg.scripts!.gate).toBe(
-      "bun run lint && bun run typecheck && bun run test && bun run build && ./scripts/smoke-test.sh && CI=1 bun run test:e2e",
-    );
-  });
-
-  it("every drift gate in gate:full carries --fail-on-drift (a report-only gate would gate nothing)", () => {
-    const gates = pkg.scripts!["gate:full"]
-      .split("&&")
-      .map((s) => s.trim())
-      .filter((s) => /^(bun run sweep|bun run census)/.test(s));
-    expect(gates.length).toBe(6); // the four viewport sweeps + the s149 fullpage gate + the s152 interior census gate
-    for (const s of gates) expect(s).toContain("--fail-on-drift");
+describe("session-199: the CRM drift-gate family retired (the s199 ledger record)", () => {
+  it("the sweep/gate:full scripts retired with the CRM surfaces they photographed", () => {
+    expect(pkg.scripts?.sweep).toBeUndefined();
+    expect(pkg.scripts?.["sweep:fullpage"]).toBeUndefined();
+    expect(pkg.scripts?.["census:interior"]).toBeUndefined();
+    expect(pkg.scripts?.["gate:full"]).toBeUndefined();
+    expect(pkg.scripts?.["probe:ref"]).toBeUndefined();
+    expect(existsSync(path.resolve(import.meta.dirname, "..", "scripts/sweep.ts"))).toBe(false);
   });
 });

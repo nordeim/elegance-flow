@@ -1,30 +1,30 @@
 // Canonical site origin seam (contract pinned by tests/metadata.test.ts
 // and tests/pwa-metadata.test.ts).
 //
-// NEXT_PUBLIC_SITE_URL has been documented in .env.example / README / CLAUDE
-// as "used for metadata, sitemap.xml, and robots.txt" since the scaffold —
-// but before session-18 it was consumed NOWHERE. Every metadata surface
-// (the root layout's metadataBase + OG/Twitter cards, app/sitemap.ts,
-// app/robots.ts) derives from siteUrl() so the documented contract is
-// finally true.
+// NEXT_PUBLIC_SITE_URL is consumed by every metadata surface (the root
+// layout's metadataBase + OG/Twitter cards, app/sitemap.ts, app/robots.ts)
+// — the documented contract since session-18, carried through the
+// session-199 domain transformation.
 //
-// Session-19 extended the seam with the per-route metadata factory: the
-// reference ships PER-ROUTE canonical/OG/Twitter on every inner page
-// (og:title "<Page> | NEO CRM", og:url origin+route, og:description
-// "<Page> on NEO CRM. " + the root paragraph — live-verified on all 10
-// routes 2026-10-01), so the pages build their metadata through
-// pageMetadata() instead of hand-rolling ten copies.
+// Session-199 (the rebrand): the reference app is EleganceFlow
+// (colossal-elevate-service-flow.base44.app) — its <title> is the
+// absolute "EleganceFlow" on / and /login and the "%s | EleganceFlow"
+// template on named routes (live-verified). It ships NO meta description;
+// ours does (the documented SEO superset the smoke ladder checks).
 //
 // NEXT_PUBLIC_* values are INLINED AT BUILD TIME by Next — set the variable
 // before `bun run build` in production (docs/DEPLOYMENT.md).
 
 import type { Metadata } from "next";
 
+import { SITE_NAME } from "@/lib/site-content";
+
 export const DEFAULT_SITE_URL = "http://localhost:3000";
 
-/** The reference's meta description, mirrored verbatim (405 chars). */
+/** The site's meta description (the reference ships none — our SEO
+ *  superset; keep it honest and specific). */
 export const SITE_DESCRIPTION =
-  "NEO CRM is a clean, intuitive customer relationship management platform designed to help teams manage accounts, contacts, and leads in one centralized dashboard. With powerful search, clear account tracking, activity monitoring, and built-in reporting, NEO CRM keeps your client data organized, accessible, and actionable—so you can focus on building stronger relationships and closing more opportunities.";
+  "EleganceFlow is a premium creative studio delivering creative direction, design & web, photography, and brand strategy for clients who value quality. Tell us about your project — we'd love to work together.";
 
 /**
  * Canonical public origin: NEXT_PUBLIC_SITE_URL when set (trailing slashes
@@ -40,47 +40,37 @@ export function siteUrl(
 }
 
 /**
- * Session-19: the reference's per-route OG description prefix — every
- * inner page's og/twitter description is
- * `"<Page> on NEO CRM. " + <the 405-char root paragraph>`
- * (live-verified on /Accounts, /Contacts, /Leads, /Calendar, /Activities,
- * /Reports, /Settings, /Profile; the root and /login stay unprefixed).
+ * The per-route OG description prefix — inner pages carry
+ * `"<Page> on EleganceFlow. " + <the root paragraph>`.
  */
 export function pageOgDescription(page: string): string {
-  return `${page} on NEO CRM. ${SITE_DESCRIPTION}`;
+  return `${page} on ${SITE_NAME}. ${SITE_DESCRIPTION}`;
 }
 
 /**
- * Session-19: the three PWA metas the reference ships in its <head>
- * (mobile-web-app-capable + the apple pair). Next's Metadata object has
- * no first-class fields for them, so they ride `metadata.other` — and
- * because page-level metadata REPLACES the layout's `other` map (shallow
- * merge), the per-page factory re-declares them on every page.
+ * The three PWA metas the head ships (mobile-web-app-capable + the apple
+ * pair). Next's Metadata object has no first-class fields for them, so
+ * they ride `metadata.other` — and because page-level metadata REPLACES
+ * the layout's `other` map (shallow merge), the per-page factory
+ * re-declares them on every page.
  */
 export const PWA_META: Record<string, string> = {
   "mobile-web-app-capable": "yes",
   "apple-mobile-web-app-status-bar-style": "black",
-  "apple-mobile-web-app-title": "NEO CRM",
+  "apple-mobile-web-app-title": SITE_NAME,
 };
 
 /**
- * Session-19: the per-route metadata factory. The reference ships
- * PER-ROUTE canonical + OG/Twitter (og:title "<Page> | NEO CRM",
- * og:url origin+route, the prefixed description, twitter:title/url —
- * live-verified on all 10 routes); Next shallow-merges page metadata over
- * the layout's, so every page re-declares the FULL openGraph/twitter/
- * other sets (otherwise the page would lose the layout's images/card/
- * PWA metas). The OG image is static across the reference's routes (the
- * same URL on root and inner pages — verified), so /og-image.png ships
- * everywhere.
+ * The per-route metadata factory (canonical + OG/Twitter, live-derived
+ * from the reference's per-route pattern). Next shallow-merges page
+ * metadata over the layout's, so every page re-declares the FULL
+ * openGraph/twitter/other sets.
  *
- * - `page: null` → the unprefixed root/login family ("NEO CRM" + the
+ * - `page: null` → the unprefixed root family ("EleganceFlow" + the
  *   plain paragraph). Login keeps its ABSOLUTE title (the s13
  *   anti-doubling pin); pass `title` for other absolute spellings
- *   (signup: "Sign up | NEO CRM").
- * - The dashboard needs NO factory call — it inherits the root layout's
- *   metadata wholesale (og:url = the origin root, which is exactly the
- *   reference's unprefixed family for / and /Dashboard).
+ *   (signup: "Sign up | EleganceFlow").
+ * - The landing inherits the root layout's metadata wholesale.
  */
 export function pageMetadata(opts: {
   page: string | null;
@@ -88,7 +78,7 @@ export function pageMetadata(opts: {
   title?: string;
 }): Metadata {
   const page = opts.page;
-  const fullTitle = page !== null ? `${page} | NEO CRM` : "NEO CRM";
+  const fullTitle = page !== null ? `${page} | ${SITE_NAME}` : SITE_NAME;
   const description = page !== null ? pageOgDescription(page) : SITE_DESCRIPTION;
   return {
     title:
@@ -96,14 +86,14 @@ export function pageMetadata(opts: {
         ? { absolute: opts.title }
         : page !== null
           ? page
-          : { absolute: "NEO CRM" },
+          : { absolute: SITE_NAME },
     alternates: { canonical: opts.route },
     openGraph: {
       title: fullTitle,
       description,
       url: opts.route,
       type: "website",
-      siteName: "NEO CRM",
+      siteName: SITE_NAME,
       images: [{ url: "/og-image.png", width: 1200, height: 630 }],
     },
     twitter: {

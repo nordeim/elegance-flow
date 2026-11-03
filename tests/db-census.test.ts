@@ -64,18 +64,14 @@ describe("session-53: the census seam (S53-P2, N-53b)", () => {
     expect(census()).not.toMatch(/15\/24\/10\/23\/12/);
   });
 
-  it("carries the seed-contract expectations and fails on drift (the N-53a guard)", () => {
+  it("carries the seed-contract expectations and fails on drift (the N-53a guard, s199 re-anchor)", () => {
     const src = census();
-    // The prisma/seed.ts row counts (15 contacts / 24 leads / 10
-    // accounts / 23 activities / 12 events + 4 users) + a non-zero exit
-    // on mismatch — the probe-residue check the s51/s52 batteries
-    // believed they had.
-    expect(src).toMatch(/contacts:\s*15/);
-    expect(src).toMatch(/leads:\s*24/);
-    expect(src).toMatch(/accounts:\s*10/);
-    expect(src).toMatch(/activities:\s*23/);
-    expect(src).toMatch(/events:\s*12/);
+    // The prisma/seed.ts row counts (session-199's domain: 3 inquiries
+    // — one per status — + 4 studio users) + a non-zero exit on
+    // mismatch — the probe-residue check.
+    expect(src).toMatch(/inquiries:\s*3/);
     expect(src).toMatch(/users:\s*4/);
+    expect(src).not.toMatch(/contacts:\s*15/);
     expect(src).toMatch(/process\.exit\(1\)/);
   });
 

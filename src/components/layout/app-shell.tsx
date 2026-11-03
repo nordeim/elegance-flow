@@ -1,94 +1,77 @@
 "use client";
 
+// Session-199 (the domain transformation): THE ELEGANCEFLOW APP SHELL —
+// the authenticated chrome for OUR superset workspace. The reference
+// app has NO surface behind its auth (live-verified: every candidate
+// route renders its SPA's empty 404 shell), so this surface owns its
+// design outright — the landing's own design language carried inward:
+// the zinc-950 top bar, the font-black tracked wordmark, the amber
+// accent, sharp corners.
+//
+// The CRM chrome retired with the domain: the 10-item sidebar, the
+// search topbar, the mobile sheet, the crm-store hydration. The shell
+// is now a lean top bar + the page-owned main scroller.
+
 import * as React from "react";
-import { usePathname } from "next/navigation";
-import { SidebarNav, BrandMark } from "./sidebar";
-import { MobileNav } from "./mobile-nav";
-import { Topbar } from "./topbar";
-import { Dialog } from "@/components/ui/dialog";
-import { useCrmStore } from "@/stores/crm-store";
-import { APP_FOOTER, SHELL_LAYOUT } from "@/lib/page-layout";
+import { useRouter } from "next/navigation";
+import { LogOut } from "lucide-react";
+
+import { SITE_NAME, STUDIO_WORDMARK } from "@/lib/site-content";
 import type { User as AppUser } from "@/types";
 
-/**
- * App chrome — session-7 reference model (SHELL_LAYOUT contracts):
- * a `flex h-screen` row holds the sidebar as an IN-FLOW flex child
- * (visible from `md`) and a `flex-1 … overflow-hidden` main column whose
- * `main` is the ONLY scroller (the window never scrolls). The mobile
- * sheet covers `< md` — since session-147 it is the reference's OWN
- * mobile-nav fix mirrored (the Radix Sheet it shipped in its
- * parity-event bundle), with our kept behavioral supersets (the
- * resize-past-md auto-close, the main-scroller lock, the route-change
- * close).
- */
 export function AppShell({ user, children }: { user: AppUser; children: React.ReactNode }) {
-  const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
-  const hydrate = useCrmStore((s) => s.hydrate);
+  const router = useRouter();
+  const [signingOut, setSigningOut] = React.useState(false);
 
-  // Close the sheet on navigation — adjust-during-render for this
-  // component's OWN state (the sanctioned React pattern). Session-35:
-  // moved here from MobileNav — adjusting the parent's state from the
-  // child's render body tripped React's cross-component render warning
-  // on non-link navigations (browser back/forward with the sheet open).
-  const pathname = usePathname();
-  const [prevPathname, setPrevPathname] = React.useState(pathname);
-  if (prevPathname !== pathname) {
-    setPrevPathname(pathname);
-    if (mobileNavOpen) setMobileNavOpen(false);
+  async function onSignOut() {
+    if (signingOut) return;
+    setSigningOut(true);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      router.push("/login");
+      router.refresh();
+    } finally {
+      setSigningOut(false);
+    }
   }
 
-  // One-time bootstrap of the client store from the session cookie.
-  React.useEffect(() => {
-    void hydrate();
-  }, [hydrate]);
-
   return (
-    // The Radix Dialog Root (no DOM) wraps the whole shell so the
-    // Topbar's DialogTrigger and the portal'd sheet share the
-    // AppShell-owned controlled open state (session-147).
-    <Dialog open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
-      <div className={SHELL_LAYOUT.root}>
-        {/* Desktop sidebar — in-flow flex child, visible from md (768px). */}
-        <aside className={SHELL_LAYOUT.sidebar}>
-          <BrandMark />
-          <div className="min-h-0 flex-1">
-            <SidebarNav />
+    <div className="flex min-h-screen flex-col bg-zinc-50">
+      <header className="sticky top-0 z-40 border-b border-white/5 bg-zinc-950">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+          <a href="/" className="text-white font-black text-lg tracking-widest">
+            {STUDIO_WORDMARK}
+          </a>
+          <div className="flex items-center gap-4">
+            <span className="hidden text-sm text-white/60 sm:inline" data-testid="shell-user-email">
+              {user.email}
+            </span>
+            <button
+              type="button"
+              onClick={onSignOut}
+              disabled={signingOut}
+              className="inline-flex items-center gap-2 border border-white/20 px-4 py-2 text-xs font-bold tracking-widest uppercase text-white transition-colors hover:border-white/50 disabled:opacity-50"
+              data-testid="sign-out"
+            >
+              <LogOut size={14} />
+              Sign out
+            </button>
           </div>
-        </aside>
-
-        {/* Mobile sheet (< md) — the reference's own drawer, mirrored
-            (session-147). */}
-        <MobileNav open={mobileNavOpen} onOpenChange={setMobileNavOpen} />
-
-        {/* Main column: topbar + main scroller. The column is
-            overflow-hidden so `main` owns all scrolling. Session-16
-            (S16-P1/P2): NO shell-level padding wrapper — the reference's
-            PAGES own their padding (PAGE_ROOT.standard/bare; contacts
-            ships the full-height layout as its root), and a blanket
-            wrapper here double-padded the contacts h-calc box (16px extra
-            per side at 390, main scrolling 37px instead of the 5px
-            mirrored quirk). Sticky bars (reports) still stick to main's
-            top. */}
-        <div className={SHELL_LAYOUT.mainColumn}>
-          <Topbar user={user} />
-          {/* Session-143 (D-143a0/F-143c1): the footer follows the page
-              children INSIDE main — the reference's placement on all 11 app
-              pages (walk33-censused; the contract rides APP_FOOTER in
-              page-layout.ts, pinned by tests/page-layout.test.ts). */}
-          <main className={SHELL_LAYOUT.main}>
-            {children}
-            <footer className={APP_FOOTER.footer}>
-              <span>{APP_FOOTER.copyright}</span>
-              <a className={APP_FOOTER.link} href={APP_FOOTER.about.href}>
-                {APP_FOOTER.about.label}
-              </a>
-              <a className={APP_FOOTER.link} href={APP_FOOTER.contact.href}>
-                {APP_FOOTER.contact.label}
-              </a>
-            </footer>
-          </main>
         </div>
-      </div>
-    </Dialog>
+      </header>
+      <main className="flex-1">
+        <div className="mx-auto w-full max-w-7xl px-6 py-8 md:py-12">{children}</div>
+      </main>
+      <footer className="border-t border-white/5 bg-zinc-950 py-6">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-6 text-xs text-white/50 md:flex-row">
+          <span>
+            © 2026 Your Studio. All rights reserved. — the {SITE_NAME} inquiries workspace
+          </span>
+          <a href="/" className="text-white/50 transition-colors hover:text-white">
+            Back to the site
+          </a>
+        </div>
+      </footer>
+    </div>
   );
 }

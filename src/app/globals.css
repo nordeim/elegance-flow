@@ -20,7 +20,7 @@
 @custom-variant hover (&:hover);
 
 /* ---------------------------------------------------------------------------
-   NEO CRM design tokens — Tailwind CSS v4 CSS-first configuration.
+   EleganceFlow design tokens — Tailwind CSS v4 CSS-first configuration.
    Rules (validated against docs/Tailwind-V4-Validation-Report.md):
    - No tailwind.config.js — everything lives in @theme.
    - No var() chains inside @theme — semantic tokens are LITERAL hex values.
@@ -55,8 +55,12 @@
      #fafafa ✓") already carried the reference's value. */
   --color-primary-foreground: #fafafa;
 
-  /* Neutrals */
-  --color-background: #f9fafb;
+  /* Neutrals — session-199 (the domain transformation): the
+     reference's marketing site is WHITE at the body level
+     (live-computed rgb(255,255,255) — its sections carry their own
+     explicit zinc/white bgs); the CRM-era #f9fafb (gray-50) retired
+     with the CRM surfaces. */
+  --color-background: #ffffff;
   --color-surface: #ffffff;
   /* Session-13 (S13-P9): the reference's default foreground (body +
      card-foreground) is #0a0a0a — computed probes on its body, stock
@@ -285,6 +289,28 @@
   --color-yellow-500: #eab308;
   --color-yellow-600: #ca8a04;
   --color-yellow-800: #854d0e;
+  /* Session-199 (the domain transformation): THE ZINC RE-PIN — the sixth
+     member of the v4 re-pin family. The EleganceFlow reference's landing
+     is zinc-first (bg-zinc-950 sections, zinc-100 filter chips, zinc-200
+     form borders, zinc-400 labels, zinc-500 body ink) and v4's default
+     zinc was re-derived in oklch — NOT byte-equal to the v3 palette the
+     reference compiles (verified against the installed tailwindcss
+     4.3.3 colors.js: EVERY step diverges, e.g. v4 zinc-100 oklch(96.7%
+     0.001 286.375) vs the reference's computed rgb(244,244,245);
+     v4 zinc-500 vs rgb(113,113,122); v4 zinc-950 vs the reference's
+     live-computed rgb(9,9,11)). The landing's surfaces pin the v3 values
+     through this block exactly like the s88 family before it. */
+  --color-zinc-50: #fafafa;
+  --color-zinc-100: #f4f4f5;
+  --color-zinc-200: #e4e4e7;
+  --color-zinc-300: #d4d4d8;
+  --color-zinc-400: #a1a1aa;
+  --color-zinc-500: #71717a;
+  --color-zinc-600: #52525b;
+  --color-zinc-700: #3f3f46;
+  --color-zinc-800: #27272a;
+  --color-zinc-900: #18181b;
+  --color-zinc-950: #09090b;
 
   /* Animations for Radix primitives */
   --animate-fade-in: fade-in 0.2s ease-out;

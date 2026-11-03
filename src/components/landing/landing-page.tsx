@@ -1,719 +1,659 @@
 "use client";
 
-// Session-142 (D-142a1): the LANDING PAGE — the reference's new public
-// marketing surface (its index-Dc6wvGtA.js bundle, probe:ref #114's parity
-// EVENT). Every construction below is the live-censused reference DOM
-// (classes, copy, geometry), with exactly three deliberate deviations:
+// Session-199 (the domain transformation): THE ELEGANCEFLOW LANDING — the
+// reference app's whole public one-pager (colossal-elevate-service-flow
+// .base44.app), byte-mirrored from six live DOM probes (2026-11-03):
+// every class string, text node (DOM-CASE — the caps ride the CSS
+// `uppercase` transform), icon size, span structure and scroll state
+// below was extracted from the reference's rendered DOM, not invented.
 //
-//  1. `truncate` replaces the reference's broken `rounded-truncate` class
-//     on the mock sidebar items (a typo class that compiles to NOTHING in
-//     the reference's build — computed-equal, the s11 re-derivation
-//     doctrine: never copy a class string that renders differently than
-//     it reads).
-//  2. The FAQ toggle carries `aria-expanded` + `aria-controls` — the
-//     reference ships neither (its accordions are stateless buttons to
-//     assistive tech). The drawer precedent: invisible a11y supersets are
-//     documented, never at the cost of the visible construction.
-//  3. The mobile disclosure menu CLOSES on section-link click (verified
-//     live on the reference — its panel unmounts after an in-panel anchor
-//     click — so this is NOT a deviation, just noted: the close rides the
-//     same toggle state, no route/hash listener needed).
+// The construction in one view:
+//   header (fixed, transparent → scrolled bg-zinc-950/95 + blur + py-4)
+//     · nav row: "YOUR STUDIO" wordmark · hidden md:flex 5 section links
+//       · hidden md:inline-flex amber "Get in Touch" · md:hidden menu button
+//     · the mobile disclosure panel (inline under the row, no drawer):
+//       5 links + the amber CTA; a link click navigates AND closes
+//   hero (min-h-screen zinc-950): full-bleed image opacity-30 · left
+//     gradient · amber w-1 accent bar · max-w-3xl column (amber eyebrow,
+//     96px font-black h1 in two block spans, white/60 paragraph, the
+//     amber + outline CTA pair) · the bottom-left SCROLL indicator
+//   about (white): 4/5 image + the amber border-4 offset frame · stats row
+//   services (zinc-950): 4 cards — the Design & Web card is FEATURED
+//     (bg-amber-500, zinc-950 ink, zinc-900/70 body, black/10 price rule)
+//   work (white): the filter strip (active chip = AMBER — probe-2's
+//     computed styles; the inactive chips zinc-100/zinc-500) + 6
+//     aspect-square cards with hover overlays (hover-only, no dialogs —
+//     verified live)
+//   testimonials (zinc-950): the amber lucide-quote + the 2xl quote +
+//     person row; the selector rail (active = border-l-4 amber + bg-
+//     zinc-900 + white name; inactive = border-white/5 + white/40 name)
+//   contact (white): the info rows (mail/phone links, location plain)
+//     + the form (name/email grid pair, the select with the absolute
+//     chevron, the 5-row textarea, the amber submit)
+//   footer (zinc-950): wordmark + tagline · 4 text socials · copyright
 //
-// The page is PUBLIC (outside the (app) group — no session guard, no
-// getSessionUser import; auth state does not change a single class).
-// The metadata rides the ROOT layout's object (title "NEO CRM", the
-// 405-char description — byte-identical to the reference's landing head
-// — the bare-origin canonical, the OG/Twitter family with og-image.png,
-// the PWA metas).
+// THE SUPERSET (the reference collects the form and toasts only):
+// ours POSTs to /api/inquiry — a zod-validated, rate-limited, PERSISTED
+// row (the /dashboard inbox reads it). The success toast is the
+// reference's own byte-verified pair; failures answer the honest toast.
 //
-// Tailwind v4 discipline: standard palette classes only (text-gray-*,
-// bg-gray-*, border-gray-*) + the new literal-hex `--color-brand` token
-// (v4 color-mix powers every /alpha modifier). No `hidden` attribute
-// fighting display utilities — the mobile panel MOUNTS/UNMOUNTS exactly
-// like the reference's (its div count delta, live-measured).
+// Deliberate deviations, both invisible in construction (the drawer
+// precedent: a11y supersets never cost the visible face):
+//   1. id/htmlFor bindings on the four form fields — the reference
+//      ships unassociated labels (an axe "label" violation); binding
+//      them changes zero pixels.
+//   2. The mobile menu button carries aria-expanded — the reference
+//      ships a bare toggle (its own menu works, verified; the attribute
+//      is the honest disclosure state for assistive tech).
+// The reference's mount-time reveal animations (inline opacity 0 → 1)
+// are a transient; the at-rest DOM parity is byte-identical without
+// them, so they are not reproduced.
+//
+// Tailwind v4 discipline (docs/Tailwind-V4-Validation-Report.md): the
+// zinc palette rides the session-199 @theme re-pin (v3 values — v4's
+// oklch re-derivation diverges on every step); `bg-gradient-to-r`
+// keeps compiling as the v4 alias of bg-linear-to-r; `outline-none`
+// rides the v4 genus on the form controls (focus:border-zinc-950 is the
+// reference's own focus face).
 
 import * as React from "react";
 import {
   ArrowRight,
-  CalendarCheck,
-  ChartColumn,
-  Check,
+  ArrowUpRight,
+  Camera,
   ChevronDown,
-  Database,
+  Mail,
+  MapPin,
+  Megaphone,
   Menu,
-  SlidersHorizontal,
-  Target,
-  Users,
+  Monitor,
+  Palette,
+  Phone,
+  Quote,
   X,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
-// ---------------------------------------------------------------------------
-// The landing content (verbatim from the reference's live DOM)
-// ---------------------------------------------------------------------------
+import { toast } from "@/components/ui/toast";
+import { INQUIRY_SERVICES } from "@/lib/schemas";
+import {
+  ABOUT,
+  CONTACT,
+  FOOTER,
+  HEADER_CTA,
+  HEADER_SCROLL,
+  HERO,
+  INQUIRY_TOAST,
+  MOBILE_PANEL,
+  NAV_ITEMS,
+  PROJECTS,
+  SERVICES,
+  SERVICES_HEADER,
+  STUDIO_WORDMARK,
+  TESTIMONIALS,
+  TESTIMONIALS_HEADER,
+  WORK_FILTERS,
+  WORK_HEADER,
+  filterProjects,
+  type WorkFilter,
+} from "@/lib/site-content";
 
-const NAV_SECTION_LINKS = [
-  { label: "Features", href: "#features" },
-  { label: "Preview", href: "#preview" },
-  { label: "Pricing", href: "#pricing" },
-  { label: "FAQ", href: "#faq" },
-] as const;
+/** The reference's amber CTA pair (its inline rgb(245,158,11)/rgb(0,0,0)
+ *  expressed through the re-pinned palette). */
+const AMBER_CTA_INK = "bg-amber-500 text-black";
 
-const FEATURES = [
-  {
-    icon: Users,
-    title: "Accounts and contacts",
-    body: "One record per company and every person inside it, with roles, priorities, company size and engagement levels.",
-  },
-  {
-    icon: Target,
-    title: "Leads and pipeline",
-    body: "Capture leads, move them through your own stages, and keep the next follow-up date, value and owner in view.",
-  },
-  {
-    icon: CalendarCheck,
-    title: "Calendar and activities",
-    body: "Log calls, emails, meetings, notes and WhatsApp against a record. Overdue follow-ups float to the top of the list.",
-  },
-  {
-    icon: ChartColumn,
-    title: "Reports built from real records",
-    body: "Sales overview, pipeline forecast, activity productivity, lead sources and account health — no figures invented in the background.",
-  },
-  {
-    icon: SlidersHorizontal,
-    title: "Your own lists",
-    body: "Define contact sources, lead stages, activity types, account tiers and industries in Settings, and pick your default values.",
-  },
-  {
-    icon: Database,
-    title: "Data you can get out",
-    body: "CSV templates, guided import, one-click exports and a guarded reset — your records are never locked inside the app.",
-  },
-] as const;
+const SERVICE_ICONS = {
+  palette: Palette,
+  monitor: Monitor,
+  camera: Camera,
+  megaphone: Megaphone,
+} as const;
 
-const PREVIEW_ROWS = [
-  {
-    title: "NEO CRM · Dashboard",
-    active: "Dashboard",
-    heading: "Dashboard",
-    body: "Pipeline value, deals closed, revenue this month and the activity that needs attention today.",
-  },
-  {
-    title: "NEO CRM · Accounts",
-    active: "Accounts",
-    heading: "Accounts",
-    body: "Filter by owner, industry, revenue range and tier, then export exactly what you are looking at.",
-  },
-  {
-    title: "NEO CRM · Reports",
-    active: "Reports",
-    heading: "Reports",
-    body: "Five report tabs computed from your own records, with date, owner and source filters across all of them.",
-  },
-] as const;
-
-const PRICING = [
-  {
-    name: "Standard",
-    sub: "The core CRM",
-    price: "$8",
-    popular: false,
-    features: [
-      "Dashboard and accounts",
-      "Contacts with roles and priorities",
-      "Leads, calendar and activities",
-      "Sales overview report",
-      "CSV import and export",
-    ],
-    cta: "Start with Standard",
-  },
-  {
-    name: "Pro",
-    sub: "Adds pipeline intelligence",
-    price: "$14",
-    popular: true,
-    features: [
-      "Everything in Standard",
-      "Pipeline and forecast report",
-      "Activity and productivity report",
-      "Lead sources report",
-      "Saved reports and richer exports",
-    ],
-    cta: "Start with Pro",
-  },
-  {
-    name: "Advanced",
-    sub: "Adds account health and control",
-    price: "$20",
-    popular: false,
-    features: [
-      "Everything in Pro",
-      "Account health report",
-      "Configurable sources, stages, types and tiers",
-      "Default values and preferences",
-      // s149 (F-149c2, walk39): the reference's Advanced card grew a
-      // SIXTH feature row — the literal verbatim from the live DOM.
-      "Data tools, templates and guarded reset",
-    ],
-    cta: "Start with Advanced",
-  },
-] as const;
-
-const FAQ_ITEMS = [
-  {
-    q: "Do I need to install anything?",
-    a: "No. NEO CRM is a web app — sign in from any modern browser on a laptop, tablet or phone and your workspace is there.",
-  },
-  {
-    q: "Is my data separate from other customers?",
-    a: "Yes. Your accounts, contacts, leads, activities and calendar events are private to your own account, and so are your configuration lists and default values.",
-  },
-  {
-    q: "Can I bring my existing contacts across?",
-    a: "Yes. Download a CSV template from Settings, fill it in, and import your contacts, accounts or leads in one go.",
-  },
-  {
-    q: "Can I change the stages, sources and industries?",
-    a: "Yes. Settings → CRM Configuration lets you define your own contact sources, lead stages, activity types, account tiers and industries, plus default values for new records.",
-  },
-  {
-    q: "What happens to my data if I stop paying?",
-    a: "Pricing is informational for now and nothing is charged, so nothing is at risk today. You can export your data to CSV at any time from Settings.",
-  },
-  {
-    q: "Which tier do I need?",
-    a: "Standard covers the day-to-day CRM. Pro adds the pipeline forecast, activity productivity and lead source reports. Advanced adds account health, configurable lists and the data tools.",
-  },
-] as const;
-
-const FOOTER_LINKS = [
-  { label: "Features", href: "#features" },
-  { label: "Pricing", href: "#pricing" },
-  { label: "FAQ", href: "#faq" },
-  { label: "About", href: "/About" },
-  { label: "Contact", href: "/Contact" },
-  { label: "Open dashboard", href: "/Dashboard" },
-] as const;
-
-// ---------------------------------------------------------------------------
-// The mock dashboard card (the hero + preview sections' CSS-built mock —
-// the reference renders the SAME construction ×4, only the chrome title
-// and the active sidebar item vary)
-// ---------------------------------------------------------------------------
-
-const MOCK_SIDEBAR_ITEMS = [
-  "Dashboard",
-  "Accounts",
-  "Contacts",
-  "Leads",
-  "Calendar",
-  "Activities",
-  "Reports",
-] as const;
-
-const MOCK_KPIS = [
-  { label: "Accounts", value: "128" },
-  { label: "Contacts", value: "342" },
-  { label: "Open deals", value: "46" },
-  { label: "Won this month", value: "12" },
-] as const;
-
-const MOCK_BARS = [72, 54, 40, 26, 15] as const;
-
-// Session-148 (F-147c3, walk38d/f byte-decoded): the reference
-// content-varied its three preview mocks — the Accounts window renders a
-// 4-row micro table, the Reports window renders "Revenue by month" with
-// SEVEN bars. The literals verbatim from the live DOM.
-const MOCK_ACCOUNT_ROWS = [
-  { name: "Northwind Trading", industry: "Wholesale", revenue: "$1.2M" },
-  { name: "Vertex Group", industry: "Software", revenue: "$3.4M" },
-  { name: "Bluepeak Health", industry: "Healthcare", revenue: "$780k" },
-  { name: "Harbour & Co", industry: "Logistics", revenue: "$450k" },
-] as const;
-
-const MOCK_REPORT_BARS = [42, 64, 50, 82, 60, 94, 71] as const;
-
-function MockDashboard({ title, active }: { title: string; active: string }) {
-  return (
-    <div className="rounded-xl border border-gray-200 bg-white shadow-xl overflow-hidden">
-      {/* the browser-chrome bar */}
-      <div className="flex items-center gap-1.5 px-3 py-2 bg-gray-100 border-b border-gray-200">
-        <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
-        <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
-        <span className="w-2.5 h-2.5 rounded-full bg-green-400" />
-        <span className="ml-2 text-[10px] text-gray-500 truncate">{title}</span>
-      </div>
-      <div className="flex">
-        {/* the mini app sidebar */}
-        <div className="hidden sm:block w-28 lg:w-36 bg-brand text-white p-2 lg:p-3 space-y-1 shrink-0">
-          {MOCK_SIDEBAR_ITEMS.map((item) => (
-            <div
-              key={item}
-              className={cn(
-                "text-[9px] lg:text-[11px] px-2 py-1 truncate transition-colors",
-                item === active ? "bg-white/20 font-semibold" : "text-white/75",
-              )}
-            >
-              {item}
-            </div>
-          ))}
-        </div>
-        {/* the mock main: the 4 KPI cells + the per-mock body (the
-            F-147c3 content-varied family — walk38d/f) */}
-        <div className="flex-1 p-3 lg:p-4 bg-gray-50 space-y-3 min-w-0">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-            {MOCK_KPIS.map((kpi) => (
-              <div key={kpi.label} className="bg-white rounded-lg border border-gray-200 p-2 min-w-0">
-                <div className="text-[8px] lg:text-[9px] uppercase tracking-wide text-gray-400 truncate">
-                  {kpi.label}
-                </div>
-                <div className="text-sm lg:text-base font-bold text-gray-900">{kpi.value}</div>
-              </div>
-            ))}
-          </div>
-          {active === "Accounts" ? (
-            /* the Accounts window's 4-row micro table (byte-decoded:
-               overflow-hidden card, the gray-50 header row, the
-               font-medium/truncate/tabular-nums cells) */
-            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-              <div className="grid grid-cols-3 gap-2 px-3 py-2 bg-gray-50 border-b border-gray-200 text-[9px] font-semibold text-gray-500">
-                <span>Account</span>
-                <span>Industry</span>
-                <span className="text-right">Revenue</span>
-              </div>
-              {MOCK_ACCOUNT_ROWS.map((row) => (
-                <div key={row.name} className="grid grid-cols-3 gap-2 px-3 py-2 border-b border-gray-100 last:border-0 text-[9px] lg:text-[11px] text-gray-700">
-                  <span className="font-medium truncate">{row.name}</span>
-                  <span className="truncate text-gray-500">{row.industry}</span>
-                  <span className="text-right tabular-nums">{row.revenue}</span>
-                </div>
-              ))}
-            </div>
-          ) : active === "Reports" ? (
-            /* the Reports window's "Revenue by month" 7-bar card */
-            <div className="bg-white rounded-lg border border-gray-200 p-3">
-              <div className="text-[9px] lg:text-[11px] font-medium text-gray-500 mb-2">
-                Revenue by month
-              </div>
-              <div className="flex items-end gap-1.5 lg:gap-2 h-16 lg:h-24">
-                {MOCK_REPORT_BARS.map((height) => (
-                  <div key={height} className="flex-1 bg-brand/80 rounded-t" style={{ height: `${height}%` }} />
-                ))}
-              </div>
-            </div>
-          ) : (
-            /* the Dashboard window's 5-bar pipeline (byte-equal, the
-               unchanged member of the family) */
-            <div className="bg-white rounded-lg border border-gray-200 p-3">
-              <div className="text-[9px] lg:text-[11px] font-medium text-gray-500 mb-2">
-                Sales pipeline by stage
-              </div>
-              <div className="flex items-end gap-1.5 lg:gap-2 h-16 lg:h-24">
-                {MOCK_BARS.map((height) => (
-                  <div key={height} className="flex-1 bg-brand/80 rounded-t" style={{ height: `${height}%` }} />
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// The header (sticky, the desktop nav + the mobile disclosure menu)
-// ---------------------------------------------------------------------------
-
-function LandingHeader() {
-  // The mobile disclosure menu — the reference's construction (the
-  // menu↔x icon swap + the in-flow border-t panel that MOUNTS/UNMOUNTS;
-  // verified live: an in-panel section-link click closes it).
+export function LandingPage() {
+  // The header's two scroll states (probe-1: scrolled past the top adds
+  // bg-zinc-950/95 + backdrop-blur-md + border-b + py-4).
+  const [scrolled, setScrolled] = React.useState(false);
+  // The mobile disclosure (probe-2's open-state DOM: an inline panel under
+  // the nav row — verified working live, closes on link click).
   const [menuOpen, setMenuOpen] = React.useState(false);
+  // The work filter (live-verified: Branding leaves Projects One + Four).
+  const [filter, setFilter] = React.useState<WorkFilter>("All");
+  // The testimonial carousel (live-verified: 3 distinct quotes).
+  const [active, setActive] = React.useState(0);
+  // The contact form.
+  const [name, setName] = React.useState("");
+  const [email, setEmail] = React.useState("");
+  const [service, setService] = React.useState("");
+  const [message, setMessage] = React.useState("");
+  const [pending, setPending] = React.useState(false);
+
+  React.useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 0);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (pending) return;
+    setPending(true);
+    try {
+      const res = await fetch("/api/inquiry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, service, message }),
+      });
+      const body = await res.json().catch(() => null);
+      if (!res.ok || !body?.ok) {
+        toast.error(
+          "Message could not be sent",
+          body?.error?.message ?? "Please try again.",
+        );
+        return;
+      }
+      // The reference's byte-verified success toast.
+      toast.success(INQUIRY_TOAST.title, INQUIRY_TOAST.description);
+      setName("");
+      setEmail("");
+      setService("");
+      setMessage("");
+    } catch {
+      toast.error(
+        "Message could not be sent",
+        "Network error — check your connection and try again.",
+      );
+    } finally {
+      setPending(false);
+    }
+  }
+
+  const visibleProjects = filterProjects(PROJECTS, filter);
+  const testimonial = TESTIMONIALS[active];
 
   return (
-    <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-gray-200">
-      <nav className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        <a href="#top" className="flex items-center gap-2.5">
-          <span className="w-8 h-8 rounded-full bg-brand flex items-center justify-center">
-            <span className="w-3.5 h-3.5 rounded-full bg-white" />
-          </span>
-          <span className="text-lg font-bold text-gray-900 tracking-tight">NEO CRM</span>
-        </a>
-        <div className="hidden md:flex items-center gap-8">
-          {NAV_SECTION_LINKS.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              className="text-sm font-medium text-gray-600 hover:text-brand transition-colors"
-            >
-              {link.label}
-            </a>
-          ))}
-        </div>
-        <div className="hidden md:flex items-center gap-4">
-          <a
-            href="/Contact"
-            className="text-sm font-medium text-gray-600 hover:text-brand transition-colors"
-          >
-            Contact
+    <div>
+      {/* ---- header (fixed; the two scroll states swap classes) ------------- */}
+      <header className={scrolled ? HEADER_SCROLL.scrolled : HEADER_SCROLL.top}>
+        <nav className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+          <a href="#" className="text-white font-black text-lg tracking-widest">
+            {STUDIO_WORDMARK}
           </a>
-          {/* the reference's stock button base on a raw anchor: bg-brand,
-              text-white, the /90-alpha hover (the M-80c1 genus) */}
-          <a
-            href="/Dashboard"
-            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 shadow h-9 px-4 py-2 bg-brand hover:bg-brand/90 text-white"
-          >
-            Open dashboard
-          </a>
-        </div>
-        <button
-          type="button"
-          aria-label="Toggle navigation"
-          aria-expanded={menuOpen}
-          className="md:hidden text-gray-700 p-1"
-          onClick={() => setMenuOpen((v) => !v)}
-        >
-          {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
-      </nav>
-      {menuOpen && (
-        <div className="md:hidden border-t border-gray-200 bg-white px-4 py-4 space-y-3">
-          {NAV_SECTION_LINKS.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              onClick={() => setMenuOpen(false)}
-              className="block text-sm font-medium text-gray-700"
-            >
-              {link.label}
-            </a>
-          ))}
-          <a
-            href="/Contact"
-            onClick={() => setMenuOpen(false)}
-            className="block text-sm font-medium text-gray-700"
-          >
-            Contact
-          </a>
-          <a
-            href="/Dashboard"
-            onClick={() => setMenuOpen(false)}
-            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 shadow h-9 px-4 py-2 w-full bg-brand hover:bg-brand/90 text-white"
-          >
-            Open dashboard
-          </a>
-        </div>
-      )}
-    </header>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// The sections
-// ---------------------------------------------------------------------------
-
-function Hero() {
-  return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-blue-50/70 via-white to-white">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-14 sm:pt-20 pb-12 sm:pb-16">
-        <div className="max-w-3xl">
-          <span className="inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand/5 px-3 py-1 text-xs font-semibold text-brand">
-            Customer relationship management, simplified
-          </span>
-          {/* Session-148 (F-147c3): the ≥sm line-heights pin the
-              reference's COMPUTED values — its leading utilities are
-              inert at ≥sm in its build (the h1 renders the text-6xl
-              pairing 60/60, the p the text-lg pairing 18/28; walk38h
-              measured both apps at 390/700/768/1440). Phone stays the
-              working 1.08/relaxed (identical on both apps). */}
-          <h1 className="mt-5 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-[1.08] sm:leading-none">
-            Every account, contact and deal in one calm workspace
-          </h1>
-          <p className="mt-5 text-base sm:text-lg text-gray-600 leading-relaxed sm:leading-[28px] max-w-2xl">
-            NEO CRM keeps your pipeline, your follow-ups and your reporting in a single fast
-            workspace — built for people who sell on their own or in a small team, without the
-            enterprise bloat.
-          </p>
-          <div className="mt-8 flex flex-col sm:flex-row gap-3">
-            <a
-              href="/Dashboard"
-              className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 shadow h-10 rounded-md px-8 bg-brand hover:bg-brand/90 text-white"
-            >
-              Open the dashboard
-              <ArrowRight className="w-4 h-4" />
-            </a>
-            <a
-              href="#pricing"
-              className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border border-line bg-surface text-foreground shadow-sm hover:bg-line-soft hover:text-neutral-900 h-10 px-8"
-            >
-              See pricing
-            </a>
-          </div>
-          <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-2">
-            {["Runs in the browser", "Private to your account", "CSV import & export"].map((item) => (
-              <li key={item} className="flex items-center gap-2 text-sm text-gray-600">
-                <Check className="w-4 h-4 text-brand" />
-                {item}
+          <ul className="hidden md:flex items-center gap-8">
+            {NAV_ITEMS.map((item) => (
+              <li key={item.href}>
+                <a
+                  href={item.href}
+                  className="text-white/60 hover:text-white text-sm font-medium tracking-wider uppercase transition-colors duration-200"
+                >
+                  {item.label}
+                </a>
               </li>
             ))}
           </ul>
-        </div>
-        <div className="mt-12 sm:mt-16">
-          <MockDashboard title="NEO CRM · Dashboard" active="Dashboard" />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Features() {
-  return (
-    <section id="features" className="py-16 sm:py-24 bg-white scroll-mt-16">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="max-w-2xl">
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">
-            The essentials, done properly
-          </h2>
-          <p className="mt-4 text-base sm:text-lg text-gray-600">
-            No modules to license, no setup project. Everything below is already in the app.
-          </p>
-        </div>
-        <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {FEATURES.map((feature) => (
-            <div
-              key={feature.title}
-              className="rounded-xl border border-gray-200 bg-white p-6 transition-shadow hover:shadow-md"
-            >
-              <span className="w-11 h-11 rounded-lg bg-brand/10 text-brand flex items-center justify-center">
-                <feature.icon className="w-5 h-5" />
-              </span>
-              <h3 className="mt-4 text-lg font-semibold text-gray-900">{feature.title}</h3>
-              <p className="mt-2 text-sm text-gray-600 leading-relaxed">{feature.body}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Preview() {
-  return (
-    <section id="preview" className="py-16 sm:py-24 bg-gray-50 scroll-mt-16">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="max-w-2xl">
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">
-            See the app itself
-          </h2>
-          <p className="mt-4 text-base sm:text-lg text-gray-600">
-            These are the real screens you work in every day — not a slide from a sales deck.
-          </p>
-        </div>
-        <div className="mt-12 space-y-12 sm:space-y-16">
-          {PREVIEW_ROWS.map((row, i) => (
-            /* Session-148 (F-147c3): the MIDDLE row flips at lg — the
-               reference's own `lg:[&>*:first-child]:order-2` (walk38e:
-               mock RIGHT + text LEFT on the Accounts row only). */
-            <div
-              key={row.title}
-              className={cn(
-                "grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-10 items-center",
-                i === 1 && "lg:[&>*:first-child]:order-2",
-              )}
-            >
-              <div className="lg:col-span-3">
-                <MockDashboard title={row.title} active={row.active} />
-              </div>
-              <div className="lg:col-span-2">
-                {/* s149 (F-149c3, walk39): the sm:leading-6 pins the */}
-                {/* reference's >=sm COMPUTED 24px (its leading utilities */}
-                {/* are inert at >=sm — the s148 hero-genus family); phone */}
-                {/* keeps the working leading-relaxed on both apps. */}
-                <h3 className="text-xl sm:text-2xl font-semibold text-gray-900">{row.heading}</h3>
-                <p className="mt-3 text-sm sm:text-base text-gray-600 leading-relaxed sm:leading-6">{row.body}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Pricing() {
-  return (
-    <section id="pricing" className="py-16 sm:py-24 bg-white scroll-mt-16">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="max-w-2xl">
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">
-            Simple monthly pricing
-          </h2>
-          <p className="mt-4 text-base sm:text-lg text-gray-600">
-            One price per workspace, every feature of your tier included. Change tier whenever you
-            need to.
-          </p>
-        </div>
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-          {PRICING.map((tier) => (
-            <div
-              key={tier.name}
-              className={cn(
-                "rounded-2xl border p-6 sm:p-8 flex flex-col h-full",
-                tier.popular ? "border-brand shadow-lg ring-1 ring-brand/20" : "border-gray-200",
-              )}
-            >
-              {tier.popular && (
-                <span className="self-start mb-3 rounded-full bg-brand/10 text-brand px-3 py-1 text-xs font-semibold">
-                  Most popular
-                </span>
-              )}
-              <h3 className="text-xl font-semibold text-gray-900">{tier.name}</h3>
-              <p className="mt-1 text-sm text-gray-500">{tier.sub}</p>
-              <div className="mt-5 flex items-baseline gap-1.5">
-                <span className="text-4xl font-bold text-gray-900">{tier.price}</span>
-                <span className="text-sm text-gray-500">/ month</span>
-              </div>
-              <ul className="mt-6 space-y-3 flex-1">
-                {tier.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-2.5 text-sm text-gray-700">
-                    <Check className="w-4 h-4 mt-0.5 shrink-0 text-brand" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
+          <a
+            href={HEADER_CTA.href}
+            className={`hidden md:inline-flex items-center px-5 py-2.5 text-sm font-semibold tracking-wider uppercase transition-all duration-200 ${AMBER_CTA_INK}`}
+          >
+            {HEADER_CTA.label}
+          </a>
+          <button
+            type="button"
+            className="md:hidden text-white p-1"
+            aria-label={menuOpen ? MOBILE_PANEL.openLabel : MOBILE_PANEL.closedLabel}
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen((v) => !v)}
+          >
+            {menuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </nav>
+        {menuOpen && (
+          <div className={MOBILE_PANEL.wrap}>
+            {NAV_ITEMS.map((item) => (
               <a
-                href="/Dashboard"
-                className={cn(
-                  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 mt-8 w-full",
-                  tier.popular
-                    ? "shadow h-9 px-4 py-2 bg-brand hover:bg-brand/90 text-white"
-                    : "border border-line bg-surface text-foreground shadow-sm hover:bg-line-soft hover:text-neutral-900 h-9 px-4 py-2",
-                )}
+                key={item.href}
+                href={item.href}
+                className={MOBILE_PANEL.link}
+                onClick={() => setMenuOpen(false)}
               >
-                {tier.cta}
-              </a>
-            </div>
-          ))}
-        </div>
-        <p className="mt-8 text-sm text-gray-500">
-          Prices are shown for reference while billing is being set up — plans are not charged
-          yet, and the app is free to use in the meantime.
-        </p>
-      </div>
-    </section>
-  );
-}
-
-function Faq() {
-  // The reference's accordion is SINGLE-OPEN (live-verified: opening an
-  // item closes the previously open one; Q1 ships open by default). The
-  // answer <p> mounts/unmounts with the open item; the chevron gains
-  // rotate-180.
-  const [openIndex, setOpenIndex] = React.useState(0);
-
-  return (
-    // Session-143 (D-143a1/F-143c2): the FAQ is the ONLY narrow landing
-    // section — the reference's container is max-w-3xl (768px) with the h2
-    // a DIRECT child (720px, no inner wrapper; walk33-censused). Every
-    // other section keeps the max-w-6xl container + the max-w-2xl h2
-    // wrapper; the s142 build wrongly rode that wide pattern here too —
-    // the 1102px column vs the reference's 718px (the open-answer wrap
-    // 43px vs 66px; below the sweep's fold, caught by the DOM walk).
-    <section id="faq" className="py-16 sm:py-24 bg-gray-50 scroll-mt-16">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6">
-        <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">
-          Questions, answered
-        </h2>
-        <div className="mt-10 divide-y divide-gray-200 rounded-xl border border-gray-200 bg-white">
-          {FAQ_ITEMS.map((item, index) => {
-            const open = index === openIndex;
-            return (
-              <div key={item.q}>
-                <button
-                  type="button"
-                  className="w-full flex items-start justify-between gap-4 px-5 py-4 text-left"
-                  aria-expanded={open}
-                  aria-controls={`faq-answer-${index}`}
-                  onClick={() => setOpenIndex(open ? -1 : index)}
-                >
-                  <span className="text-sm sm:text-base font-medium text-gray-900">{item.q}</span>
-                  <ChevronDown
-                    className={cn(
-                      "w-5 h-5 shrink-0 text-gray-400 transition-transform",
-                      open && "rotate-180",
-                    )}
-                  />
-                </button>
-                {open && (
-                  <p
-                    id={`faq-answer-${index}`}
-                    className="px-5 pb-5 -mt-1 text-sm text-gray-600 leading-relaxed"
-                  >
-                    {item.a}
-                  </p>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function LandingFooter() {
-  return (
-    <footer className="bg-white border-t border-gray-200">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-          <div>
-            <div className="flex items-center gap-2.5">
-              <span className="w-8 h-8 rounded-full bg-brand flex items-center justify-center">
-                <span className="w-3.5 h-3.5 rounded-full bg-white" />
-              </span>
-              <span className="text-lg font-bold text-gray-900 tracking-tight">NEO CRM</span>
-            </div>
-            <p className="mt-3 text-sm text-gray-500 max-w-sm">
-              A personal customer relationship workspace: accounts, contacts, leads, calendar and
-              reporting in one place.
-            </p>
-          </div>
-          <nav className="flex flex-wrap gap-x-6 gap-y-2">
-            {FOOTER_LINKS.map((link) => (
-              <a
-                key={link.href + link.label}
-                href={link.href}
-                className="text-sm text-gray-600 hover:text-brand transition-colors"
-              >
-                {link.label}
+                {item.label}
               </a>
             ))}
-          </nav>
+            <a
+              href={HEADER_CTA.href}
+              className={`${MOBILE_PANEL.cta} ${AMBER_CTA_INK}`}
+              onClick={() => setMenuOpen(false)}
+            >
+              {HEADER_CTA.label}
+            </a>
+          </div>
+        )}
+      </header>
+
+      {/* ---- hero ------------------------------------------------------------- */}
+      <section className="relative min-h-screen flex items-center overflow-hidden bg-zinc-950">
+        <img
+          src={HERO.image}
+          alt={HERO.imageAlt}
+          className="w-full h-full object-cover opacity-30"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/80 to-transparent" />
+        <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-500" />
+        <div className="relative max-w-7xl mx-auto px-6 pt-32 pb-20">
+          <div className="max-w-3xl">
+            <p className="text-sm font-bold tracking-[0.3em] uppercase mb-6 text-amber-500">
+              {HERO.eyebrow}
+            </p>
+            {/* Session-199 (the s11 re-derivation doctrine, the
+                two-breakpoint decode): the reference's computed
+                line-heights are 0.9×font at <md (its plain .leading-
+                [0.9] sorts after its plain .text-5xl) but 1×font at
+                md+ (its media-block .md\:text-7xl / .lg\:text-8xl
+                line-height:1 rules sort AFTER the plain leading —
+                live-probed: 43.2px at 390, 72px at md, 96px at 1280).
+                OUR v4 sorts the arbitrary leading LAST at every width,
+                so the parity port is leading-[0.9] md:leading-none —
+                0.9 below md, 1 from md up. The five h2s carry the same
+                construction at 0.95. */}
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-white leading-[0.9] md:leading-none tracking-tight mb-8">
+              <span className="block">{HERO.headingLines[0]}</span>
+              <span className="block">{HERO.headingLines[1]}</span>
+            </h1>
+            <p className="text-white/60 text-lg md:text-xl leading-relaxed max-w-xl mb-10">
+              {HERO.paragraph}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <a
+                href="#contact"
+                className={`group inline-flex items-center gap-3 px-8 py-4 text-sm font-bold tracking-widest uppercase transition-all duration-300 hover:gap-5 ${AMBER_CTA_INK}`}
+              >
+                {HERO.primaryCta}
+                <ArrowRight
+                  size={16}
+                  className="transition-transform group-hover:translate-x-1"
+                />
+              </a>
+              <a
+                href="#portfolio"
+                className="inline-flex items-center gap-3 px-8 py-4 text-sm font-bold tracking-widest uppercase border border-white/20 text-white hover:border-white/50 transition-all duration-300"
+              >
+                {HERO.secondaryCta}
+              </a>
+            </div>
+          </div>
         </div>
-        <p className="mt-8 pt-6 border-t border-gray-100 text-xs text-gray-500">© 2026 NEO CRM</p>
-      </div>
-    </footer>
-  );
-}
+        <div className="absolute bottom-10 left-6 flex items-center gap-3">
+          <div className="w-8 h-px bg-white/30" />
+          <span className="text-white/30 text-xs tracking-widest uppercase">
+            {HERO.scrollLabel}
+          </span>
+        </div>
+      </section>
 
-// ---------------------------------------------------------------------------
-// The page
-// ---------------------------------------------------------------------------
+      {/* ---- about ------------------------------------------------------------- */}
+      <section id="about" className="bg-white py-28 md:py-36 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-16 items-center">
+          <div className="relative">
+            <img
+              src={ABOUT.image}
+              alt={ABOUT.imageAlt}
+              className="w-full aspect-[4/5] object-cover"
+            />
+            <div className="absolute -bottom-4 -right-4 w-1/2 h-1/2 border-4 border-amber-500 -z-10" />
+          </div>
+          <div>
+            <p className="text-xs font-bold tracking-[0.3em] uppercase mb-5 text-amber-500">
+              {ABOUT.eyebrow}
+            </p>
+            <h2 className="text-4xl md:text-5xl font-black text-zinc-950 leading-[0.95] md:leading-none tracking-tight mb-8">
+              <span className="block">{ABOUT.headingLines[0]}</span>
+              <span className="block">{ABOUT.headingLines[1]}</span>
+            </h2>
+            <p className="text-zinc-500 text-lg leading-relaxed mb-12">{ABOUT.paragraph}</p>
+            <div className="grid grid-cols-3 gap-6 border-t border-zinc-100 pt-10">
+              {ABOUT.stats.map((stat) => (
+                <div key={stat.label}>
+                  <div className="text-3xl font-black mb-1 text-amber-500">{stat.value}</div>
+                  <div className="text-zinc-400 text-sm">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
 
-export function LandingPage() {
-  return (
-    <div id="top" className="min-h-screen bg-white">
-      <LandingHeader />
-      <main>
-        <Hero />
-        <Features />
-        <Preview />
-        <Pricing />
-        <Faq />
-      </main>
-      <LandingFooter />
+      {/* ---- services ----------------------------------------------------------- */}
+      <section id="services" className="bg-zinc-950 py-28 md:py-36">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="mb-16">
+            <p className="text-xs font-bold tracking-[0.3em] uppercase mb-4 text-amber-500">
+              {SERVICES_HEADER.eyebrow}
+            </p>
+            <h2 className="text-4xl md:text-6xl font-black text-white leading-[0.95] md:leading-none tracking-tight">
+              <span className="block">{SERVICES_HEADER.headingLines[0]}</span>
+              <span className="block">{SERVICES_HEADER.headingLines[1]}</span>
+            </h2>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {SERVICES.map((svc) => {
+              const Icon = SERVICE_ICONS[svc.icon];
+              return (
+                <div
+                  key={svc.title}
+                  className={
+                    svc.featured
+                      ? "relative p-8 flex flex-col gap-5 group transition-all duration-300 text-zinc-950 bg-amber-500"
+                      : "relative p-8 flex flex-col gap-5 group transition-all duration-300 bg-zinc-900 border border-white/5 text-white hover:border-white/20"
+                  }
+                >
+                  <Icon
+                    size={28}
+                    className={svc.featured ? "text-zinc-950" : "text-white/50"}
+                  />
+                  <div>
+                    <h3 className="text-xl font-black mb-2">{svc.title}</h3>
+                    <p
+                      className={
+                        svc.featured
+                          ? "text-sm leading-relaxed text-zinc-900/70"
+                          : "text-sm leading-relaxed text-white/50"
+                      }
+                    >
+                      {svc.description}
+                    </p>
+                  </div>
+                  <div
+                    className={
+                      svc.featured
+                        ? "mt-auto pt-4 border-t border-black/10"
+                        : "mt-auto pt-4 border-t border-white/10"
+                    }
+                  >
+                    <span className="text-sm font-bold tracking-wide">{svc.price}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ---- work (the portfolio) ------------------------------------------------ */}
+      <section id="portfolio" className="bg-white py-28 md:py-36">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-14">
+            <div>
+              <p className="text-xs font-bold tracking-[0.3em] uppercase mb-4 text-amber-500">
+                {WORK_HEADER.eyebrow}
+              </p>
+              <h2 className="text-4xl md:text-6xl font-black text-zinc-950 leading-[0.95] md:leading-none tracking-tight">
+                {WORK_HEADER.heading}
+              </h2>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {WORK_FILTERS.map((f) => (
+                <button
+                  key={f}
+                  type="button"
+                  className={`px-5 py-2 text-xs font-bold tracking-widest uppercase transition-all duration-200 ${
+                    filter === f ? AMBER_CTA_INK : "bg-zinc-100 text-zinc-500"
+                  }`}
+                  onClick={() => setFilter(f)}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {visibleProjects.map((project) => (
+              <div
+                key={project.title}
+                className="group relative overflow-hidden aspect-square cursor-pointer"
+              >
+                <img
+                  src={project.image}
+                  alt={project.title}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-zinc-950/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-7">
+                  <p className="text-xs font-bold tracking-widest uppercase mb-1 text-amber-500">
+                    {project.category}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-white text-xl font-black">{project.title}</h3>
+                    <ArrowUpRight size={20} className="text-white" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ---- testimonials ---------------------------------------------------------- */}
+      <section id="testimonials" className="bg-zinc-950 py-28 md:py-36">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="mb-16">
+            <p className="text-xs font-bold tracking-[0.3em] uppercase mb-4 text-amber-500">
+              {TESTIMONIALS_HEADER.eyebrow}
+            </p>
+            <h2 className="text-4xl md:text-6xl font-black text-white leading-[0.95] md:leading-none tracking-tight">
+              <span className="block">{TESTIMONIALS_HEADER.headingLines[0]}</span>
+              <span className="block">{TESTIMONIALS_HEADER.headingLines[1]}</span>
+            </h2>
+          </div>
+          <div className="grid md:grid-cols-5 gap-12 items-start">
+            <div className="md:col-span-3">
+              <div>
+                <Quote size={40} className="mb-6 opacity-30 text-amber-500" />
+                <p className="text-white text-2xl md:text-3xl font-semibold leading-snug mb-10">
+                  &ldquo;{testimonial.quote}&rdquo;
+                </p>
+                <div className="flex items-center gap-4">
+                  <img
+                    src={testimonial.avatar}
+                    alt={testimonial.name}
+                    className="w-12 h-12 rounded-full object-cover"
+                  />
+                  <div>
+                    <div className="text-white font-bold text-sm">{testimonial.name}</div>
+                    <div className="text-white/40 text-xs mt-0.5">{testimonial.role}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="md:col-span-2 flex flex-col gap-4">
+              {TESTIMONIALS.map((t, idx) => (
+                <button
+                  key={t.role}
+                  type="button"
+                  className={
+                    active === idx
+                      ? "text-left p-5 border transition-all duration-200 border-l-4 border-l-amber-500 bg-zinc-900"
+                      : "text-left p-5 border transition-all duration-200 border-white/5 hover:border-white/15"
+                  }
+                  onClick={() => setActive(idx)}
+                >
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={t.avatar}
+                      alt={t.name}
+                      className="w-9 h-9 rounded-full object-cover opacity-80"
+                    />
+                    <div>
+                      <div
+                        className={
+                          active === idx
+                            ? "text-sm font-bold text-white"
+                            : "text-sm font-bold text-white/40"
+                        }
+                      >
+                        {t.name}
+                      </div>
+                      <div className="text-white/30 text-xs">{t.role}</div>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ---- contact ----------------------------------------------------------------- */}
+      <section id="contact" className="bg-white py-28 md:py-36">
+        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-16">
+          <div>
+            <p className="text-xs font-bold tracking-[0.3em] uppercase mb-5 text-amber-500">
+              {CONTACT.eyebrow}
+            </p>
+            <h2 className="text-4xl md:text-5xl font-black text-zinc-950 leading-[0.95] md:leading-none tracking-tight mb-6">
+              <span className="block">{CONTACT.headingLines[0]}</span>
+              <span className="block">{CONTACT.headingLines[1]}</span>
+            </h2>
+            <p className="text-zinc-500 text-lg leading-relaxed mb-12">{CONTACT.paragraph}</p>
+            <div className="flex flex-col gap-5">
+              <a href={`mailto:${CONTACT.email}`} className="flex items-center gap-4 group">
+                <div className="w-10 h-10 flex items-center justify-center border border-zinc-200 group-hover:border-zinc-400 transition-colors">
+                  <Mail size={16} className="text-zinc-400" />
+                </div>
+                <span className="text-zinc-600 group-hover:text-zinc-950 transition-colors text-sm">
+                  {CONTACT.email}
+                </span>
+              </a>
+              <a href={`tel:${CONTACT.phone}`} className="flex items-center gap-4 group">
+                <div className="w-10 h-10 flex items-center justify-center border border-zinc-200 group-hover:border-zinc-400 transition-colors">
+                  <Phone size={16} className="text-zinc-400" />
+                </div>
+                <span className="text-zinc-600 group-hover:text-zinc-950 transition-colors text-sm">
+                  {CONTACT.phone}
+                </span>
+              </a>
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 flex items-center justify-center border border-zinc-200">
+                  <MapPin size={16} className="text-zinc-400" />
+                </div>
+                <span className="text-zinc-600 text-sm">{CONTACT.location}</span>
+              </div>
+            </div>
+          </div>
+          <form className="flex flex-col gap-5" onSubmit={onSubmit} noValidate>
+            <div className="grid sm:grid-cols-2 gap-5">
+              <div>
+                <label
+                  htmlFor="inquiry-name"
+                  className="text-xs font-bold tracking-widest uppercase text-zinc-400 block mb-2"
+                >
+                  {CONTACT.labels.name}
+                </label>
+                <input
+                  id="inquiry-name"
+                  type="text"
+                  required
+                  className="w-full border border-zinc-200 px-4 py-3 text-sm text-zinc-950 outline-none focus:border-zinc-950 transition-colors"
+                  placeholder={CONTACT.namePlaceholder}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="inquiry-email"
+                  className="text-xs font-bold tracking-widest uppercase text-zinc-400 block mb-2"
+                >
+                  {CONTACT.labels.email}
+                </label>
+                <input
+                  id="inquiry-email"
+                  type="email"
+                  required
+                  className="w-full border border-zinc-200 px-4 py-3 text-sm text-zinc-950 outline-none focus:border-zinc-950 transition-colors"
+                  placeholder={CONTACT.emailPlaceholder}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="relative">
+              <label
+                htmlFor="inquiry-service"
+                className="text-xs font-bold tracking-widest uppercase text-zinc-400 block mb-2"
+              >
+                {CONTACT.labels.service}
+              </label>
+              <select
+                id="inquiry-service"
+                className="w-full border border-zinc-200 px-4 py-3 text-sm text-zinc-950 outline-none focus:border-zinc-950 transition-colors bg-white appearance-none pr-10"
+                value={service}
+                onChange={(e) => setService(e.target.value)}
+              >
+                <option value="">{CONTACT.servicePlaceholder}</option>
+                {INQUIRY_SERVICES.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown
+                size={14}
+                className="absolute right-4 top-1/2 translate-y-1 pointer-events-none text-zinc-400"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="inquiry-message"
+                className="text-xs font-bold tracking-widest uppercase text-zinc-400 block mb-2"
+              >
+                {CONTACT.labels.message}
+              </label>
+              <textarea
+                id="inquiry-message"
+                required
+                rows={5}
+                className="w-full border border-zinc-200 px-4 py-3 text-sm text-zinc-950 outline-none focus:border-zinc-950 transition-colors resize-none"
+                placeholder={CONTACT.messagePlaceholder}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={pending}
+              className={`group flex items-center gap-3 px-8 py-4 text-sm font-bold tracking-widest uppercase transition-all duration-300 self-start ${AMBER_CTA_INK}`}
+            >
+              {CONTACT.submit}
+              <ArrowRight
+                size={16}
+                className="transition-transform duration-300 group-hover:translate-x-1"
+              />
+            </button>
+          </form>
+        </div>
+      </section>
+
+      {/* ---- footer -------------------------------------------------------------------- */}
+      <footer className="bg-zinc-950 border-t border-white/5 py-12">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div>
+            <div className="text-white font-black text-sm tracking-widest mb-1">
+              {FOOTER.wordmark}
+            </div>
+            <div className="text-white/30 text-xs">{FOOTER.tagline}</div>
+          </div>
+          <div className="flex items-center gap-6">
+            {FOOTER.socials.map((social) => (
+              <a
+                key={social.label}
+                href={social.href}
+                className="text-white/30 hover:text-white text-xs font-bold tracking-widest uppercase transition-colors"
+              >
+                {social.label}
+              </a>
+            ))}
+          </div>
+          <div className="text-white/20 text-xs">{FOOTER.copyright}</div>
+        </div>
+      </footer>
     </div>
   );
 }

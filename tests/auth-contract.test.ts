@@ -19,8 +19,11 @@ import { describe, expect, it } from "vitest";
 // - S67-P2 (N-67d): all four public auth routes pre-gate the declared
 //   body size BEFORE req.json() buffers it (the S36-P3 upload precedent
 //   extended to the auth family).
-// - S67-P3 (N-67e): the one route that writes user bytes to disk joins
-//   the rate-limit family, deliberately AFTER the session guard.
+// - S67-P3 (N-67e): session-199 re-anchor — the upload route RETIRED
+//   with the CRM domain (its byte-writing surface has no EleganceFlow
+//   consumer); the NEW public route that joins the rate-limit family is
+//   POST /api/inquiry (the landing's contact form, 10/15-min/IP), with
+//   the same limiter placement and Retry-After carriage.
 // - S67-P4 (N-67f): the /signup page carries no authenticated redirect
 //   (the s23-P2 retirement /login already carries; the superset page is
 //   a pure render).
@@ -45,7 +48,7 @@ const loginRoute = () => stripComments(read("src/app/api/auth/login/route.ts") ?
 const signupRoute = () => stripComments(read("src/app/api/auth/signup/route.ts") ?? "");
 const verifyRoute = () => stripComments(read("src/app/api/auth/verify/route.ts") ?? "");
 const resendRoute = () => stripComments(read("src/app/api/auth/resend/route.ts") ?? "");
-const uploadRoute = () => stripComments(read("src/app/api/upload/route.ts") ?? "");
+const inquiryRoute = () => stripComments(read("src/app/api/inquiry/route.ts") ?? "");
 const signupPage = () => stripComments(read("src/app/signup/page.tsx") ?? "");
 const loginCard = () => stripComments(read("src/components/layout/login-card.tsx") ?? "");
 
@@ -89,14 +92,18 @@ describe("session-67: the auth-seam contract (the N-67 family)", () => {
     expect(gate).toBeLessThan(parse);
   });
 
-  it("S67-P3: the upload route is rate-limited after the session guard", () => {
-    const src = uploadRoute();
-    expect(src).toContain("rateLimit(`upload:${clientKey(request)}`, 20, 15 * 60 * 1000)");
-    const guard = src.indexOf("isGuarded(guard)");
+  it("S67-P3 (s199 re-anchor): the public inquiry route is rate-limited before the composed parse", () => {
+    const src = inquiryRoute();
+    expect(src).toMatch(/rateLimit\(`inquiry:\$\{clientKey\(req\)\}`/);
+    // The auth family's canonical ordering (mirrored from login): the
+    // limiter, then parseBody — the declared-size pre-gate rides INSIDE
+    // the composed seam (api.ts) alongside the schema.
     const limit = src.indexOf("rateLimit(");
-    expect(guard).toBeGreaterThanOrEqual(0);
-    // The deliberate placement: the unauth 401 never burns an IP's bucket.
-    expect(limit).toBeGreaterThan(guard);
+    const parse = src.indexOf("await parseBody(req");
+    expect(limit).toBeGreaterThanOrEqual(0);
+    expect(parse).toBeGreaterThan(limit);
+    expect(src).toContain("if (!parsed.ok) return parsed.response;");
+    expect(src).toContain("ERR.RATE_LIMITED(limit.retryAfterSec)");
   });
 
   it("S67-P4: the /signup page carries no authenticated redirect", () => {
@@ -158,8 +165,11 @@ describe("session-67: the standing auth-seam records (the N-67 keep set)", () =>
     expect(src).toContain("export function clientKey(req: Request): string");
   });
 
-  it("N-67e: the upload pre-gate ceiling stays (the S36-P3 precedent the auth family now shares)", () => {
-    const src = uploadRoute();
-    expect(src).toContain("MAX_UPLOAD_BYTES + 64 * 1024");
+  it("N-67e (s199): the upload route retired with the CRM domain — nothing writes user bytes to disk", () => {
+    // The retirement record: the byte-writing surface (photo uploads) had
+    // no EleganceFlow consumer; the route family is gone entirely.
+    expect(read("src/app/api/upload/route.ts")).toBeNull();
+    expect(read("src/app/api/uploads")).toBeNull();
+    expect(read("src/lib/uploads.ts")).toBeNull();
   });
 });
