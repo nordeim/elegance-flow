@@ -368,6 +368,28 @@
     outline-color: rgba(10, 10, 10, 0.5);
   }
 
+  /* Round-15 (the motion/glyph census): the reference's app CSS ships the
+     raw rule `html { scroll-behavior: smooth }` (found live in its
+     stylesheets; its html computes smooth) — every anchor navigation
+     GLIDES through intermediate positions (trajectory-probed: the #about
+     ride sampled 0→27→199→552→686→751→778→796→800 over ~700ms) where a
+     bare build JUMPS to the target on the first sample. The divergence
+     rode EVERY in-page navigation — the 5 desktop nav links, the 5
+     mobile-menu links, both hero CTAs, the footer links — while every
+     gate stayed green (parity-199 reads the elements' own at-rest faces,
+     never the html element's scroll-behavior; the drift probe read
+     text/img/login/preflight faces; the e2e anchor assertions ride
+     hash/visibility, which pass identically under an instant jump). The
+     raw-rule genus — the session-10 cursor and session-16 th/td
+     precedents: reference CSS rules outside the utility system that the
+     port carries explicitly. NOT a v4 trap (nothing v3/v4-related — the
+     rule was simply never ported). The html element itself stays BARE
+     (the reference's html carries no class; the rule, never a
+     scroll-smooth utility — pinned by tests/motion-glyph.test.ts ②). */
+  html {
+    scroll-behavior: smooth;
+  }
+
   /* Session-10 (S10-1): the reference's global stylesheet ships
      `button, [role="button"] { cursor: pointer; }` — every button (and
      role=button control) shows the hand cursor. Our buttons computed

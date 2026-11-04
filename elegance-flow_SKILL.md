@@ -179,7 +179,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 436 checks / 34 files**: the seam batteries (auth,
+- **Unit — Vitest, 443 checks / 35 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
@@ -240,9 +240,18 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   reset; the transition-colors property-list re-pin — the EIGHTH v4
   trap, cured by the UNLAYERED rule; the transition-transform
   keeps-out — the load-bearing decode that must never be re-pinned) —
+  and motion-glyph — the round-15 battery that pins the landing's
+  time-dimension and glyph faces (the reference's raw `html {
+  scroll-behavior: smooth }` rule — every anchor ride glides where a
+  bare build jumps, the trajectory-proven motion face; the html
+  element's bare-class purity — the rule, never the scroll-smooth
+  utility; the testimonial quote's STRAIGHT double quotes — the
+  full-text census proved the typographic pair the sole text
+  divergence on the landing; the retired &ldquo;/&rdquo; forms never
+  return) —
   comment-stripped source reads; a literal pinned by a comment alone is
   vacuous.
-- **E2E — Playwright, 75 checks / 8 specs**: the standalone artifact on
+- **E2E — Playwright, 76 checks / 8 specs**: the standalone artifact on
   :3100 with `db/e2e.db`; ONE shared login (`auth.setup.ts` →
   storageState — the auth endpoints are rate-limited 10/IP/15-min); one
   worker; alphabetical file order → every spec SELF-SUFFICIENT (its own
@@ -251,7 +260,9 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   rendered img set pinned against the reference's live photographs;
   round-14 gains the preflight-face check — the form's placeholder ink,
   background and the nav link's transition-property pinned against the
-  reference's v3-preflight computed faces),
+  reference's v3-preflight computed faces; round-15 gains the
+  motion/glyph check — the html element's scroll-behavior computes
+  smooth + the testimonial quote renders the straight-quote pair),
   mobile-navigation (THE operator's standing emphasis — the full
   390×844 battery), auth, reset-password, dashboard-inbox, keyboard
   (the round-10 keyboard-operability battery — the keyboard rides plus

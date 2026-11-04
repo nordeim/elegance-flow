@@ -159,6 +159,31 @@ test.describe("the EleganceFlow landing (desktop 1280)", () => {
     expect(faces.navTransition).toBe("color, background-color, border-color, text-decoration-color, fill, stroke");
   });
 
+  test("the motion/glyph faces compute the reference's faces (round-15: the smooth scroll + the straight-quote glyphs)", async ({ page }) => {
+    // The round-15 motion/glyph pins: the reference's app CSS ships the
+    // raw `html { scroll-behavior: smooth }` rule — every anchor ride
+    // glides (trajectory-probed live: intermediate scroll positions on
+    // both apps) where a bare build jumps. And the testimonial quote
+    // renders STRAIGHT double quotes (U+0022) — the full-text census
+    // proved the typographic pair the SOLE text divergence on the
+    // landing (cured in landing-page.tsx; pinned at the source level by
+    // tests/motion-glyph.test.ts).
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+    const faces = await page.evaluate(() => {
+      const quote = document.querySelector("#testimonials .md\\:col-span-3 p");
+      const t = quote?.textContent ?? "";
+      return {
+        scrollBehavior: getComputedStyle(document.documentElement).scrollBehavior,
+        firstGlyph: t.codePointAt(0),
+        lastGlyph: t.length > 0 ? t.codePointAt(t.length - 1) : null,
+      };
+    });
+    expect(faces.scrollBehavior).toBe("smooth");
+    expect(faces.firstGlyph).toBe(34); // U+0022 — the straight double quote
+    expect(faces.lastGlyph).toBe(34);
+  });
+
   test("the footer carries the wordmark, the four socials and the copyright", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByText("Quality work for quality clients.")).toBeVisible();

@@ -200,6 +200,43 @@ async function preflightFace(url: string): Promise<PreflightFace> {
   return base;
 }
 
+// The round-15 MOTION/GLYPH census: the time-dimension and glyph faces
+// no probe read (parity-199 reads the elements' own at-rest styles — never
+// the html element's scroll-behavior or any scroll trajectory; the text
+// census above walks nav/h1/h2/services/stats/chips — never the
+// testimonial quote block). Read at 1280: the html element's computed
+// scroll-behavior (the reference's raw `html { scroll-behavior: smooth }`
+// rule — every anchor ride glides where a bare build jumps) + the quote
+// block's glyph face (the reference renders STRAIGHT double quotes, not
+// typographic ones — the full-text census proved this the sole text
+// divergence on the landing).
+type MotionGlyphFace = {
+  scrollBehavior: string;
+  quoteGlyphs: string;
+};
+
+async function motionGlyphFace(url: string): Promise<MotionGlyphFace> {
+  const browser = await chromium.launch();
+  const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+  await page.goto(url, { waitUntil: "networkidle" });
+  await page.waitForTimeout(1000);
+  const base = await page.evaluate(() => {
+    // the quote PARAGRAPH itself (the .md:col-span-3 wrapper carries the
+    // avatar row's text after the quote — the glyph pair is the p's first
+    // + last code points)
+    const quote = document.querySelector("#testimonials .md\\:col-span-3 p");
+    const t = quote?.textContent ?? "";
+    return {
+      scrollBehavior: getComputedStyle(document.documentElement).scrollBehavior,
+      // the glyph face: the code points wrapping the quote text (the
+      // reference's U+0022 pair vs a typographic U+201C/U+201D pair)
+      quoteGlyphs: t.length >= 2 ? `${t.codePointAt(0)}…${t.codePointAt(t.length - 1)}` : "",
+    };
+  });
+  await browser.close();
+  return base;
+}
+
 const [ref, ours] = await Promise.all([face(REF, 390, 844), face(OURS, 390, 844)]);
 const out: string[] = [];
 diff("[390]", ref.title, ours.title, "title", out);
@@ -231,11 +268,17 @@ diff("[preflight]", refPreflight.inputBg, oursPreflight.inputBg, "inputBg (the U
 diff("[preflight]", refPreflight.textareaPlaceholder, oursPreflight.textareaPlaceholder, "textareaPlaceholder", out);
 diff("[preflight]", refPreflight.navTransition, oursPreflight.navTransition, "navTransition (the v3 property list)", out);
 
+// The round-15 motion/glyph leg (the html scroll face + the quote glyphs at 1280)
+const [refMotion, oursMotion] = await Promise.all([motionGlyphFace(REF), motionGlyphFace(OURS)]);
+diff("[motion]", refMotion.scrollBehavior, oursMotion.scrollBehavior, "scrollBehavior (the reference's raw smooth rule)", out);
+diff("[motion]", refMotion.quoteGlyphs, oursMotion.quoteGlyphs, "quoteGlyphs (the straight-quote pair)", out);
+
 if (out.length === 0) {
   console.log("[390] CONTENT + MOBILE-MENU FACE: NO DRIFT — the reference matches our byte-mirror");
   console.log("[login] AUTH-CARD FACE: NO DRIFT — the reference matches our login mirror");
   console.log("[preflight] FORM-FACE: NO DRIFT — the reference matches our preflight mirror");
+  console.log("[motion] MOTION/GLYPH FACE: NO DRIFT — the reference matches our motion/glyph mirror");
 } else {
-  console.log(`[390 + login + preflight] DRIFT DETECTED — ${out.length} field(s):`);
+  console.log(`[390 + login + preflight + motion] DRIFT DETECTED — ${out.length} field(s):`);
   for (const line of out) console.log(line);
 }

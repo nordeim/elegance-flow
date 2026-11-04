@@ -453,7 +453,15 @@ export function LandingPage() {
               <div>
                 <Quote size={40} className="mb-6 opacity-30 text-amber-500" />
                 <p className="text-white text-2xl md:text-3xl font-semibold leading-snug mb-10">
-                  &ldquo;{testimonial.quote}&rdquo;
+                  {/* Round-15 (the motion/glyph census): the reference
+                      renders STRAIGHT double quotes (U+0022) as standalone
+                      text-node children — the full-text census (96 vs 96
+                      nodes, byte-diffed) proved the typographic pair the
+                      SOLE text divergence on the landing. The DOM structure
+                      is unchanged (3 children); only the glyph bytes
+                      match the reference now — pinned by
+                      tests/motion-glyph.test.ts ③④. */}
+                  "{testimonial.quote}"
                 </p>
                 <div className="flex items-center gap-4">
                   <img
