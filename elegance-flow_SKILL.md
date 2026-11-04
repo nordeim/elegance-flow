@@ -182,7 +182,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 462 checks / 36 files**: the seam batteries (auth,
+- **Unit — Vitest, 472 checks / 37 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
@@ -265,10 +265,28 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   blocks empty submits at the browser, no POST leaves the page; the
   reference-exact glyph quartet — the lucide-era palette/megaphone/
   mail/phone shapes + the login card's classic 22.56-based Google
-  quartet, carried by `src/components/ui/reference-icons.tsx`) —
-  comment-stripped source reads; a literal pinned by a comment alone is
-  vacuous.
-- **E2E — Playwright, 79 checks / 8 specs**: the standalone artifact on
+  quartet, carried by `src/components/ui/reference-icons.tsx`) — and
+  auth-validation — the round-17 battery that pins the auth card's
+  VALIDATION-MODE family (the F-16d genus on the auth surfaces: the
+  reference's sign-in/signup/reset forms NATIVE-VALIDATE — no
+  noValidate, an empty submit fires no submit event and no POST, the
+  browser paints its own bubbles; OURS carried noValidate on all
+  three reachable forms — the empty sign-in submit POSTed
+  `/api/auth/login`, the empty signup POSTed `/api/auth/signup`, the
+  empty reset submit fired our JS guard's banner where the reference
+  paints the browser bubble; the reset email's missing `required`
+  gate; the signup password family's `minLength={8}` — ours-only
+  attrs that activate as a STRICTER-than-reference client gate once
+  the native validation turns on: the reference's "Min. 8
+  characters" PLACEHOLDER communicates the policy its server
+  enforces, our Zod seam owns the same enforcement server-side; the
+  verify form's noValidate KEPT — the reference's verify view is
+  unreachable without a real signup, our own incomplete-guard UX
+  stands, recorded as the unverifiable member; the autocomplete
+  superset family stays — email/current-password/new-password, the
+  reference ships none) — comment-stripped source reads; a literal
+  pinned by a comment alone is vacuous.
+- **E2E — Playwright, 81 checks / 8 specs**: the standalone artifact on
   :3100 with `db/e2e.db`; ONE shared login (`auth.setup.ts` →
   storageState — the auth endpoints are rate-limited 10/IP/15-min); one
   worker; alphabetical file order → every spec SELF-SUFFICIENT (its own

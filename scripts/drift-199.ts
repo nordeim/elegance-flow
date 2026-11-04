@@ -311,6 +311,44 @@ async function googleGlyphFace(url: string): Promise<string> {
   return d;
 }
 
+// The round-17 auth-validation leg: the validation-mode faces no probe
+// read (the login leg reads at-rest computed inks/pads; the e2e fills
+// valid credentials — the empty-submit mode never rode). Reads the
+// sign-in form's noValidate, then the reset view's (via the Forgot
+// password? swap) and the signup view's (via the Sign up swap), each
+// form's noValidate + the reset email's required + the signup
+// password's minlength census. Safe: view-swap clicks only, never a
+// submit.
+async function authValidationFace(url: string, page: import("@playwright/test").Page) {
+  await page.goto(url + "/login", { waitUntil: "networkidle" });
+  await page.waitForTimeout(1000);
+  const sign = await page.evaluate(() => {
+    const form = document.querySelector("form") as HTMLFormElement | null;
+    return { noValidate: form ? form.noValidate : null };
+  });
+  await page.locator("button", { hasText: /Forgot password\?/i }).first().click();
+  await page.waitForTimeout(700);
+  const reset = await page.evaluate(() => {
+    const form = document.querySelector("form") as HTMLFormElement | null;
+    const email = form?.querySelector('input[type="email"]') as HTMLInputElement | null;
+    return { noValidate: form ? form.noValidate : null, emailRequired: email ? email.hasAttribute("required") : null };
+  });
+  await page.locator("button", { hasText: /Back to sign in/i }).first().click();
+  await page.waitForTimeout(500);
+  await page.locator("button", { hasText: /Sign up/i }).first().click();
+  await page.waitForTimeout(700);
+  const signup = await page.evaluate(() => {
+    const form = document.querySelector("form") as HTMLFormElement | null;
+    const pw = form?.querySelector('input[type="password"]') as HTMLInputElement | null;
+    return {
+      noValidate: form ? form.noValidate : null,
+      pwMinLength: pw ? pw.getAttribute("minlength") : null,
+      pwRequired: pw ? pw.hasAttribute("required") : null,
+    };
+  });
+  return { sign, reset, signup };
+}
+
 const [ref, ours] = await Promise.all([face(REF, 390, 844), face(OURS, 390, 844)]);
 const out: string[] = [];
 diff("[390]", ref.title, ours.title, "title", out);
@@ -369,13 +407,36 @@ for (const [tag, r, o] of [
 const [refGoogle, oursGoogle] = await Promise.all([googleGlyphFace(REF), googleGlyphFace(OURS)]);
 diff("[geometry:login]", refGoogle, oursGoogle, "googleGlyph (the classic 22.56-based quartet)", out);
 
+// The round-17 auth-validation leg (the three reachable forms' mode +
+// the attribute census on the swapped views) — ONE browser, both apps
+// sequential: the concurrent legs already launch a dozen browsers and a
+// fresh launch under that load stalled past the action timeout on the
+// view-swap clicks (found live at round-17's born-RED proof).
+{
+  const browser = await chromium.launch();
+  try {
+    const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+    const refAuth = await authValidationFace(REF, page);
+    const oursAuth = await authValidationFace(OURS, page);
+    diff("[auth-validation]", refAuth.sign.noValidate, oursAuth.sign.noValidate, "signNoValidate (the reference native-validates)", out);
+    diff("[auth-validation]", refAuth.reset.noValidate, oursAuth.reset.noValidate, "resetNoValidate (the reference native-validates)", out);
+    diff("[auth-validation]", refAuth.reset.emailRequired, oursAuth.reset.emailRequired, "resetEmailRequired (the reference's attribute census)", out);
+    diff("[auth-validation]", refAuth.signup.noValidate, oursAuth.signup.noValidate, "signupNoValidate (the reference native-validates)", out);
+    diff("[auth-validation]", refAuth.signup.pwMinLength, oursAuth.signup.pwMinLength, "signupPwMinLength (the reference ships none)", out);
+    diff("[auth-validation]", refAuth.signup.pwRequired, oursAuth.signup.pwRequired, "signupPwRequired (the shared gate)", out);
+  } finally {
+    await browser.close();
+  }
+}
+
 if (out.length === 0) {
   console.log("[390] CONTENT + MOBILE-MENU FACE: NO DRIFT — the reference matches our byte-mirror");
   console.log("[login] AUTH-CARD FACE: NO DRIFT — the reference matches our login mirror");
   console.log("[preflight] FORM-FACE: NO DRIFT — the reference matches our preflight mirror");
   console.log("[motion] MOTION/GLYPH FACE: NO DRIFT — the reference matches our motion/glyph mirror");
   console.log("[geometry] STRUCTURE/GEOMETRY FACE: NO DRIFT — the reference matches our geometry mirror");
+  console.log("[auth-validation] AUTH-VALIDATION FACE: NO DRIFT — the reference matches our validation-mode mirror");
 } else {
-  console.log(`[390 + login + preflight + motion + geometry] DRIFT DETECTED — ${out.length} field(s):`);
+  console.log(`[390 + login + preflight + motion + geometry + auth-validation] DRIFT DETECTED — ${out.length} field(s):`);
   for (const line of out) console.log(line);
 }

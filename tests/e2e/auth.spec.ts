@@ -254,4 +254,64 @@ test.describe("the EleganceFlow login card (logged-out)", () => {
     expect(createdBody.ok).toBe(true);
     expect(typeof createdBody.data.id).toBe("string");
   });
+
+  test("the sign-in form native-validates (an empty submit never POSTs — the reference's own gate)", async ({ page }) => {
+    // Round-17 (F-17a, the F-16d genus on the auth family): the
+    // reference's auth card native-validates — its forms carry NO
+    // noValidate, so an empty submit fires no submit event, no POST,
+    // and the browser paints its own bubbles (probe-verified live on
+    // both apps). OURS carried noValidate: the empty sign-in submit
+    // POSTed to /api/auth/login (400 → our banner). Pinned at the
+    // source level by tests/auth-validation.test.ts ①②③.
+    await page.goto("/login");
+    const faces = await page.evaluate(() => {
+      const form = document.querySelector("form") as HTMLFormElement | null;
+      return { noValidate: form ? form.noValidate : true, checkValidity: form ? form.checkValidity() : null };
+    });
+    expect(faces.noValidate).toBe(false); // the reference's native gate
+    expect(faces.checkValidity).toBe(false); // the empty form is invalid — an empty submit cannot fire
+    let posted = false;
+    page.on("request", (r) => {
+      if (r.method() === "POST" && r.url().includes("/api/auth/")) posted = true;
+    });
+    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.waitForTimeout(400);
+    expect(posted).toBe(false); // the native gate blocked the empty submit
+    // NOTE: the browser's own validation bubble registers in Chromium's
+    // a11y tree as an alert node (found live at round-17) — the DOM-level
+    // banner census is NOT asserted here because the native bubble IS
+    // the reference's own feedback face (our ErrorCallout renders on
+    // `error` state alone, which the native gate never sets).
+  });
+
+  test("the swapped views' validation faces (the reset email's required gate + the signup's mode mirror)", async ({ page }) => {
+    // Round-17 ⑤⑥: the reference's reset email input carries required
+    // (the attribute census); its signup password family carries NO
+    // minlength (the placeholder + the server own the policy). The
+    // verify form keeps its noValidate (the unreachable-reference
+    // record — pinned at the source level by tests/auth-validation.test.ts ④).
+    await page.goto("/login");
+    await page.getByRole("button", { name: "Forgot password?" }).click();
+    const reset = await page.evaluate(() => {
+      const form = document.querySelector("form") as HTMLFormElement | null;
+      const email = form?.querySelector('input[type="email"]') as HTMLInputElement | null;
+      return { noValidate: form ? form.noValidate : true, required: email ? email.hasAttribute("required") : false };
+    });
+    expect(reset.noValidate).toBe(false);
+    expect(reset.required).toBe(true);
+    await page.getByRole("button", { name: "Back to sign in" }).click();
+    await page.getByRole("button", { name: "Need an account? Sign up" }).click();
+    const signup = await page.evaluate(() => {
+      const form = document.querySelector("form") as HTMLFormElement | null;
+      const pw = form?.querySelector('input[type="password"]') as HTMLInputElement | null;
+      return {
+        noValidate: form ? form.noValidate : true,
+        minLength: pw ? pw.getAttribute("minlength") : "PRESENT",
+        required: pw ? pw.hasAttribute("required") : false,
+      };
+    });
+    expect(signup.noValidate).toBe(false);
+    expect(signup.minLength).toBeNull(); // the reference ships none — the placeholder + the Zod seam own the policy
+    expect(signup.required).toBe(true);
+  });
 });

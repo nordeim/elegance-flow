@@ -362,7 +362,16 @@ export function LoginCard({ mode = "signin" }: { mode?: Mode }) {
                             Enter your email and we'll send you a link to reset your password
                           </p>
                         </div>
-                        <form className="space-y-4 sm:space-y-5" onSubmit={onSendResetLink} noValidate>
+                        <form
+                          className="space-y-4 sm:space-y-5"
+                          onSubmit={onSendResetLink}
+                          /* Round-17 (F-17a, the F-16d genus): the
+                             reference's reset form NATIVE-VALIDATES (no
+                             noValidate — the browser's own bubbles block
+                             an empty submit; its email input carries
+                             required). Our noValidate let the empty
+                             submit reach the JS guard's banner. */
+                        >
                           {error && <ErrorCallout message={error} />}
                           <div className={LOGIN_LAYOUT.field}>
                             <label htmlFor="email" className={LOGIN_LAYOUT.label}>
@@ -375,6 +384,7 @@ export function LoginCard({ mode = "signin" }: { mode?: Mode }) {
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
+                                required
                                 autoComplete="email"
                                 placeholder="you@example.com"
                                 className={LOGIN_RESET_LAYOUT.resetInput}
@@ -408,7 +418,17 @@ export function LoginCard({ mode = "signin" }: { mode?: Mode }) {
                             the s21-era wrapper was an inert single-child
                             text-center space-y-2 div. */}
                         <h2 className={LOGIN_SIGNUP_LAYOUT.title}>Create your account</h2>
-                        <form className={LOGIN_SIGNUP_LAYOUT.form} onSubmit={onSignupSubmit} noValidate>
+                        {/* Round-17 (F-17a, the F-16d genus): the
+                            reference's signup form NATIVE-VALIDATES — no
+                            noValidate, its three inputs required. The
+                            signup password family carries NO minLength
+                            (the reference's inputs ship none — its
+                            "Min. 8 characters" PLACEHOLDER communicates
+                            the policy, its server enforces it; our Zod
+                            seam owns the same enforcement server-side,
+                            so the client gate mirrors the reference's
+                            mode exactly). */}
+                        <form className={LOGIN_SIGNUP_LAYOUT.form} onSubmit={onSignupSubmit}>
                           <div className={LOGIN_SIGNUP_LAYOUT.fields}>
                             <div className={LOGIN_SIGNUP_LAYOUT.field}>
                               <label htmlFor="email" className={LOGIN_SIGNUP_LAYOUT.label}>
@@ -441,7 +461,6 @@ export function LoginCard({ mode = "signin" }: { mode?: Mode }) {
                                   value={password}
                                   onChange={(e) => setPassword(e.target.value)}
                                   required
-                                  minLength={8}
                                   autoComplete="new-password"
                                   placeholder="Min. 8 characters"
                                   className={LOGIN_SIGNUP_LAYOUT.input}
@@ -461,7 +480,6 @@ export function LoginCard({ mode = "signin" }: { mode?: Mode }) {
                                   value={confirmPassword}
                                   onChange={(e) => setConfirmPassword(e.target.value)}
                                   required
-                                  minLength={8}
                                   autoComplete="new-password"
                                   placeholder="Re-enter password"
                                   className={LOGIN_SIGNUP_LAYOUT.input}
@@ -682,7 +700,15 @@ export function LoginCard({ mode = "signin" }: { mode?: Mode }) {
               </div>
             </div>
 
-            <form onSubmit={onSigninSubmit} className={LOGIN_LAYOUT.form} noValidate>
+            {/* Round-17 (F-17a, the F-16d genus on the auth family):
+                the reference's sign-in form NATIVE-VALIDATES (no
+                noValidate — the browser's own bubbles block an empty
+                submit: no submit event, no POST, probe-verified live;
+                both inputs required on both apps). Our noValidate let
+                an empty submit POST to /api/auth/login (400 → our
+                banner). The Zod seam stays the server-side backstop
+                for non-empty-but-invalid payloads. */}
+            <form onSubmit={onSigninSubmit} className={LOGIN_LAYOUT.form}>
               <div className={LOGIN_LAYOUT.fields}>
                 <div className={LOGIN_LAYOUT.field}>
                   <label htmlFor="email" className={LOGIN_LAYOUT.label}>
