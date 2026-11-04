@@ -68,18 +68,20 @@ import {
   ArrowUpRight,
   Camera,
   ChevronDown,
-  Mail,
   MapPin,
-  Megaphone,
   Menu,
   Monitor,
-  Palette,
-  Phone,
   Quote,
   X,
 } from "lucide-react";
 
 import { toast } from "@/components/ui/toast";
+import {
+  ReferenceMail,
+  ReferenceMegaphone,
+  ReferencePalette,
+  ReferencePhone,
+} from "@/components/ui/reference-icons";
 import { INQUIRY_SERVICES } from "@/lib/schemas";
 import {
   ABOUT,
@@ -108,10 +110,10 @@ import {
 const AMBER_CTA_INK = "bg-amber-500 text-black";
 
 const SERVICE_ICONS = {
-  palette: Palette,
+  palette: ReferencePalette,
   monitor: Monitor,
   camera: Camera,
-  megaphone: Megaphone,
+  megaphone: ReferenceMegaphone,
 } as const;
 
 export function LandingPage() {
@@ -237,12 +239,24 @@ export function LandingPage() {
 
       {/* ---- hero ------------------------------------------------------------- */}
       <section className="relative min-h-screen flex items-center overflow-hidden bg-zinc-950">
-        <img
-          src={HERO.image}
-          alt={HERO.imageAlt}
-          className="w-full h-full object-cover opacity-30"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/80 to-transparent" />
+        {/* Round-16 (the attribute/geometry census): the reference
+            nests its hero photo + gradient inside an `absolute inset-0`
+            wrapper (its own DOM, probe-verified). A direct in-flow
+            <img> becomes a SECOND FLEX ITEM that squeezed the content
+            column to min-content and pushed it entirely off-canvas
+            (x=1280 at desktop, x=390 at phone — clipped by
+            overflow-hidden) while every gate stayed green: parity reads
+            computed styles, toBeVisible passes off-canvas, the drift
+            probes read text/faces, never geometry. Pinned by
+            tests/geometry-faces.test.ts ①② + the drift geometry leg. */}
+        <div className="absolute inset-0">
+          <img
+            src={HERO.image}
+            alt={HERO.imageAlt}
+            className="w-full h-full object-cover opacity-30"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/80 to-transparent" />
+        </div>
         <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-500" />
         <div className="relative max-w-7xl mx-auto px-6 pt-32 pb-20">
           <div className="max-w-3xl">
@@ -264,7 +278,18 @@ export function LandingPage() {
               <span className="block">{HERO.headingLines[0]}</span>
               <span className="block">{HERO.headingLines[1]}</span>
             </h1>
-            <p className="text-white/60 text-lg md:text-xl leading-relaxed max-w-xl mb-10">
+            {/* Round-16 (the attribute/geometry census — the trap-⑥
+                genus, two new members): the reference's v3-era cascade
+                makes its plain .leading-relaxed LOSE to its media-block
+                .md\:text-xl rule at md+ (v3 pairs text-xl 20px with
+                line-height 28px, and media rules sort after the plain
+                leading rule — live-probed: REF 28px, OURS 32.5px at
+                1280; 29.25px on both at 390). Our v4 sorts the leading
+                utility LAST at every width — the md: override
+                reproduces the reference's computed face, the h1/h2
+                decode precedent. Pinned by geometry-faces ④ + the drift
+                geometry leg. */}
+            <p className="text-white/60 text-lg md:text-xl leading-relaxed md:leading-7 max-w-xl mb-10">
               {HERO.paragraph}
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
@@ -286,12 +311,18 @@ export function LandingPage() {
               </a>
             </div>
           </div>
-        </div>
-        <div className="absolute bottom-10 left-6 flex items-center gap-3">
-          <div className="w-8 h-px bg-white/30" />
-          <span className="text-white/30 text-xs tracking-widest uppercase">
-            {HERO.scrollLabel}
-          </span>
+          {/* Round-16 (the attribute/geometry census): the reference's
+              scroll indicator rides INSIDE the content column (its
+              `relative` establishes the containing block → renders at
+              the column's bottom-left, [256,719] at 1280) — at section
+              level it renders at the section's own bottom-left, a
+              visible position divergence. Pinned by geometry-faces ③. */}
+          <div className="absolute bottom-10 left-6 flex items-center gap-3">
+            <div className="w-8 h-px bg-white/30" />
+            <span className="text-white/30 text-xs tracking-widest uppercase">
+              {HERO.scrollLabel}
+            </span>
+          </div>
         </div>
       </section>
 
@@ -452,7 +483,16 @@ export function LandingPage() {
             <div className="md:col-span-3">
               <div>
                 <Quote size={40} className="mb-6 opacity-30 text-amber-500" />
-                <p className="text-white text-2xl md:text-3xl font-semibold leading-snug mb-10">
+                {/* Round-16 (the attribute/geometry census — the trap-⑥
+                    genus, two new members): the reference's .md\:text-3xl
+                    pairs 30px with line-height 36px and its media rule
+                    beats the plain .leading-snug at md+ (live-probed: REF
+                    36px, OURS 41.25px at 1280 — the entire +26px
+                    testimonials section delta; 33px on both at 390).
+                    The md:leading-9 override reproduces the reference's
+                    computed face — the h1/h2 decode precedent. Pinned by
+                    geometry-faces ④ + the drift geometry leg. */}
+                <p className="text-white text-2xl md:text-3xl font-semibold leading-snug md:leading-9 mb-10">
                   {/* Round-15 (the motion/glyph census): the reference
                       renders STRAIGHT double quotes (U+0022) as standalone
                       text-node children — the full-text census (96 vs 96
@@ -529,7 +569,7 @@ export function LandingPage() {
             <div className="flex flex-col gap-5">
               <a href={`mailto:${CONTACT.email}`} className="flex items-center gap-4 group">
                 <div className="w-10 h-10 flex items-center justify-center border border-zinc-200 group-hover:border-zinc-400 transition-colors">
-                  <Mail size={16} className="text-zinc-400" />
+                  <ReferenceMail size={16} className="text-zinc-400" />
                 </div>
                 <span className="text-zinc-600 group-hover:text-zinc-950 transition-colors text-sm">
                   {CONTACT.email}
@@ -537,7 +577,7 @@ export function LandingPage() {
               </a>
               <a href={`tel:${CONTACT.phone}`} className="flex items-center gap-4 group">
                 <div className="w-10 h-10 flex items-center justify-center border border-zinc-200 group-hover:border-zinc-400 transition-colors">
-                  <Phone size={16} className="text-zinc-400" />
+                  <ReferencePhone size={16} className="text-zinc-400" />
                 </div>
                 <span className="text-zinc-600 group-hover:text-zinc-950 transition-colors text-sm">
                   {CONTACT.phone}
@@ -551,7 +591,16 @@ export function LandingPage() {
               </div>
             </div>
           </div>
-          <form className="flex flex-col gap-5" onSubmit={onSubmit} noValidate>
+          {/* Round-16 (the attribute/geometry census): the reference's
+              form NATIVE-VALIDATES (its four required controls block an
+              empty submit — no submit event, no POST, the browser's own
+              bubbles; live-probed on both apps). Our noValidate let an
+              empty submit POST to the API (400 → our error toast) — a
+              visible behavioral divergence. The native gate is the
+              byte-mirror face; the Zod 400 backstop stays for
+              non-empty-but-invalid payloads. Pinned by geometry-faces ⑤
+              + the drift geometry leg. */}
+          <form className="flex flex-col gap-5" onSubmit={onSubmit}>
             <div className="grid sm:grid-cols-2 gap-5">
               <div>
                 <label

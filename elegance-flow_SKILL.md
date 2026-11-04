@@ -93,7 +93,10 @@ members (see `docs/Tailwind-V4-Validation-Report.md`, required reading):
    (touch devices never fire hovers without it).
 6. **The computed-face re-derivations**: the leading family (§2) — a class
    that never takes effect in the reference's own build ports as the face it
-   actually renders.
+   actually renders (round-16 grew the family: the plain `leading-snug`/
+   `leading-relaxed` on the `md:text-3xl`/`md:text-xl` carriers are dead at
+   md+ in the reference's cascade — its md: text rules re-pair 36px/28px —
+   so the ports are `md:leading-9`/`md:leading-7`).
 7. **The `outline-none` rename (round-13)**: the reference's v3
    `.outline-none` computes `outline: 2px solid transparent;
    outline-offset: 2px`; v4's spells `outline-style: none` — and v4.3's
@@ -179,7 +182,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 443 checks / 35 files**: the seam batteries (auth,
+- **Unit — Vitest, 462 checks / 36 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
@@ -248,10 +251,24 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   utility; the testimonial quote's STRAIGHT double quotes — the
   full-text census proved the typographic pair the sole text
   divergence on the landing; the retired &ldquo;/&rdquo; forms never
-  return) —
+  return) — and geometry-faces — the round-16 battery that pins the
+  attribute/geometry faces (the hero's absolute-wrapper structure —
+  the reference nests its photo inside `absolute inset-0`, and a
+  direct in-flow `<img>` becomes a second flex item that squeezed the
+  ENTIRE content column off-canvas at both viewports while every gate
+  stayed green: parity reads computed styles, toBeVisible passes a
+  non-empty box wherever it sits; the scroll label's placement INSIDE
+  the content column; the two NEW trap-⑥ leading decodes — the
+  reference's md:text-Nxl media rules pair 36px/28px and beat the
+  plain leading rules in ITS cascade, so the port is `md:leading-9` /
+  `md:leading-7`; the form's native-validation mode — the reference
+  blocks empty submits at the browser, no POST leaves the page; the
+  reference-exact glyph quartet — the lucide-era palette/megaphone/
+  mail/phone shapes + the login card's classic 22.56-based Google
+  quartet, carried by `src/components/ui/reference-icons.tsx`) —
   comment-stripped source reads; a literal pinned by a comment alone is
   vacuous.
-- **E2E — Playwright, 76 checks / 8 specs**: the standalone artifact on
+- **E2E — Playwright, 79 checks / 8 specs**: the standalone artifact on
   :3100 with `db/e2e.db`; ONE shared login (`auth.setup.ts` →
   storageState — the auth endpoints are rate-limited 10/IP/15-min); one
   worker; alphabetical file order → every spec SELF-SUFFICIENT (its own
@@ -262,7 +279,13 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   background and the nav link's transition-property pinned against the
   reference's v3-preflight computed faces; round-15 gains the
   motion/glyph check — the html element's scroll-behavior computes
-  smooth + the testimonial quote renders the straight-quote pair),
+  smooth + the testimonial quote renders the straight-quote pair;
+  round-16 gains the attribute/geometry checks — the hero's bounding
+  boxes (the content column IN-CANVAS at both viewports, the 800px
+  hero), the leading-decode computed faces (36px/28px at md+,
+  33px/29.25px at phone), the native-validation + glyph pins (the
+  empty submit never leaves the page, the reference's palette and
+  phone shapes)),
   mobile-navigation (THE operator's standing emphasis — the full
   390×844 battery), auth, reset-password, dashboard-inbox, keyboard
   (the round-10 keyboard-operability battery — the keyboard rides plus

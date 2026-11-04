@@ -46,8 +46,8 @@ re-pinned to the reference's v3 palette).
    seams in `src/lib/` rather than inlining logic. Keep lint green as
    you go.
 5. **VERIFY** — Run the full gate: `bun run lint` → `bun run typecheck`
-   → `bun run test` (443) → `bun run build` → `./scripts/smoke-test.sh`
-   (14) → `CI=1 bun run test:e2e` (76). The `gate` script chains them.
+   → `bun run test` (462) → `bun run build` → `./scripts/smoke-test.sh`
+   (14) → `CI=1 bun run test:e2e` (79). The `gate` script chains them.
 6. **DOCUMENT** — Update the touched docs (`README.md`, this file, the
    PAD, `worklog.md`) in the same change; the counts in the docs must
    match the suites (the lockstep doctrine — doc claims about the tree
@@ -78,8 +78,8 @@ SEO metadata family (the reference ships none), deep-linkable
 
 ```bash
 bun run dev        # :3000
-bun run test       # vitest (443 checks / 35 files)
-bun run test:e2e   # playwright (76 checks / 8 specs) — build first
+bun run test       # vitest (462 checks / 36 files)
+bun run test:e2e   # playwright (79 checks / 8 specs) — build first
 bun run gate       # the full chain, in order
 bun run db:census  # MUST print "pristine: MATCH" before you trust any db read
 ```
@@ -115,7 +115,7 @@ in production — the boot gate refuses to serve without it),
 
 ## Testing Strategy
 
-- **Unit (Vitest, 35 files / 443 checks)** — the seam batteries (auth,
+- **Unit (Vitest, 36 files / 462 checks)** — the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (`site-content`,
@@ -125,7 +125,7 @@ in production — the boot gate refuses to serve without it),
   `count-ladder-census`, `re-pin-tokens`, `doc-pointer-census`,
   `dead-code-census`, `focus-contract`, `inbox-states`,
   `landing-images`, `focus-outline`, `preflight-faces`,
-  `motion-glyph`) —
+  `motion-glyph`, `geometry-faces`) —
   comment-stripped source reads; a literal pinned by a comment alone is
   vacuous.
 - **E2E (Playwright, `tests/e2e/*.spec.ts`)** — the standalone

@@ -237,6 +237,80 @@ async function motionGlyphFace(url: string): Promise<MotionGlyphFace> {
   return base;
 }
 
+// The round-16 GEOMETRY census: the attribute/geometry faces no probe
+// read (parity-199 reads ~40 computed at-rest styles — never bounding
+// boxes; the e2e hero test rode toBeVisible, which passes a non-empty
+// box ENTIRELY off-canvas; the drift legs above read text/src/faces).
+// Read at 1280 AND 390: the hero section's rect (the in-flow-img genus
+// stretched it 1008/927 where the reference renders 800/844), the
+// content column's x (232 both — 1280/390 when squeezed off-canvas),
+// the h1's rect, the scroll label's x (256 = inside the content
+// column; 24 = the section-level placement), the quote-P + hero-P
+// computed line-heights (the trap-⑥ md:text-Nxl decodes: 36px/28px at
+// md+, 33px/29.25px below), the form's noValidate (the reference
+// native-validates), and the four glyph fingerprints + the login
+// Google-G fingerprint (the lucide-era quartet).
+type GeometryFace = {
+  heroRect: number[];
+  contentX: number;
+  h1Rect: number[];
+  scrollLabelX: number;
+  quoteLh: string;
+  heroPLh: string;
+  formNoValidate: boolean;
+  glyphPalette: string;
+  glyphMegaphone: string;
+  glyphMail: string;
+  glyphPhone: string;
+};
+
+async function geometryFace(url: string, w: number, h: number): Promise<GeometryFace> {
+  const browser = await chromium.launch();
+  const page = await browser.newPage({ viewport: { width: w, height: h } });
+  await page.goto(url, { waitUntil: "networkidle" });
+  await page.waitForTimeout(1000);
+  const base = await page.evaluate(() => {
+    const rect = (el: Element | null): number[] => {
+      if (!el) return [-1, -1, -1, -1];
+      const b = el.getBoundingClientRect();
+      return [Math.round(b.x), Math.round(b.y), Math.round(b.width), Math.round(b.height)];
+    };
+    const sec = document.querySelector("section");
+    const content = sec?.querySelector(".relative.max-w-7xl") ?? null;
+    const h1 = document.querySelector("h1");
+    const label = [...document.querySelectorAll("span")].find((s) => (s.textContent ?? "").trim() === "Scroll") ?? null;
+    const quote = document.querySelector("#testimonials .md\\:col-span-3 p");
+    const heroP = [...document.querySelectorAll("p")].find((p) => /leading-relaxed/.test(p.className) && (p.textContent ?? "").includes("exceptional")) ?? null;
+    const form = document.querySelector("#contact form") as HTMLFormElement | null;
+    const glyph = (cls: string): string => document.querySelector(`svg.lucide-${cls} path`)?.getAttribute("d")?.slice(0, 24) ?? "ABSENT";
+    return {
+      heroRect: rect(sec),
+      contentX: content ? rect(content)[0] : -1,
+      h1Rect: rect(h1),
+      scrollLabelX: label ? rect(label)[0] : -1,
+      quoteLh: quote ? getComputedStyle(quote).lineHeight : "ABSENT",
+      heroPLh: heroP ? getComputedStyle(heroP).lineHeight : "ABSENT",
+      formNoValidate: form ? form.noValidate : true,
+      glyphPalette: glyph("palette"),
+      glyphMegaphone: glyph("megaphone"),
+      glyphMail: glyph("mail"),
+      glyphPhone: glyph("phone"),
+    };
+  });
+  await browser.close();
+  return base;
+}
+
+async function googleGlyphFace(url: string): Promise<string> {
+  const browser = await chromium.launch();
+  const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+  await page.goto(url + "/login", { waitUntil: "networkidle" });
+  await page.waitForTimeout(800);
+  const d = await page.evaluate(() => document.querySelector("svg path")?.getAttribute("d")?.slice(0, 24) ?? "ABSENT");
+  await browser.close();
+  return d;
+}
+
 const [ref, ours] = await Promise.all([face(REF, 390, 844), face(OURS, 390, 844)]);
 const out: string[] = [];
 diff("[390]", ref.title, ours.title, "title", out);
@@ -273,12 +347,35 @@ const [refMotion, oursMotion] = await Promise.all([motionGlyphFace(REF), motionG
 diff("[motion]", refMotion.scrollBehavior, oursMotion.scrollBehavior, "scrollBehavior (the reference's raw smooth rule)", out);
 diff("[motion]", refMotion.quoteGlyphs, oursMotion.quoteGlyphs, "quoteGlyphs (the straight-quote pair)", out);
 
+// The round-16 geometry leg (the structure/leading/validation/glyph faces at 1280 + 390)
+const [refGeoD, oursGeoD] = await Promise.all([geometryFace(REF, 1280, 800), geometryFace(OURS, 1280, 800)]);
+const [refGeoM, oursGeoM] = await Promise.all([geometryFace(REF, 390, 844), geometryFace(OURS, 390, 844)]);
+for (const [tag, r, o] of [
+  ["[geometry:1280]", refGeoD, oursGeoD],
+  ["[geometry:390]", refGeoM, oursGeoM],
+] as const) {
+  diff(tag, r.heroRect.join(","), o.heroRect.join(","), "heroRect (the wrapper vs the in-flow img)", out);
+  diff(tag, r.contentX, o.contentX, "contentX (the off-canvas detector)", out);
+  diff(tag, r.h1Rect.join(","), o.h1Rect.join(","), "h1Rect", out);
+  diff(tag, r.scrollLabelX, o.scrollLabelX, "scrollLabelX (inside the column vs section level)", out);
+  diff(tag, r.quoteLh, o.quoteLh, "quoteLh (the md:text-3xl pairing)", out);
+  diff(tag, r.heroPLh, o.heroPLh, "heroPLh (the md:text-xl pairing)", out);
+  diff(tag, r.formNoValidate, o.formNoValidate, "formNoValidate (the reference native-validates)", out);
+  diff(tag, r.glyphPalette, o.glyphPalette, "glyphPalette (the reference's circles-and-body)", out);
+  diff(tag, r.glyphMegaphone, o.glyphMegaphone, "glyphMegaphone (the reference's horn-and-handle)", out);
+  diff(tag, r.glyphMail, o.glyphMail, "glyphMail (the reference's 1.94 arc)", out);
+  diff(tag, r.glyphPhone, o.glyphPhone, "glyphPhone (the reference's classic handset)", out);
+}
+const [refGoogle, oursGoogle] = await Promise.all([googleGlyphFace(REF), googleGlyphFace(OURS)]);
+diff("[geometry:login]", refGoogle, oursGoogle, "googleGlyph (the classic 22.56-based quartet)", out);
+
 if (out.length === 0) {
   console.log("[390] CONTENT + MOBILE-MENU FACE: NO DRIFT — the reference matches our byte-mirror");
   console.log("[login] AUTH-CARD FACE: NO DRIFT — the reference matches our login mirror");
   console.log("[preflight] FORM-FACE: NO DRIFT — the reference matches our preflight mirror");
   console.log("[motion] MOTION/GLYPH FACE: NO DRIFT — the reference matches our motion/glyph mirror");
+  console.log("[geometry] STRUCTURE/GEOMETRY FACE: NO DRIFT — the reference matches our geometry mirror");
 } else {
-  console.log(`[390 + login + preflight + motion] DRIFT DETECTED — ${out.length} field(s):`);
+  console.log(`[390 + login + preflight + motion + geometry] DRIFT DETECTED — ${out.length} field(s):`);
   for (const line of out) console.log(line);
 }

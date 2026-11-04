@@ -571,3 +571,44 @@ ink, the input background and the nav link's transition-property
 pinned against the reference's v3-preflight faces on the standalone
 artifact); `scripts/drift-199.ts`'s preflight census carries the live
 bar (born-RED on the pre-fix tree, NO DRIFT after).
+
+## Appendix: Project Trap Log — Trap 6 Expanded: The `md:text-Nxl` × Plain-Leading Decodes (round 16)
+
+The trap-⑥ genus (the computed-face re-derivations: a class that never
+takes effect in the reference's own build ports as the face it actually
+renders) grew TWO new members in round 16 — the attribute/geometry
+census's leading sweep caught them.
+
+**The mechanism.** v3-era Tailwind pairs every `text-Nxl` step with its
+own line-height (`text-3xl` = 30px/36px, `text-xl` = 20px/28px) and
+emits the `md:` media rules AFTER the plain utilities, so on the
+reference a plain leading utility on an `md:text-Nxl` carrier is DEAD at
+md+ — the media rule's paired line-height wins. Our v4 sorts the plain
+leading utility LAST at every width, so the same class string computes
+a DIFFERENT face.
+
+**The two carriers (live-probed, both apps):**
+
+- the testimonial quote `text-2xl md:text-3xl font-semibold
+  leading-snug`: REFERENCE computes **36px** at md+ (the text-3xl
+  pairing), OURS computed **41.25px** (v4's 1.375 ratio) — the entire
+  +26px testimonials section delta (5 lines × 5.25px). Below md both
+  compute 33px (the plain leading wins on both cascades).
+- the hero paragraph `text-lg md:text-xl leading-relaxed`: REFERENCE
+  computes **28px** at md+ (the text-xl pairing), OURS computed
+  **32.5px** (v4's 1.625 ratio). Below md both compute 29.25px.
+
+**The cures** (the h1/h2 `md:leading-none` precedent exactly): the
+`md:leading-9` / `md:leading-7` overrides reproduce the reference's
+computed faces — `leading-snug md:leading-9` and `leading-relaxed
+md:leading-7`.
+
+**Pinned by** `tests/geometry-faces.test.ts` ④ (the decode literals)
+and `tests/e2e/landing.spec.ts`'s round-16 leading pin (36px/28px at
+md+, 33px/29.25px at phone, computed on the standalone artifact);
+`scripts/drift-199.ts`'s geometry census carries the live bar (born-RED
+20-field on the pre-fix tree, NO DRIFT after). The h1/h2 decode members
+(`leading-[0.9] md:leading-none` and the `leading-[0.95]` family) carry
+their own record at §2 of the skill — this appendix completes the
+family census: every `leading-*` × `md:text-Nxl` carrier on the landing
+is now decoded.

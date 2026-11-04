@@ -184,6 +184,102 @@ test.describe("the EleganceFlow landing (desktop 1280)", () => {
     expect(faces.lastGlyph).toBe(34);
   });
 
+  test("the hero geometry mirrors the reference (in-canvas content column, the 800px hero, the label inside the column)", async ({ page }) => {
+    // Round-16 (the attribute/geometry census): the direct in-flow <img>
+    // squeezed the content column entirely off-canvas at BOTH viewports
+    // while toBeVisible passed (a non-empty box is "visible" wherever it
+    // sits) — the geometry pin reads bounding boxes, the faces the style
+    // probes never measured. Pinned at the source level by
+    // tests/geometry-faces.test.ts ①②③; live-diffed by the drift
+    // geometry leg.
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+    const geo = await page.evaluate(() => {
+      const rect = (el: Element | null): number[] | null => {
+        if (!el) return null;
+        const b = el.getBoundingClientRect();
+        return [Math.round(b.x), Math.round(b.y), Math.round(b.width), Math.round(b.height)];
+      };
+      const sec = document.querySelector("section");
+      const content = sec?.querySelector(".relative.max-w-7xl") ?? null;
+      const h1 = document.querySelector("h1");
+      const label = [...document.querySelectorAll("span")].find((s) => (s.textContent ?? "").trim() === "Scroll") ?? null;
+      return { hero: rect(sec), content: rect(content), h1: rect(h1), labelX: label ? rect(label)?.[0] ?? null : null };
+    });
+    expect(geo.hero).toEqual([0, 0, 1280, 800]);
+    expect(geo.content?.[0]).toBe(232); // centered, IN-CANVAS (the squeezed form sat at x=1280)
+    expect(geo.h1).toEqual([256, 197, 768, 288]);
+    expect(geo.labelX).toBe(300); // the label span inside the content column
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForTimeout(400);
+    const mob = await page.evaluate(() => {
+      const rect = (el: Element | null): number[] | null => {
+        if (!el) return null;
+        const b = el.getBoundingClientRect();
+        return [Math.round(b.x), Math.round(b.y), Math.round(b.width), Math.round(b.height)];
+      };
+      const sec = document.querySelector("section");
+      const content = sec?.querySelector(".relative.max-w-7xl") ?? null;
+      return { hero: rect(sec), content: rect(content) };
+    });
+    expect(mob.hero).toEqual([0, 0, 390, 844]);
+    expect(mob.content?.[0]).toBe(0); // full-width at phone (the squeezed form sat at x=390)
+  });
+
+  test("the leading decodes compute the reference's faces (36px quote / 28px hero P at md+; 33px / 29.25px at phone)", async ({ page }) => {
+    // Round-16 (the trap-⑥ genus, two new members): the reference's
+    // md:text-3xl / md:text-xl rules pair their sizes with 36px / 28px
+    // and beat the plain leading rules in ITS cascade at md+ — our v4
+    // sorts the leading LAST, so the md: overrides reproduce the faces.
+    // Pinned at the source level by tests/geometry-faces.test.ts ④.
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+    const readLh = () =>
+      page.evaluate(() => {
+        const quote = document.querySelector("#testimonials .md\\:col-span-3 p");
+        const heroP = [...document.querySelectorAll("p")].find((p) => p.className.match(/leading-relaxed/) !== null && (p.textContent ?? "").includes("exceptional")) ?? null;
+        return {
+          quote: quote ? getComputedStyle(quote).lineHeight : "ABSENT",
+          heroP: heroP ? getComputedStyle(heroP).lineHeight : "ABSENT",
+        };
+      });
+    const desk = await readLh();
+    expect(desk.quote).toBe("36px");
+    expect(desk.heroP).toBe("28px");
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForTimeout(400);
+    const mob = await readLh();
+    expect(mob.quote).toBe("33px");
+    expect(mob.heroP).toBe("29.25px");
+  });
+
+  test("the form native-validates (empty submits never leave the page) and the glyphs render the reference's shapes", async ({ page }) => {
+    // Round-16: the reference's form native-validates (browser bubbles,
+    // no submit event, no POST) — ours carried noValidate, letting an
+    // empty submit POST to the API. The glyphs: the reference ships its
+    // older lucide-era shapes (the classic palette + handset). Pinned at
+    // the source level by tests/geometry-faces.test.ts ⑤⑥.
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+    const faces = await page.evaluate(() => {
+      const form = document.querySelector("#contact form") as HTMLFormElement | null;
+      const palette = document.querySelector("svg.lucide-palette path")?.getAttribute("d") ?? "ABSENT";
+      const phone = document.querySelector("svg.lucide-phone path")?.getAttribute("d") ?? "ABSENT";
+      return { noValidate: form ? form.noValidate : true, checkValidity: form ? form.checkValidity() : null, palette, phone };
+    });
+    expect(faces.noValidate).toBe(false); // the reference's native gate
+    expect(faces.checkValidity).toBe(false); // the empty form is invalid — an empty submit cannot fire
+    expect(faces.palette.startsWith("M12 2C6.5")).toBe(true); // the reference's circles-and-body palette
+    expect(faces.phone.startsWith("M22 16.92")).toBe(true); // the reference's classic handset
+    let posted = false;
+    page.on("request", (r) => {
+      if (r.method() === "POST") posted = true;
+    });
+    await page.locator("#contact button[type=submit]").click();
+    await page.waitForTimeout(300);
+    expect(posted).toBe(false); // the native gate blocked the empty submit
+  });
+
   test("the footer carries the wordmark, the four socials and the copyright", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByText("Quality work for quality clients.")).toBeVisible();

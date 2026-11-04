@@ -140,7 +140,7 @@ const SEAM_BATTERIES = [
 ];
 
 // The source contracts — comment-stripped source reads + module pins +
-// the doc/route census batteries (round-15's motion-glyph is the
+// the doc/route census batteries (round-16's geometry-faces is the
 // newest member).
 const SOURCE_CONTRACTS = [
   "site-content",
@@ -165,6 +165,7 @@ const SOURCE_CONTRACTS = [
   "focus-outline",
   "preflight-faces",
   "motion-glyph",
+  "geometry-faces",
 ];
 
 const fileOf = (family: string) => `${family}.test.ts`;

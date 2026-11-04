@@ -24,8 +24,8 @@ bun run start                    # the standalone server (production)
 
 bun run lint                     # eslint --max-warnings 0 (the 0/0 standard)
 bun run typecheck                # tsc --noEmit
-bun run test                     # vitest run  (443 checks / 35 files)
-bun run test:e2e                 # playwright (76 checks / 8 specs; needs build)
+bun run test                     # vitest run  (462 checks / 36 files)
+bun run test:e2e                 # playwright (79 checks / 8 specs; needs build)
 CI=1 bun run test:e2e            # force a fresh server (never reuse stale)
 
 bun run db:push                  # prisma db push (SQLite at repo/db/custom.db)
@@ -91,6 +91,10 @@ reference's own class strings that never take effect in ITS build (the
 `leading-[0.9]`/`leading-[0.95]` pair is beaten by its text-Nxl
 line-height:1 rules at md+) port as `leading-[0.9] md:leading-none` —
 copy the COMPUTED face, never the literal class (the s11 doctrine);
+round-16 grew the family: the plain `leading-snug`/`leading-relaxed` on
+`md:text-3xl`/`md:text-xl` carriers are DEAD at md+ in the reference's
+cascade too (its md: text rules re-pair 36px/28px) — the ports are
+`md:leading-9`/`md:leading-7`;
 ⑦ the `outline-none` semantic rename (v3 computes 2px-solid-transparent
 + offset-2; v4 spells style:none — only the `outline-2
 outline-transparent outline-offset-2` composition ports the face);
