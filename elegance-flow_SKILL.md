@@ -10,8 +10,8 @@ description: >
   doctrine, the Tailwind v4 re-pin traps, the mobile inline menu, the auth
   seams, the testing pyramid and the debugging playbook. Use it to extend,
   debug, onboard, or replicate this architecture.
-version: 1.199.0
-last_updated: 2026-11-03
+version: 1.200.0
+last_updated: 2026-11-04
 ---
 
 # EleganceFlow — the domain skill
@@ -133,6 +133,15 @@ The reference's contact form answers a toast and DISCARDS the submission
 - The SEO metadata family (the reference ships none) + the designed 404
   (true 404 status, vs the reference's blank SPA shells) + deep-linkable
   `/signup` and `/reset-password`.
+- The Google button's honest fallback (round-21, R-21a): the reference's
+  "Continue with Google" is a REAL Google OAuth redirect (the click
+  navigates to the platform's `/api/apps/auth/login` document endpoint
+  whose 302 lands on accounts.google.com with base44's client_id and the
+  app.base44.com callback) — unimplementable in the self-hosted clone
+  (the redirect_uri is registered to base44's Google app), so ours
+  degrades to the honest info toast; pinned by
+  `tests/google-fallback.test.ts` + the auth e2e leg + the drift
+  script's [google] census (the 10th leg).
 
 Superset surfaces pass WCAG AA OUTRIGHT (zinc-600/zinc-500 honest inks, no
 zinc-400; every interactive control carries a visible focus-visible ring
@@ -182,7 +191,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 496 checks / 40 files**: the seam batteries (auth,
+- **Unit — Vitest, 500 checks / 41 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
@@ -328,9 +337,24 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   ours keeps it on all five surfaces, the security superset R-20f;
   the records: the platform's 400 vs our canonical 401, the endpoint
   shapes, the real-account sent card unverifiable — no email side
-  effects)) — comment-stripped source reads; a
+  effects)) — and google-fallback — the round-21 battery that pins
+  the Google button's honest fallback face (R-21a, the record: the
+  reference's "Continue with Google" is a REAL Google OAuth redirect —
+  live-ridden via the intercepted navigation: the click navigates the
+  main frame to the platform's `/api/apps/auth/login?from_url=…&
+  app_id=…` document endpoint whose 302 Location is the full
+  accounts.google.com/v3/signin/identifier?client_id=185178814199-
+  6a35e9aqcmlm15ig0upncg07c91av8do…&redirect_uri=https://app.base44.
+  com/api/apps/auth/callback&scope=openid+email+profile&prompt=
+  select_account URL — UNIMPLEMENTABLE in the self-hosted clone, the
+  redirect_uri is registered to base44's Google app; F-21a, the
+  coverage catch: the fallback was UNPINNED — the battery pins the
+  handler's exact toast call (title + description + the info
+  variant), the never-submits `type="button"`, the keeps (the class
+  mount, the G glyph, the span), and the no-navigation contract) —
+  comment-stripped source reads; a
   literal pinned by a comment alone is vacuous.
-- **E2E — Playwright, 85 checks / 8 specs**: the standalone artifact on
+- **E2E — Playwright, 86 checks / 8 specs**: the standalone artifact on
   :3100 with `db/e2e.db`; ONE shared login (`auth.setup.ts` →
   storageState — the auth endpoints are rate-limited 10/IP/15-min); one
   worker; alphabetical file order → every spec SELF-SUFFICIENT (its own

@@ -359,4 +359,32 @@ test.describe("the EleganceFlow login card (logged-out)", () => {
     expect(parsed.itemListElement[1].item.endsWith("/signup")).toBe(true);
     expect(head.viewport).not.toContain("viewport-fit"); // the login-only shape never generalizes
   });
+
+  test("round-21: the Google button's honest fallback — the info toast ride (the R-21a record's local face)", async ({ page }) => {
+    // Round-21 (R-21a, the record; F-21a, the pin): the reference's
+    // "Continue with Google" navigates to a REAL Google OAuth redirect
+    // (accounts.google.com with base44's client_id + the
+    // app.base44.com/api/apps/auth/callback redirect_uri — live-ridden,
+    // intercepted, zero side effects). UNIMPLEMENTABLE in the
+    // self-hosted clone: the redirect_uri is registered to base44's
+    // Google app. OUR honest fallback — the info toast — pinned at the
+    // source level by tests/google-fallback.test.ts; this leg rides it
+    // BEHAVIORALLY on the standalone artifact: the toast renders, the
+    // URL never leaves /login, and the card never fires a page error.
+    const errors: string[] = [];
+    page.on("pageerror", (e) => errors.push(String(e)));
+    await page.goto("/login");
+    await page.getByRole("button", { name: "Continue with Google" }).click();
+    const toast = page.locator('[role="region"][aria-label="Notifications"] [role="status"]');
+    await expect(toast).toBeVisible();
+    await expect(toast).toContainText("Google sign-in not configured");
+    await expect(toast).toContainText(
+      "This self-hosted clone uses email and password sign-in",
+    );
+    // the honest LOCAL fallback: the click never navigates
+    expect(page.url()).toContain("/login");
+    // the auto-dismiss ride (the 4s timer, hover-paused at 0)
+    await expect(toast).toHaveCount(0, { timeout: 6000 });
+    expect(errors, "the ride must fire zero page errors").toEqual([]);
+  });
 });

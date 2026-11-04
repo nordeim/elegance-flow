@@ -683,6 +683,123 @@ async function authFailFace(url: string) {
   }
 }
 
+// The round-21 [google] census leg — the Google button's CLICK ride on
+// both apps (the surface no probe ever read: inks at round-13, the G
+// glyph at round-16 — the click never ridden). R-21a (the record): the
+// reference's button navigates to a REAL Google OAuth redirect
+// (accounts.google.com with base44's client_id and the
+// app.base44.com/api/apps/auth/callback redirect_uri — intercepted +
+// aborted here, zero side effects). UNIMPLEMENTABLE in the self-hosted
+// clone (the redirect_uri is registered to base44's Google app), so
+// OURS degrades to the honest info toast (the fallback pinned by
+// tests/google-fallback.test.ts + the auth e2e leg). The two faces
+// differ BY DESIGN — each side is pinned against its RECORDED constant;
+// a change on either side (the reference drops the button, swaps the
+// client_id, or changes the scope; our toast breaks or drops the text)
+// reads DRIFT. The dynamic OAuth params (nonce, dsh, state, continue,
+// rart) are per-session by construction and excluded.
+async function googleFace(url: string, ours: boolean) {
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  try {
+    // The ride's capture channels (the round-21 experiment probe decoded
+    // the mechanism): the click navigates the MAIN FRAME to the
+    // platform's OWN document endpoint
+    // `{REF}/api/apps/auth/login?from_url=…&app_id=…` (route-visible),
+    // whose 302 Location IS the Google OAuth URL — and redirect
+    // followers BYPASS route interception (the Playwright/Chromium
+    // redirect-chain behavior), so the OAuth URL's reliable capture is
+    // the framenavigated event. Google's own page resources (ssl.
+    // gstatic, /_/bscframe) are aborted — the signin page never fully
+    // loads; the single anonymous navigation-request hit is the ride's
+    // whole external footprint (no credentials, no state change — the
+    // round-20 zero-side-effects doctrine).
+    const googleNavs: string[] = [];
+    const platformAuthLogin: string[] = [];
+    await context.route("**/*", (route) => {
+      const req = route.request();
+      const u = req.url();
+      if (req.resourceType() === "document" && u.includes("/api/apps/auth/login")) {
+        platformAuthLogin.push(u); // the chain's head — CONTINUE (the 302 is the signal's source)
+        return route.continue();
+      }
+      if (u.includes("accounts.google.com") || u.includes("ssl.gstatic.com")) {
+        return route.abort();
+      }
+      return route.continue();
+    });
+    const page = await context.newPage();
+    page.on("framenavigated", (f) => {
+      const u = f.url();
+      if (u.startsWith("https://accounts.google.com/")) googleNavs.push(u);
+    });
+    await page.goto(url + "/login", { waitUntil: "networkidle" });
+    await page.waitForTimeout(600);
+    const google = page.getByRole("button", { name: "Continue with Google" });
+    const buttonCount = await google.count();
+    if (buttonCount > 0) {
+      await google.first().click();
+      await page.waitForTimeout(1800);
+    }
+    // OURS: the honest toast face
+    const toastFace = ours
+      ? await page.evaluate(() => {
+          const card = document.querySelector('[role="region"][aria-label="Notifications"] [role="status"]');
+          return card
+            ? {
+                rendered: true,
+                role: card.getAttribute("role"),
+                text: (card.textContent ?? "").replace(/\s+/g, " ").trim(),
+              }
+            : { rendered: false, role: null, text: null };
+        })
+      : null;
+    // REF: the platform endpoint's shape + the OAuth redirect's STATIC params
+    let platform: Record<string, string> | null = null;
+    if (platformAuthLogin[0]) {
+      try {
+        const u = new URL(platformAuthLogin[0]);
+        platform = {
+          path: u.pathname,
+          fromUrl: u.searchParams.get("from_url") ?? "(none)",
+          appId: u.searchParams.get("app_id") ?? "(none)",
+        };
+      } catch {
+        platform = null;
+      }
+    }
+    let oauth: Record<string, string> | null = null;
+    const oauthNav = googleNavs[0];
+    if (oauthNav) {
+      try {
+        const u = new URL(oauthNav);
+        oauth = {
+          host: u.host,
+          clientId: u.searchParams.get("client_id") ?? "(none)",
+          redirectUri: u.searchParams.get("redirect_uri") ?? "(none)",
+          responseType: u.searchParams.get("response_type") ?? "(none)",
+          scope: u.searchParams.get("scope") ?? "(none)",
+          prompt: u.searchParams.get("prompt") ?? "(none)",
+        };
+      } catch {
+        oauth = null;
+      }
+    }
+    await page.close();
+    return { buttonCount, platform, oauth, toastFace };
+  } finally {
+    await context.close();
+  }
+}
+
+/** The recorded-constant pin (the two-sided leg's diff: recorded vs live). */
+function expectConst(label: string, side: string, recorded: unknown, live: unknown, out: string[]) {
+  const jr = JSON.stringify(recorded);
+  const jl = JSON.stringify(live);
+  if (jr !== jl) {
+    out.push(`${label} ${side} face changed:\n  RECORDED: ${jr}\n  LIVE    : ${jl}`);
+  }
+}
+
 // The round-19 interact leg — sequential on ONE context per app (the
 // rides auto-scroll; the header-top read must precede them).
 {
@@ -725,6 +842,52 @@ async function authFailFace(url: string) {
   diff("[authfail]", refAuthFail.backButton, oursAuthFail.backButton, "sentBackButton", out);
 }
 
+// The round-21 [google] leg — the click ride on both apps; the two
+// faces differ BY DESIGN (R-21a) so each side pins against its own
+// recorded constant.
+{
+  const refGoogle = await googleFace(REF, false);
+  const oursGoogle = await googleFace(OURS, true);
+  expectConst(
+    "[google]",
+    "REF",
+    {
+      path: "/api/apps/auth/login",
+      fromUrl: "https://colossal-elevate-service-flow.base44.app/",
+      appId: "69ca8f9d112e0923462fae91",
+    },
+    refGoogle.platform,
+    out,
+  );
+  expectConst(
+    "[google]",
+    "REF",
+    {
+      host: "accounts.google.com",
+      clientId: "185178814199-6a35e9aqcmlm15ig0upncg07c91av8do.apps.googleusercontent.com",
+      redirectUri: "https://app.base44.com/api/apps/auth/callback",
+      responseType: "code",
+      scope: "openid email profile",
+      prompt: "select_account",
+    },
+    refGoogle.oauth,
+    out,
+  );
+  expectConst(
+    "[google]",
+    "OURS",
+    {
+      rendered: true,
+      role: "status",
+      text: "Google sign-in not configuredThis self-hosted clone uses email and password sign-in (demo credentials in the README).",
+    },
+    oursGoogle.toastFace,
+    out,
+  );
+  expectConst("[google]", "REF", 1, refGoogle.buttonCount, out);
+  expectConst("[google]", "OURS", 1, oursGoogle.buttonCount, out);
+}
+
 if (out.length === 0) {
   console.log("[390] CONTENT + MOBILE-MENU FACE: NO DRIFT — the reference matches our byte-mirror");
   console.log("[login] AUTH-CARD FACE: NO DRIFT — the reference matches our login mirror");
@@ -735,8 +898,9 @@ if (out.length === 0) {
   console.log("[head] HEAD/METADATA FACE: NO DRIFT — the reference matches our document mirror");
   console.log("[interact] INTERACTION-BEHAVIOR FACE: NO DRIFT — the reference matches our interaction mirror");
   console.log("[authfail] AUTH-FAILURE/RESPONSE FACE: NO DRIFT — the reference matches our failure/header mirror");
+  console.log("[google] GOOGLE-BUTTON FACE: NO DRIFT — both faces match their recorded constants (the reference's OAuth redirect + our honest toast, R-21a)");
 } else {
-  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact + authfail] DRIFT DETECTED — ${out.length} field(s):`);
+  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact + authfail + google] DRIFT DETECTED — ${out.length} field(s):`);
   for (const line of out) console.log(line);
 }
 

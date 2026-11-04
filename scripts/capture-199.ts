@@ -96,6 +96,21 @@ async function main() {
   await sentPage.screenshot({ path: `${OUT}/ours-reset-sent-1280.png` });
   await sentCtx.close();
 
+  // ---- the GOOGLE-BUTTON TOAST (round-21 — the honest fallback face) ------
+  // The click ride on OUR card: the reference navigates to a REAL Google
+  // OAuth redirect (unimplementable here — the redirect_uri is base44's);
+  // ours degrades to the honest info toast (bottom-right at 1280,
+  // role=status, auto-dismisses at 4s). Captured mid-toast (600ms after
+  // the click — before the 4s timer retires it).
+  const toastCtx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const toastPage = await toastCtx.newPage();
+  await toastPage.goto(`${OURS}/login`, { waitUntil: "networkidle" });
+  await toastPage.waitForTimeout(600);
+  await toastPage.getByRole("button", { name: "Continue with Google" }).click();
+  await toastPage.waitForTimeout(600);
+  await toastPage.screenshot({ path: `${OUT}/ours-google-toast-1280.png` });
+  await toastCtx.close();
+
   await browser.close();
   console.log("captures saved under", OUT);
 }
