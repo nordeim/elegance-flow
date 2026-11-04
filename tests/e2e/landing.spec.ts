@@ -372,4 +372,76 @@ test.describe("the EleganceFlow landing (desktop 1280)", () => {
     const h1 = await page.evaluate(() => getComputedStyle(document.querySelector("h1")!).fontSize);
     expect(h1).toBe("72px");
   });
+
+  test("round-23: the deep-link boot (/#portfolio) lands the section — OUR superset (the reference's SPA never scrolls, R-23b)", async ({ page }) => {
+    // Round-23 (R-23b/F-23a): the cold-boot deep link. Every e2e leg
+    // since session-199 goto("/") plain — the hash family was never
+    // ridden. The reference's own deep links are BROKEN (its SPA shell
+    // renders the sections after the browser's one-time boot-time hash
+    // scroll; scrollTop stays 0 at 0.5s–5s — live-probed). OURS lands
+    // the native SSR scroll: the section rides to the viewport top and
+    // the header flips to its scrolled state. Source pins:
+    // tests/anchor-faces.test.ts ①④.
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/#portfolio");
+    await expect(page).toHaveURL(/\/#portfolio$/);
+    await expect
+      .poll(async () => page.evaluate(() => Math.abs(Math.round(document.getElementById("portfolio")?.getBoundingClientRect().top ?? -1))))
+      .toBe(0);
+    const scrolled = await page.evaluate(() => document.documentElement.scrollTop > 0);
+    expect(scrolled).toBe(true);
+    await expect(page.locator("header")).toHaveClass(/bg-zinc-950\/95 backdrop-blur-md/);
+  });
+
+  test("round-23: the desktop nav ride — click Work → #portfolio lands the section + the scrolled header (R-23a)", async ({ page }) => {
+    // The DESKTOP nav link ride (the mobile panel rides are pinned in
+    // mobile-navigation.spec.ts; the desktop family never was — F-23a).
+    // The non-obvious mapping ridden behaviorally: Work anchors
+    // #portfolio, not #work. Live-verified IDENTICAL on both apps:
+    // the hash lands, the section rides to the viewport top, the
+    // header flips to its scrolled state.
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+    await page.locator("header nav ul").getByRole("link", { name: "Work" }).click();
+    await expect(page).toHaveURL(/\/#portfolio$/);
+    await expect
+      .poll(async () => page.evaluate(() => Math.abs(Math.round(document.getElementById("portfolio")?.getBoundingClientRect().top ?? -1))))
+      .toBe(0);
+    await expect(page.locator("header")).toHaveClass(/bg-zinc-950\/95 backdrop-blur-md/);
+    await expect(page.locator("header")).toHaveClass(/py-4/);
+  });
+
+  test("round-23: the hero CTA ride — Start a Project → #contact lands the contact section (R-23a)", async ({ page }) => {
+    // The hero's amber CTA (the href family byte-identical both apps —
+    // the discovery census; the RIDE never ridden). The click glides
+    // (scroll-behavior: smooth, the round-15 pin) and the contact
+    // section lands at the viewport top.
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+    await page.getByRole("link", { name: /start a project/i }).click();
+    await expect(page).toHaveURL(/\/#contact$/);
+    await expect
+      .poll(async () => page.evaluate(() => Math.abs(Math.round(document.getElementById("contact")?.getBoundingClientRect().top ?? -1))))
+      .toBe(0);
+  });
+
+  test("round-23: the logo ride — the # wordmark returns the page to the top and clears the hash (R-23a)", async ({ page }) => {
+    // The logo's bare `#` href (the reference's own href, byte-mirrored):
+    // after a landed ride the wordmark click returns the page to the
+    // top (scrollTop 0), clears the hash, and the header restores its
+    // at-top transparent state. Live-verified IDENTICAL on both apps.
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+    await page.locator("header nav ul").getByRole("link", { name: "About" }).click();
+    await expect
+      .poll(async () => page.evaluate(() => Math.abs(Math.round(document.getElementById("about")?.getBoundingClientRect().top ?? -1))))
+      .toBe(0);
+    await page.locator("header a").first().click();
+    await expect
+      .poll(async () => page.evaluate(() => Math.abs(Math.round(document.documentElement.scrollTop))))
+      .toBe(0);
+    const hashAfterLogo = await page.evaluate(() => location.hash);
+    expect(hashAfterLogo).toBe("");
+    await expect(page.locator("header")).toHaveClass(/bg-transparent py-6/);
+  });
 });

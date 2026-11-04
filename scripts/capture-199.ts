@@ -128,6 +128,21 @@ async function main() {
   await b640.waitForTimeout(900);
   await b640.screenshot({ path: `${OUT}/ours-login-640.png` });
 
+  // ---- the DEEP-LINK LANDED view (round-23 — the superset's own face) ------
+  // The cold-boot /#portfolio ride: OURS lands the native SSR scroll (the
+  // section at the viewport top, the header in its scrolled state) — the
+  // reference's SPA never scrolls its deep links (R-23b: its shell renders
+  // the sections after the browser's one-time boot-time hash scroll; the
+  // round-18 soft-404 precedent — the reference's own defect, ours the
+  // working superset). The pins ride tests/anchor-faces.test.ts ①④ + the
+  // drift [anchors] leg + the e2e deep-link leg.
+  const deepCtx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const deepPage = await deepCtx.newPage();
+  await deepPage.goto(`${OURS}/#portfolio`, { waitUntil: "networkidle" });
+  await deepPage.waitForTimeout(1600);
+  await deepPage.screenshot({ path: `${OUT}/ours-deeplink-portfolio-1280.png` });
+  await deepCtx.close();
+
   await browser.close();
   console.log("captures saved under", OUT);
 }

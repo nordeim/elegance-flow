@@ -984,6 +984,104 @@ function expectConst(label: string, side: string, recorded: unknown, live: unkno
   expectConst("[google]", "OURS", 1, oursGoogle.buttonCount, out);
 }
 
+// The round-23 [anchors] leg — the hash-link RIDE family no probe ever
+// rode: the five DESKTOP nav rides + the logo `#` ride on BOTH apps
+// (each diffed REF vs OURS — the settled hash + the target's landing),
+// plus the deep-link boot pinned per-side against its RECORDED constant
+// (the R-23b record: the reference's SPA never scrolls its deep links —
+// scrollTop 0; OURS lands the native SSR scroll — the section at the
+// viewport top).
+async function navRideFace(url: string, label: string) {
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const page = await context.newPage();
+  try {
+    await page.goto(url, { waitUntil: "networkidle" });
+    await page.waitForTimeout(800);
+    await page.locator("header nav ul").getByRole("link", { name: label }).click();
+    // scroll-behavior: smooth — poll until the scroll settles.
+    await page.waitForTimeout(400);
+    for (let i = 0; i < 20; i++) {
+      const stable = await page.evaluate(() => {
+        const y = document.documentElement.scrollTop;
+        return new Promise<boolean>((res) => setTimeout(() => res(Math.abs(document.documentElement.scrollTop - y) < 1), 120));
+      });
+      if (stable) break;
+      await page.waitForTimeout(150);
+    }
+    return await page.evaluate(() => ({
+      hashAfter: location.hash,
+      scrollTop: Math.round(document.documentElement.scrollTop),
+      targetTop: Math.round(
+        (document.querySelector(
+          ["#about", "#services", "#portfolio", "#testimonials", "#contact"].find((h) => h === location.hash) ?? "#about",
+        ) as HTMLElement | null)?.getBoundingClientRect().top ?? -1,
+      ),
+    }));
+  } finally {
+    await context.close();
+  }
+}
+
+async function logoRideFace(url: string) {
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const page = await context.newPage();
+  try {
+    await page.goto(url, { waitUntil: "networkidle" });
+    await page.waitForTimeout(600);
+    await page.evaluate(() => document.getElementById("services")?.scrollIntoView());
+    await page.waitForTimeout(900);
+    await page.locator("header a").first().click();
+    await page.waitForTimeout(1200);
+    return await page.evaluate(() => ({
+      hashAfter: location.hash,
+      scrollTop: Math.round(document.documentElement.scrollTop),
+    }));
+  } finally {
+    await context.close();
+  }
+}
+
+async function deepLinkFace(url: string) {
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const page = await context.newPage();
+  try {
+    await page.goto(`${url}/#portfolio`, { waitUntil: "networkidle" });
+    await page.waitForTimeout(1600);
+    return await page.evaluate(() => ({
+      hashAfter: location.hash,
+      scrollTop: Math.round(document.documentElement.scrollTop),
+      targetTop: Math.round(document.getElementById("portfolio")?.getBoundingClientRect().top ?? -1),
+    }));
+  } finally {
+    await context.close();
+  }
+}
+
+{
+  // The five desktop rides — sequential, each face diffed REF vs OURS
+  // (R-23a: the positive census — IDENTICAL on both apps).
+  for (const label of ["About", "Services", "Work", "Testimonials", "Contact"]) {
+    const refRide = await navRideFace(REF, label);
+    const oursRide = await navRideFace(OURS, label);
+    diff("[anchors]", refRide.hashAfter, oursRide.hashAfter, `${label} navRide hashAfter`, out);
+    diff("[anchors]", refRide.scrollTop, oursRide.scrollTop, `${label} navRide scrollTop (the settled landing)`, out);
+    diff("[anchors]", refRide.targetTop, oursRide.targetTop, `${label} navRide targetTop (the target at the viewport top)`, out);
+  }
+  const refLogo = await logoRideFace(REF);
+  const oursLogo = await logoRideFace(OURS);
+  diff("[anchors]", refLogo.hashAfter, oursLogo.hashAfter, "logoRide hashAfter (the # wordmark)", out);
+  diff("[anchors]", refLogo.scrollTop, oursLogo.scrollTop, "logoRide scrollTop (the return to top)", out);
+  // The deep-link boot — the R-23b record, per-side RECORDED constants
+  // (the reference's SPA never scrolls its deep links — the round-18
+  // soft-404 precedent's transport sibling; OURS the working superset).
+  // Each side projects to the fields that carry the semantic (the
+  // layout-dependent numbers ride the diffed legs, never the constants).
+  const refDeep = await deepLinkFace(REF);
+  const oursDeep = await deepLinkFace(OURS);
+  expectConst("[anchors]", "REF", { hashAfter: "#portfolio", scrollTop: 0 }, { hashAfter: refDeep.hashAfter, scrollTop: refDeep.scrollTop }, out);
+  expectConst("[anchors]", "OURS", { hashAfter: "#portfolio", targetTop: 0 }, { hashAfter: oursDeep.hashAfter, targetTop: oursDeep.targetTop }, out);
+}
+
 // The round-22 [viewport] leg — the intermediate-viewport family at the
 // sm (640) and md (768) boundaries, both apps, each face diffed REF vs
 // OURS (R-22a: the positive census — every face COMPUTE IDENTICAL).
@@ -1020,8 +1118,9 @@ if (out.length === 0) {
   console.log("[authfail] AUTH-FAILURE/RESPONSE FACE: NO DRIFT — the reference matches our failure/header mirror");
   console.log("[google] GOOGLE-BUTTON FACE: NO DRIFT — both faces match their recorded constants (the reference's OAuth redirect + our honest toast, R-21a)");
   console.log("[viewport] INTERMEDIATE-VIEWPORT FACE: NO DRIFT — the sm/md boundaries compute identical on both apps (R-22a: the positive census; the mobile menu's retirement boundary clean)");
+  console.log("[anchors] ANCHOR-NAVIGATION/DEEP-LINK FACE: NO DRIFT — the desktop nav rides + the logo ride identical on both apps; the deep-link boot matches each side's recorded constant (R-23a + the R-23b superset record)");
 } else {
-  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact + authfail + google + viewport] DRIFT DETECTED — ${out.length} field(s):`);
+  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact + authfail + google + viewport + anchors] DRIFT DETECTED — ${out.length} field(s):`);
   for (const line of out) console.log(line);
 }
 

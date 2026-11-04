@@ -10,7 +10,7 @@ description: >
   doctrine, the Tailwind v4 re-pin traps, the mobile inline menu, the auth
   seams, the testing pyramid and the debugging playbook. Use it to extend,
   debug, onboard, or replicate this architecture.
-version: 1.210.0
+version: 1.211.0
 last_updated: 2026-11-05
 ---
 
@@ -191,7 +191,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 504 checks / 42 files**: the seam batteries (auth,
+- **Unit — Vitest, 508 checks / 43 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
@@ -369,10 +369,22 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   — the battery pins the landing's breakpoint-class family, the
   LOGIN_LAYOUT sm:/md: contract, the toast viewport's breakpoint
   string, and the root-font-size PURITY (no declared font-size on
-  html/:root — the UA 16px default IS the rem-breakpoint carrier)) —
+  html/:root — the UA 16px default IS the rem-breakpoint carrier)) — and
+  anchor-faces — the round-23 battery that pins the ANCHOR-NAVIGATION/
+  DEEP-LINK family (R-23a, the record: the desktop hash-link rides no
+  probe ever rode — the five nav links, the header CTA, the hero CTA
+  pair, the logo's #, all IDENTICAL on both apps incl. the settled
+  landings; R-23b: the reference's DEEP LINKS ARE BROKEN — its SPA
+  shell renders the sections after the browser's one-time boot-time
+  hash scroll, so /#portfolio and /#about never scroll there; OURS
+  lands the native SSR scroll, the working superset, the round-18
+  soft-404 precedent; F-23a: the coverage catch — the battery pins the
+  five section-id targets, the hero-CTA/logo href wiring, the
+  scroll-margin/scroll-padding PURITY, and the no-dynamic-import
+  SSR-boot keep) —
   comment-stripped source reads; a
   literal pinned by a comment alone is vacuous.
-- **E2E — Playwright, 88 checks / 8 specs**: the standalone artifact on
+- **E2E — Playwright, 92 checks / 8 specs**: the standalone artifact on
   :3100 with `db/e2e.db`; ONE shared login (`auth.setup.ts` →
   storageState — the auth endpoints are rate-limited 10/IP/15-min); one
   worker; alphabetical file order → every spec SELF-SUFFICIENT (its own
@@ -393,6 +405,15 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   REMOVES the form and renders the reference's in-place panel (the
   48px icon, the h3/p pair, no floating toast, the bare right-column
   wrapper)),
+  round-22 gains the two boundary rides — at 640 the hamburger family
+  still rides below md, at 768 the header flips and the h1 steps to
+  72px; round-23 gains the four ANCHOR-NAVIGATION/DEEP-LINK rides —
+  the cold-boot /#portfolio deep link lands the section with the
+  scrolled header (OUR superset: the reference's SPA never scrolls its
+  deep links — R-23b), the desktop nav ride (Work → #portfolio, the
+  non-obvious mapping ridden behaviorally), the hero CTA ride
+  (Start a Project → #contact), and the logo # ride (back to top, hash
+  cleared, the header restored),
   mobile-navigation (THE operator's standing emphasis — the full
   390×844 battery), auth, reset-password, dashboard-inbox, keyboard
   (the round-10 keyboard-operability battery — the keyboard rides plus
