@@ -171,6 +171,7 @@ const SOURCE_CONTRACTS = [
   "interaction-faces",
   "auth-failure-faces",
   "google-fallback",
+  "viewport-faces",
 ];
 
 const fileOf = (family: string) => `${family}.test.ts`;

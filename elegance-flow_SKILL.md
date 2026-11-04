@@ -10,8 +10,8 @@ description: >
   doctrine, the Tailwind v4 re-pin traps, the mobile inline menu, the auth
   seams, the testing pyramid and the debugging playbook. Use it to extend,
   debug, onboard, or replicate this architecture.
-version: 1.200.0
-last_updated: 2026-11-04
+version: 1.210.0
+last_updated: 2026-11-05
 ---
 
 # EleganceFlow — the domain skill
@@ -191,7 +191,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 500 checks / 41 files**: the seam batteries (auth,
+- **Unit — Vitest, 504 checks / 42 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
@@ -351,10 +351,28 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   coverage catch: the fallback was UNPINNED — the battery pins the
   handler's exact toast call (title + description + the info
   variant), the never-submits `type="button"`, the keeps (the class
-  mount, the G glyph, the span), and the no-navigation contract) —
+  mount, the G glyph, the span), and the no-navigation contract) — and
+  viewport-faces — the round-22 battery that pins the
+  INTERMEDIATE-VIEWPORT family (R-22a, the record: the two breakpoint
+  boundaries no probe ever visited — every probe since session-199
+  read 1280 and 390 only; the sm (640) and md (768) boundaries carry
+  whole computed families: the landing's header flip — the mobile
+  menu's own retirement boundary — the hero h1's text ladder
+  (48px→72px), the grid flips, the auth card's whole sm:/md: family
+  (h-11 sm:h-12 inputs, p-8 sm:p-10 md:pt-12 md:pb-10 md:px-10 inner
+  pads, the sm:hidden trailing spacer), the toast viewport's own
+  breakpoints (bottom-right from sm, max-w-420 from md), and the html
+  font-size — the v4 REM-BREAKPOINT CARRIER: v3's media queries were
+  px-based, v4's are rem-based — at the 16px default they agree, and a
+  declared root size would shift every boundary on OUR build only;
+  F-22a, the coverage catch: none of the boundary faces carried a pin
+  — the battery pins the landing's breakpoint-class family, the
+  LOGIN_LAYOUT sm:/md: contract, the toast viewport's breakpoint
+  string, and the root-font-size PURITY (no declared font-size on
+  html/:root — the UA 16px default IS the rem-breakpoint carrier)) —
   comment-stripped source reads; a
   literal pinned by a comment alone is vacuous.
-- **E2E — Playwright, 86 checks / 8 specs**: the standalone artifact on
+- **E2E — Playwright, 88 checks / 8 specs**: the standalone artifact on
   :3100 with `db/e2e.db`; ONE shared login (`auth.setup.ts` →
   storageState — the auth endpoints are rate-limited 10/IP/15-min); one
   worker; alphabetical file order → every spec SELF-SUFFICIENT (its own

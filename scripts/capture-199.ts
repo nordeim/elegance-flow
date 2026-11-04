@@ -111,6 +111,23 @@ async function main() {
   await toastPage.screenshot({ path: `${OUT}/ours-google-toast-1280.png` });
   await toastCtx.close();
 
+  // ---- the INTERMEDIATE-VIEWPORT faces (round-22 — the boundaries) ---------
+  // The two breakpoint boundaries no capture ever showed: the md (768)
+  // landing — the header flipped to the desktop nav, the h1 at 72px —
+  // and the sm (640) login card — the h-12 inputs, the p-10 inner pads,
+  // the sm:flex-row footer. Live-verified COMPUTE IDENTICAL on both
+  // apps (R-22a, the positive census; the pins ride
+  // tests/viewport-faces.test.ts + the drift [viewport] leg).
+  const b768 = await browser.newPage({ viewport: { width: 768, height: 900 } });
+  await b768.goto(OURS, { waitUntil: "networkidle" });
+  await b768.waitForTimeout(1200);
+  await b768.screenshot({ path: `${OUT}/ours-landing-768.png`, fullPage: true });
+
+  const b640 = await browser.newPage({ viewport: { width: 640, height: 900 } });
+  await b640.goto(`${OURS}/login`, { waitUntil: "networkidle" });
+  await b640.waitForTimeout(900);
+  await b640.screenshot({ path: `${OUT}/ours-login-640.png` });
+
   await browser.close();
   console.log("captures saved under", OUT);
 }

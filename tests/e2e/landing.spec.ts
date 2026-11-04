@@ -343,4 +343,33 @@ test.describe("the EleganceFlow landing (desktop 1280)", () => {
     expect(res?.status()).toBe(404);
     await expect(page.getByText("404")).toBeVisible();
   });
+
+  test("round-22: the sm boundary (640) — the hamburger family still rides below md", async ({ page }) => {
+    // Round-22 (R-22a/F-22a): the intermediate viewports no probe ever
+    // visited. At 640 the header is still the MOBILE face (the hamburger
+    // visible, the desktop nav + CTA hidden) and the hero h1 computes
+    // the base 48px — live-verified IDENTICAL on both apps. The
+    // source-contract pins ride tests/viewport-faces.test.ts ①.
+    await page.setViewportSize({ width: 640, height: 900 });
+    await page.goto("/");
+    await expect(page.getByRole("button", { name: "Open menu" })).toBeVisible();
+    await expect(page.locator("header nav ul")).toBeHidden();
+    const h1 = await page.evaluate(() => getComputedStyle(document.querySelector("h1")!).fontSize);
+    expect(h1).toBe("48px");
+  });
+
+  test("round-22: the md boundary (768) — the header flips, the hamburger retires, the h1 steps to 72px", async ({ page }) => {
+    // The mobile menu's own RETIREMENT boundary (the operator's standing
+    // emphasis): at 768 the desktop nav + the amber CTA appear and the
+    // hamburger goes display:none — the md: media family computes the
+    // reference's v3 breakpoints exactly (no Tailwind v4 media-query
+    // bug; live-verified IDENTICAL on both apps).
+    await page.setViewportSize({ width: 768, height: 900 });
+    await page.goto("/");
+    await expect(page.getByRole("button", { name: "Open menu" })).toBeHidden();
+    await expect(page.locator("header nav ul")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Get in Touch" })).toBeVisible();
+    const h1 = await page.evaluate(() => getComputedStyle(document.querySelector("h1")!).fontSize);
+    expect(h1).toBe("72px");
+  });
 });

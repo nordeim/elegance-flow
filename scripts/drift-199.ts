@@ -791,6 +791,102 @@ async function googleFace(url: string, ours: boolean) {
   }
 }
 
+// The round-22 [viewport] census leg — the INTERMEDIATE-VIEWPORT family
+// no probe ever visited: every probe since session-199 read 1280 and
+// 390 only (the parity script's two viewports, the drift legs' widths,
+// the e2e device 1280×720). The two breakpoint BOUNDARIES — sm (640)
+// and md (768) — carry whole computed families: the landing's header
+// flip (the mobile menu's own retirement boundary, the operator's
+// standing emphasis), the hero h1's text ladder, the about grid's md:
+// flip, the auth card's sm:/md: family, the mobile panel's OPEN wrap
+// class at 640 (the between-boundary state), and the html font-size —
+// the v4 REM-BREAKPOINT CARRIER (v3's media queries were px-based;
+// v4's are rem-based — at the 16px default they agree; a declared root
+// size would shift every boundary on OUR build only). R-22a: the
+// positive census (clean, first time probed 2026-11-05) — every face
+// COMPUTE IDENTICAL both apps at both boundaries. The pins ride
+// tests/viewport-faces.test.ts + the landing e2e's two boundary legs.
+async function viewportFace(url: string, w: number) {
+  const context = await browser.newContext({ viewport: { width: w, height: 900 } });
+  const page = await context.newPage();
+  try {
+    await page.goto(url, { waitUntil: "networkidle" });
+    await page.waitForTimeout(1000);
+    const landingFace = await page.evaluate(() => {
+      const cs = (el: Element | null | undefined) => (el ? getComputedStyle(el as HTMLElement) : null);
+      const header = document.querySelector("header");
+      const nav = header?.querySelector("nav");
+      const desktopUl = nav?.querySelector("ul");
+      const hamburger = [...(nav?.querySelectorAll("button") ?? [])].find((b) =>
+        /menu/i.test(b.getAttribute("aria-label") ?? "") || b.querySelector("svg") !== null,
+      );
+      const cta = [...(nav?.querySelectorAll("a") ?? [])].find((a) => !a.closest("ul") && (a.getAttribute("href") ?? "") !== "#");
+      const h1 = document.querySelector("h1");
+      const about = [...document.querySelectorAll("section")].find((s) => /about/i.test(s.id ?? ""));
+      const aboutGrid = about?.querySelector("div[class*='md\\:grid-cols-2'], div.grid");
+      return {
+        htmlFontSize: getComputedStyle(document.documentElement).fontSize,
+        hamburgerDisplay: cs(hamburger)?.display ?? "",
+        desktopNavDisplay: cs(desktopUl)?.display ?? "",
+        headerCtaDisplay: cs(cta)?.display ?? "",
+        h1Font: cs(h1)?.fontSize ?? "",
+        aboutGrid: aboutGrid ? getComputedStyle(aboutGrid as HTMLElement).gridTemplateColumns : "",
+      };
+    });
+    // the auth card's boundary family (the LOGIN_LAYOUT sm:/md: faces)
+    await page.goto(`${url}/login`, { waitUntil: "networkidle" });
+    await page.waitForTimeout(1000);
+    const cardFace = await page.evaluate(() => {
+      const cs = (el: Element | null | undefined) => (el ? getComputedStyle(el as HTMLElement) : null);
+      const h1 = document.querySelector("h1");
+      const card = h1?.closest("form")?.parentElement ?? h1?.closest("div[class*='rounded']");
+      const inner = card?.firstElementChild;
+      const email = document.querySelector('input[type="email"], input[name="email"]');
+      return {
+        inputHeight: cs(email)?.height ?? "",
+        inputFont: cs(email)?.fontSize ?? "",
+        innerPad: inner ? cs(inner)?.padding ?? "" : "",
+      };
+    });
+    return { w, ...landingFace, ...cardFace };
+  } finally {
+    await context.close();
+  }
+}
+
+// The round-22 [viewport] panel leg — the mobile panel OPEN at 640 (the
+// between-boundary state: the hamburger shows below md; the panel census
+// rode at 390 only). Byte-diffed both apps: the wrap class + the links.
+async function viewportPanelFace(url: string) {
+  const context = await browser.newContext({ viewport: { width: 640, height: 900 } });
+  const page = await context.newPage();
+  try {
+    await page.goto(url, { waitUntil: "networkidle" });
+    await page.waitForTimeout(800);
+    const toggle = page.locator("header button").first();
+    if (await toggle.count()) {
+      await toggle.click();
+      await page.waitForTimeout(600);
+    }
+    return await page.evaluate(() => {
+      const txt = (el: Element | null) => (el?.textContent ?? "").replace(/\s+/g, " ").trim();
+      const navs = [...document.querySelectorAll("header nav, header div")].filter((n) => {
+        const r = n.getBoundingClientRect();
+        return r.height > 40 && txt(n).includes("About");
+      });
+      const panel = navs[0];
+      if (!panel) return { panelVisible: false, links: [] as string[], wrapClass: "" };
+      return {
+        panelVisible: true,
+        links: [...panel.querySelectorAll("a")].map((a) => `${txt(a)} -> ${(a as HTMLAnchorElement).getAttribute("href")}`),
+        wrapClass: (panel as HTMLElement).className,
+      };
+    });
+  } finally {
+    await context.close();
+  }
+}
+
 /** The recorded-constant pin (the two-sided leg's diff: recorded vs live). */
 function expectConst(label: string, side: string, recorded: unknown, live: unknown, out: string[]) {
   const jr = JSON.stringify(recorded);
@@ -888,6 +984,30 @@ function expectConst(label: string, side: string, recorded: unknown, live: unkno
   expectConst("[google]", "OURS", 1, oursGoogle.buttonCount, out);
 }
 
+// The round-22 [viewport] leg — the intermediate-viewport family at the
+// sm (640) and md (768) boundaries, both apps, each face diffed REF vs
+// OURS (R-22a: the positive census — every face COMPUTE IDENTICAL).
+{
+  for (const w of [640, 768]) {
+    const refFace = await viewportFace(REF, w);
+    const oursFace = await viewportFace(OURS, w);
+    diff("[viewport]", refFace.htmlFontSize, oursFace.htmlFontSize, `@${w} htmlFontSize (the v4 rem-breakpoint carrier)`, out);
+    diff("[viewport]", refFace.hamburgerDisplay, oursFace.hamburgerDisplay, `@${w} hamburgerDisplay (the mobile-menu family)`, out);
+    diff("[viewport]", refFace.desktopNavDisplay, oursFace.desktopNavDisplay, `@${w} desktopNavDisplay`, out);
+    diff("[viewport]", refFace.headerCtaDisplay, oursFace.headerCtaDisplay, `@${w} headerCtaDisplay`, out);
+    diff("[viewport]", refFace.h1Font, oursFace.h1Font, `@${w} h1Font (the text ladder boundary)`, out);
+    diff("[viewport]", refFace.aboutGrid, oursFace.aboutGrid, `@${w} aboutGrid (the md:grid-cols-2 flip)`, out);
+    diff("[viewport]", refFace.inputHeight, oursFace.inputHeight, `@${w} loginInputHeight (the sm:h-12 flip)`, out);
+    diff("[viewport]", refFace.inputFont, oursFace.inputFont, `@${w} loginInputFont (the md:text-sm flip)`, out);
+    diff("[viewport]", refFace.innerPad, oursFace.innerPad, `@${w} loginInnerPad (the p-8 sm:p-10 md:… family)`, out);
+  }
+  const refPanel = await viewportPanelFace(REF);
+  const oursPanel = await viewportPanelFace(OURS);
+  diff("[viewport]", refPanel.panelVisible, oursPanel.panelVisible, "@640 panelOpen (the between-boundary state)", out);
+  diff("[viewport]", refPanel.links, oursPanel.links, "@640 panelLinks (the open panel's census)", out);
+  diff("[viewport]", refPanel.wrapClass, oursPanel.wrapClass, "@640 panelWrapClass (the byte-mirrored wrap)", out);
+}
+
 if (out.length === 0) {
   console.log("[390] CONTENT + MOBILE-MENU FACE: NO DRIFT — the reference matches our byte-mirror");
   console.log("[login] AUTH-CARD FACE: NO DRIFT — the reference matches our login mirror");
@@ -899,8 +1019,9 @@ if (out.length === 0) {
   console.log("[interact] INTERACTION-BEHAVIOR FACE: NO DRIFT — the reference matches our interaction mirror");
   console.log("[authfail] AUTH-FAILURE/RESPONSE FACE: NO DRIFT — the reference matches our failure/header mirror");
   console.log("[google] GOOGLE-BUTTON FACE: NO DRIFT — both faces match their recorded constants (the reference's OAuth redirect + our honest toast, R-21a)");
+  console.log("[viewport] INTERMEDIATE-VIEWPORT FACE: NO DRIFT — the sm/md boundaries compute identical on both apps (R-22a: the positive census; the mobile menu's retirement boundary clean)");
 } else {
-  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact + authfail + google] DRIFT DETECTED — ${out.length} field(s):`);
+  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact + authfail + google + viewport] DRIFT DETECTED — ${out.length} field(s):`);
   for (const line of out) console.log(line);
 }
 
