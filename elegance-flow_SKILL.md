@@ -182,7 +182,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 472 checks / 37 files**: the seam batteries (auth,
+- **Unit — Vitest, 484 checks / 38 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
@@ -284,9 +284,20 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   unreachable without a real signup, our own incomplete-guard UX
   stands, recorded as the unverifiable member; the autocomplete
   superset family stays — email/current-password/new-password, the
-  reference ships none) — comment-stripped source reads; a literal
-  pinned by a comment alone is vacuous.
-- **E2E — Playwright, 81 checks / 8 specs**: the standalone artifact on
+  reference ships none) — and head-faces — the round-18 battery that
+  pins the HEAD/document faces no probe ever read (F-18a: the
+  reference's /login carries a schema.org BreadcrumbList JSON-LD —
+  Home → login, the platform's exact spaced serialization — and
+  serves the same family at its /signup URL, now a 200-status
+  soft-404 (the base44 DeadEndPage; our working /signup is the
+  documented superset, and the crumb is semantically true on it — one
+  hop from home); OURS shipped zero JSON-LD anywhere; F-18b: the
+  login-ONLY viewport-fit=cover — the reference's /login viewport
+  declares it while its landing and signup-URL viewports carry none;
+  the keeps: the landing's JSON-LD purity, the signup's plain
+  viewport, the every-page theme-color) — comment-stripped source
+  reads; a literal pinned by a comment alone is vacuous.
+- **E2E — Playwright, 83 checks / 8 specs**: the standalone artifact on
   :3100 with `db/e2e.db`; ONE shared login (`auth.setup.ts` →
   storageState — the auth endpoints are rate-limited 10/IP/15-min); one
   worker; alphabetical file order → every spec SELF-SUFFICIENT (its own

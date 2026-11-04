@@ -1,9 +1,11 @@
 import { LoginCard } from "@/components/layout/login-card";
 import { LOGIN_LAYOUT } from "@/lib/page-layout";
-import { pageMetadata } from "@/lib/site";
+import { breadcrumbJsonLd, pageMetadata } from "@/lib/site";
 
-// Session-10: the reference has no /signup (404 + a dead login button —
-// kept as our working superset). Its title follows the same scheme.
+// Session-10: the reference has no real /signup (the live platform now
+// serves the URL as a 200-status soft-404 — the base44 DeadEndPage with
+// the breadcrumb JSON-LD riding it; kept as our working superset). Its
+// title follows the same scheme.
 // Session-13 (S13-P1): ABSOLUTE — the string already contains the
 // suffix, so the root template doubled it ("Sign up | EleganceFlow | EleganceFlow").
 // Session-19 (S19-P4/P5): the per-route canonical/OG/Twitter family —
@@ -24,6 +26,16 @@ export const dynamic = "force-dynamic";
 export default function SignupPage() {
   return (
     <main className={LOGIN_LAYOUT.page}>
+      {/* Round-18 (F-18a, the superset member): the reference serves the
+          BreadcrumbList JSON-LD family at its /signup URL too (riding the
+          platform's soft-404 body) — the crumb is semantically true on our
+          working superset as well: one hop from home. NO viewport change
+          here — the reference's signup-URL viewport carries no
+          viewport-fit (tests/head-faces.test.ts ②⑤). */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: breadcrumbJsonLd("/signup") }}
+      />
       <LoginCard mode="signup" />
     </main>
   );

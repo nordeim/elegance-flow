@@ -314,4 +314,49 @@ test.describe("the EleganceFlow login card (logged-out)", () => {
     expect(signup.minLength).toBeNull(); // the reference ships none — the placeholder + the Zod seam own the policy
     expect(signup.required).toBe(true);
   });
+
+  test("the login page's head carries the BreadcrumbList JSON-LD + the viewport-fit=cover declaration", async ({ page }) => {
+    // Round-18 (F-18a/F-18b, the HEAD/METADATA census — the document
+    // faces no probe ever read against the live reference): the
+    // reference's /login head carries a schema.org BreadcrumbList
+    // JSON-LD (Home → login, the platform's spaced serialization) and
+    // its viewport meta declares viewport-fit=cover — LOGIN-ONLY (its
+    // landing and signup-URL viewports carry none). OURS shipped zero
+    // JSON-LD anywhere and a plain viewport. Pinned at the source
+    // level by tests/head-faces.test.ts ①④; the drift [head] leg
+    // rides the live pair.
+    await page.goto("/login");
+    const head = await page.evaluate(() => ({
+      jsonld: Array.from(document.querySelectorAll("script[type='application/ld+json']")).map((s) => (s.textContent || "").trim()),
+      viewport: document.querySelector("meta[name='viewport']")?.getAttribute("content") ?? null,
+    }));
+    expect(head.jsonld.length).toBe(1);
+    const parsed = JSON.parse(head.jsonld[0]) as {
+      itemListElement: Array<{ position: number; name: string; item: string }>;
+    };
+    expect(parsed.itemListElement.map((i) => `${i.position}:${i.name}`)).toEqual(["1:Home", "2:login"]);
+    expect(parsed.itemListElement[1].item.endsWith("/login")).toBe(true); // origin-agnostic: the e2e port is scratch-owned
+    expect(head.viewport).toContain("viewport-fit=cover");
+  });
+
+  test("the signup page's head carries its BreadcrumbList member and NO viewport-fit (the login-only shape)", async ({ page }) => {
+    // Round-18 ②⑤: the reference serves the breadcrumb family at its
+    // /signup URL too (riding the platform's 200-status soft-404 body —
+    // our working /signup is the documented superset, and the crumb is
+    // semantically true on it: one hop from home), while the
+    // viewport-fit stays login-only. Pinned at the source level by
+    // tests/head-faces.test.ts ②⑤.
+    await page.goto("/signup");
+    const head = await page.evaluate(() => ({
+      jsonld: Array.from(document.querySelectorAll("script[type='application/ld+json']")).map((s) => (s.textContent || "").trim()),
+      viewport: document.querySelector("meta[name='viewport']")?.getAttribute("content") ?? null,
+    }));
+    expect(head.jsonld.length).toBe(1);
+    const parsed = JSON.parse(head.jsonld[0]) as {
+      itemListElement: Array<{ position: number; name: string; item: string }>;
+    };
+    expect(parsed.itemListElement.map((i) => `${i.position}:${i.name}`)).toEqual(["1:Home", "2:signup"]);
+    expect(parsed.itemListElement[1].item.endsWith("/signup")).toBe(true);
+    expect(head.viewport).not.toContain("viewport-fit"); // the login-only shape never generalizes
+  });
 });

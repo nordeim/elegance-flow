@@ -20,6 +20,18 @@ import { chromium } from "@playwright/test";
 const OURS = "http://localhost:3000";
 const REF = "https://colossal-elevate-service-flow.base44.app";
 
+// The round-18 LIVE FIND (the launch-accumulation ceiling): one browser
+// per leg — the design since round-4 — crossed the sandbox's ceiling at
+// the round-18 head leg: the tail launch's goto times out at 30s and the
+// finally's browser.close() then wedges, hanging the script silently
+// (isolated, the identical sequences fly — the tail alone in 10s, nine
+// loads on ONE browser in 17s, and 14 launch/close cycles + the tail
+// reproduce the TimeoutError). The cure: ONE browser for the whole
+// script, one isolated CONTEXT per face call — contexts are cheap and
+// cookie-isolated, preserving the fresh-browser semantics every leg was
+// born with.
+const browser = await chromium.launch();
+
 type Face = {
   title: string;
   navLinks: string[];        // header nav: text -> href
@@ -36,8 +48,8 @@ type Face = {
 };
 
 async function face(url: string, w: number, h: number): Promise<Face> {
-  const browser = await chromium.launch();
-  const page = await browser.newPage({ viewport: { width: w, height: h } });
+  const context = await browser.newContext({ viewport: { width: w, height: h } });
+  const page = await context.newPage();
   await page.goto(url, { waitUntil: "networkidle" });
   await page.waitForTimeout(1000);
 
@@ -94,7 +106,7 @@ async function face(url: string, w: number, h: number): Promise<Face> {
     }
   }
 
-  await browser.close();
+  await context.close();
   return base;
 }
 
@@ -120,8 +132,8 @@ type LoginFace = {
 };
 
 async function loginFace(url: string): Promise<LoginFace> {
-  const browser = await chromium.launch();
-  const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const page = await context.newPage();
   await page.goto(`${url}/login`, { waitUntil: "networkidle" });
   await page.waitForTimeout(1200);
   // The permissive annotation widens the evaluate's inferred literal so
@@ -160,7 +172,7 @@ async function loginFace(url: string): Promise<LoginFace> {
     });
     if (hover) base.googleHover = hover;
   }
-  await browser.close();
+  await context.close();
   return base;
 }
 
@@ -179,8 +191,8 @@ type PreflightFace = {
 };
 
 async function preflightFace(url: string): Promise<PreflightFace> {
-  const browser = await chromium.launch();
-  const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const page = await context.newPage();
   await page.goto(url, { waitUntil: "networkidle" });
   await page.waitForTimeout(1000);
   const base = await page.evaluate(() => {
@@ -196,7 +208,7 @@ async function preflightFace(url: string): Promise<PreflightFace> {
       navTransition: cs(navItem)?.transitionProperty ?? "",
     };
   });
-  await browser.close();
+  await context.close();
   return base;
 }
 
@@ -216,8 +228,8 @@ type MotionGlyphFace = {
 };
 
 async function motionGlyphFace(url: string): Promise<MotionGlyphFace> {
-  const browser = await chromium.launch();
-  const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const page = await context.newPage();
   await page.goto(url, { waitUntil: "networkidle" });
   await page.waitForTimeout(1000);
   const base = await page.evaluate(() => {
@@ -233,7 +245,7 @@ async function motionGlyphFace(url: string): Promise<MotionGlyphFace> {
       quoteGlyphs: t.length >= 2 ? `${t.codePointAt(0)}…${t.codePointAt(t.length - 1)}` : "",
     };
   });
-  await browser.close();
+  await context.close();
   return base;
 }
 
@@ -265,8 +277,8 @@ type GeometryFace = {
 };
 
 async function geometryFace(url: string, w: number, h: number): Promise<GeometryFace> {
-  const browser = await chromium.launch();
-  const page = await browser.newPage({ viewport: { width: w, height: h } });
+  const context = await browser.newContext({ viewport: { width: w, height: h } });
+  const page = await context.newPage();
   await page.goto(url, { waitUntil: "networkidle" });
   await page.waitForTimeout(1000);
   const base = await page.evaluate(() => {
@@ -297,17 +309,17 @@ async function geometryFace(url: string, w: number, h: number): Promise<Geometry
       glyphPhone: glyph("phone"),
     };
   });
-  await browser.close();
+  await context.close();
   return base;
 }
 
 async function googleGlyphFace(url: string): Promise<string> {
-  const browser = await chromium.launch();
-  const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const page = await context.newPage();
   await page.goto(url + "/login", { waitUntil: "networkidle" });
   await page.waitForTimeout(800);
   const d = await page.evaluate(() => document.querySelector("svg path")?.getAttribute("d")?.slice(0, 24) ?? "ABSENT");
-  await browser.close();
+  await context.close();
   return d;
 }
 
@@ -408,14 +420,19 @@ const [refGoogle, oursGoogle] = await Promise.all([googleGlyphFace(REF), googleG
 diff("[geometry:login]", refGoogle, oursGoogle, "googleGlyph (the classic 22.56-based quartet)", out);
 
 // The round-17 auth-validation leg (the three reachable forms' mode +
-// the attribute census on the swapped views) — ONE browser, both apps
-// sequential: the concurrent legs already launch a dozen browsers and a
-// fresh launch under that load stalled past the action timeout on the
-// view-swap clicks (found live at round-17's born-RED proof).
+// the attribute census on the swapped views) — sequential on ONE
+// context (round-17's own live find: a fresh launch under the
+// concurrent legs' load stalled past the action timeout on the
+// view-swap clicks).
+// Round-18 found the ceiling itself: the head census's first tail goto
+// timed out at 30s and the finally's close wedged the whole script
+// (the top-of-file launch-accumulation find). The script now rides ONE
+// browser with an isolated context per face — and the round-18 head
+// census shares THIS context's page, right after the auth reads.
 {
-  const browser = await chromium.launch();
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   try {
-    const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+    const page = await context.newPage();
     const refAuth = await authValidationFace(REF, page);
     const oursAuth = await authValidationFace(OURS, page);
     diff("[auth-validation]", refAuth.sign.noValidate, oursAuth.sign.noValidate, "signNoValidate (the reference native-validates)", out);
@@ -424,9 +441,55 @@ diff("[geometry:login]", refGoogle, oursGoogle, "googleGlyph (the classic 22.56-
     diff("[auth-validation]", refAuth.signup.noValidate, oursAuth.signup.noValidate, "signupNoValidate (the reference native-validates)", out);
     diff("[auth-validation]", refAuth.signup.pwMinLength, oursAuth.signup.pwMinLength, "signupPwMinLength (the reference ships none)", out);
     diff("[auth-validation]", refAuth.signup.pwRequired, oursAuth.signup.pwRequired, "signupPwRequired (the shared gate)", out);
+    // The round-18 head census — same shared browser (see headFace above
+    // for the face's story).
+    const refHead = await headFace(REF, page);
+    const oursHead = await headFace(OURS, page);
+    diff("[head]", refHead.login.jsonld, oursHead.login.jsonld, "loginJsonld (the reference's BreadcrumbList)", out);
+    diff("[head]", refHead.signup.jsonld, oursHead.signup.jsonld, "signupJsonld (the same family the reference serves at its soft-404 /signup)", out);
+    diff("[head]", refHead.login.viewport, oursHead.login.viewport, "loginViewport (viewport-fit=cover; the initial-scale serialization normalized — the round-16 record)", out);
+    diff("[head]", refHead.signup.viewport, oursHead.signup.viewport, "signupViewport (no viewport-fit — the login-only shape)", out);
+    diff("[head]", refHead.login.themeColor, oursHead.login.themeColor, "loginThemeColor (#000000)", out);
+    diff("[head]", refHead.login.canonical, oursHead.login.canonical, "loginCanonical (origin-normalized)", out);
+    diff("[head]", refHead.signup.canonical, oursHead.signup.canonical, "signupCanonical (origin-normalized)", out);
+    // NOT diffed: /signup's theme-color (ours is the every-page
+    // superset; the reference's soft-404 carries none — the recorded
+    // delta; tests/head-faces.test.ts ⑥ pins our family).
   } finally {
-    await browser.close();
+    await context.close();
   }
+}
+
+// The round-18 HEAD/METADATA census: the DOCUMENT faces no probe read
+// (the body legs read computed styles/text/geometry; the smoke ladder
+// curls OUR sitemap/robots — the reference's own <head> was never
+// diffed) — the BreadcrumbList JSON-LD family on /login + /signup, the
+// viewport meta (viewport-fit=cover — LOGIN-ONLY), theme-color, and
+// canonical. Origins normalize (localhost vs the base44 origin), and
+// the initial-scale=1.0-vs-1 serialization folds to the recorded
+// round-16 delta (numerically equal).
+async function headFace(url: string, page: import("@playwright/test").Page) {
+  const origin = new URL(url).origin;
+  const faces: Record<string, { jsonld: string[]; viewport: string | null; themeColor: string | null; canonical: string | null }> = {};
+  for (const route of ["login", "signup"] as const) {
+    await page.goto(`${url}/${route}`, { waitUntil: "networkidle" });
+    await page.waitForTimeout(800);
+    const raw = await page.evaluate(() => ({
+      jsonld: Array.from(document.querySelectorAll("script[type='application/ld+json']")).map((s) => (s.textContent || "").trim()),
+      viewport: document.querySelector("meta[name='viewport']")?.getAttribute("content") ?? null,
+      themeColor: document.querySelector("meta[name='theme-color']")?.getAttribute("content") ?? null,
+      canonical: document.querySelector("link[rel='canonical']")?.getAttribute("href") ?? null,
+    }));
+    // normalize: the origin folds to ORIGIN; the initial-scale
+    // serialization folds to the recorded round-16 delta.
+    faces[route] = {
+      jsonld: raw.jsonld.map((t) => t.split(origin).join("ORIGIN")),
+      viewport: raw.viewport?.replace("initial-scale=1.0", "initial-scale=1") ?? null,
+      themeColor: raw.themeColor,
+      canonical: raw.canonical?.split(origin).join("ORIGIN") ?? null,
+    };
+  }
+  return faces;
 }
 
 if (out.length === 0) {
@@ -436,7 +499,12 @@ if (out.length === 0) {
   console.log("[motion] MOTION/GLYPH FACE: NO DRIFT — the reference matches our motion/glyph mirror");
   console.log("[geometry] STRUCTURE/GEOMETRY FACE: NO DRIFT — the reference matches our geometry mirror");
   console.log("[auth-validation] AUTH-VALIDATION FACE: NO DRIFT — the reference matches our validation-mode mirror");
+  console.log("[head] HEAD/METADATA FACE: NO DRIFT — the reference matches our document mirror");
 } else {
-  console.log(`[390 + login + preflight + motion + geometry + auth-validation] DRIFT DETECTED — ${out.length} field(s):`);
+  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head] DRIFT DETECTED — ${out.length} field(s):`);
   for (const line of out) console.log(line);
 }
+
+// The report prints BEFORE the shared browser retires — a wedged close
+// must never eat the results (the round-18 close-after-print order).
+await browser.close();

@@ -110,3 +110,18 @@ export function pageMetadata(opts: {
     },
   };
 }
+
+/**
+ * Round-18 (F-18a): the schema.org BreadcrumbList JSON-LD the reference's
+ * non-home public pages carry in their head — Home → /, the route → the
+ * route — in the platform's exact spaced serialization (byte-mirrored:
+ * the `, ` after every colon and between the elements; the drift [head]
+ * leg diffs it live, origin-normalized). Rendered via
+ * dangerouslySetInnerHTML on /login and /signup (tests/head-faces.test.ts
+ * ①②⑦ pin the serialization, the parsed object, and this route union).
+ */
+export function breadcrumbJsonLd(route: "/login" | "/signup"): string {
+  const origin = siteUrl();
+  const name = route === "/login" ? "login" : "signup";
+  return `{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "${origin}/"}, {"@type": "ListItem", "position": 2, "name": "${name}", "item": "${origin}${route}"}]}`;
+}
