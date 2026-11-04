@@ -24,8 +24,8 @@ bun run start                    # the standalone server (production)
 
 bun run lint                     # eslint --max-warnings 0 (the 0/0 standard)
 bun run typecheck                # tsc --noEmit
-bun run test                     # vitest run  (425 checks / 33 files)
-bun run test:e2e                 # playwright (74 checks / 8 specs; needs build)
+bun run test                     # vitest run  (436 checks / 34 files)
+bun run test:e2e                 # playwright (75 checks / 8 specs; needs build)
 CI=1 bun run test:e2e            # force a fresh server (never reuse stale)
 
 bun run db:push                  # prisma db push (SQLite at repo/db/custom.db)
@@ -78,7 +78,7 @@ the declared-length 16KB pre-gate, and the schema. A bare `req.json()`
 anywhere in `src/app/api` fails the body-pregate unit gate. DB writes
 wrap in try/catch → `ERR.INTERNAL()`.
 
-**Tailwind v4 — seven re-pin traps (all live in `src/app/globals.css`
+**Tailwind v4 — EIGHT re-pin traps (all live in `src/app/globals.css`
 @theme + the class-spelling sites).** The reference compiles v3-era CSS;
 our v4 build diverges unless pinned: ① the v3 literal palette (zinc/amber/etc. re-pinned to
 v3 hex — v4's oklch re-derivation differs at every step); ②
@@ -90,7 +90,18 @@ v4's `(hover: hover)` media (touch devices never fired hovers); ⑥ the
 reference's own class strings that never take effect in ITS build (the
 `leading-[0.9]`/`leading-[0.95]` pair is beaten by its text-Nxl
 line-height:1 rules at md+) port as `leading-[0.9] md:leading-none` —
-copy the COMPUTED face, never the literal class (the s11 doctrine).
+copy the COMPUTED face, never the literal class (the s11 doctrine);
+⑦ the `outline-none` semantic rename (v3 computes 2px-solid-transparent
++ offset-2; v4 spells style:none — only the `outline-2
+outline-transparent outline-offset-2` composition ports the face);
+⑧ `transition-colors`' property list expanded (v4 adds outline-color
++ the gradient vars; v4.3 hardcodes it — NOT theme-driven, and a
+custom `@utility` colliding with the functional built-in is silently
+dropped; the cure is the UNLAYERED `.transition-colors` rule
+re-pinning the v3 six-property list — while `transition-transform`'s
+v4 list is the LOAD-BEARING decode: v4 compiles translate-x/scale to
+the individual properties, so re-pinning it would kill the hover
+motions — never override it).
 See `docs/Tailwind-V4-Validation-Report.md`.
 
 **Reference parity is COMPUTED-face parity, proven live.** The landing

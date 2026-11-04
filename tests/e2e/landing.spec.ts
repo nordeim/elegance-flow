@@ -135,6 +135,30 @@ test.describe("the EleganceFlow landing (desktop 1280)", () => {
     // inbox spec sees it through the seeded session).
   });
 
+  test("the form faces the preflights own compute the reference's v3-preflight faces (round-14)", async ({ page }) => {
+    // The preflight-genus pins: the v3 preflight painted ::placeholder
+    // gray-400 (#9ca3af) and left the UA field background (white); v4's
+    // preflight paints currentcolor@50% and resets the background to
+    // transparent — both cured by the scoped rules in globals.css
+    // (tests/preflight-faces.test.ts). And the transition-colors
+    // property list re-pinned to the v3 six-property form (trap ⑧) via
+    // the unlayered rule.
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+    const faces = await page.evaluate(() => {
+      const input = document.querySelector("#contact input") as HTMLElement | null;
+      const navItem = document.querySelectorAll("header nav ul a")[0];
+      return {
+        placeholder: input ? getComputedStyle(input, "::placeholder").color : null,
+        bg: input ? getComputedStyle(input).backgroundColor : null,
+        navTransition: navItem ? getComputedStyle(navItem).transitionProperty : null,
+      };
+    });
+    expect(faces.placeholder).toBe("rgb(156, 163, 175)");
+    expect(faces.bg).toBe("rgb(255, 255, 255)");
+    expect(faces.navTransition).toBe("color, background-color, border-color, text-decoration-color, fill, stroke");
+  });
+
   test("the footer carries the wordmark, the four socials and the copyright", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByText("Quality work for quality clients.")).toBeVisible();

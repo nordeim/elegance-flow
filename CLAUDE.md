@@ -46,8 +46,8 @@ re-pinned to the reference's v3 palette).
    seams in `src/lib/` rather than inlining logic. Keep lint green as
    you go.
 5. **VERIFY** — Run the full gate: `bun run lint` → `bun run typecheck`
-   → `bun run test` (425) → `bun run build` → `./scripts/smoke-test.sh`
-   (14) → `CI=1 bun run test:e2e` (74). The `gate` script chains them.
+   → `bun run test` (436) → `bun run build` → `./scripts/smoke-test.sh`
+   (14) → `CI=1 bun run test:e2e` (75). The `gate` script chains them.
 6. **DOCUMENT** — Update the touched docs (`README.md`, this file, the
    PAD, `worklog.md`) in the same change; the counts in the docs must
    match the suites (the lockstep doctrine — doc claims about the tree
@@ -78,8 +78,8 @@ SEO metadata family (the reference ships none), deep-linkable
 
 ```bash
 bun run dev        # :3000
-bun run test       # vitest (425 checks / 33 files)
-bun run test:e2e   # playwright (74 checks / 8 specs) — build first
+bun run test       # vitest (436 checks / 34 files)
+bun run test:e2e   # playwright (75 checks / 8 specs) — build first
 bun run gate       # the full chain, in order
 bun run db:census  # MUST print "pristine: MATCH" before you trust any db read
 ```
@@ -105,7 +105,7 @@ in production — the boot gate refuses to serve without it),
 - **Components**: pure presentation; content strings live in
   `src/lib/site-content.ts` (the one source, unit-pinned, DOM-case).
 - **Styling**: Tailwind v4 CSS-first — tokens in `globals.css`
-  `@theme` only (no JS config); the seven re-pin traps are documented in
+  `@theme` only (no JS config); the eight re-pin traps are documented in
   `AGENTS.md` and `docs/Tailwind-V4-Validation-Report.md`. Sharp
   corners on the landing (the reference ships radius 0); amber-500
   accents; zinc-950 sections.
@@ -115,7 +115,7 @@ in production — the boot gate refuses to serve without it),
 
 ## Testing Strategy
 
-- **Unit (Vitest, 33 files / 425 checks)** — the seam batteries (auth,
+- **Unit (Vitest, 34 files / 436 checks)** — the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (`site-content`,
@@ -124,7 +124,7 @@ in production — the boot gate refuses to serve without it),
   `toast-anatomy`, `sitemap-routes`, `deployment-doc-census`,
   `count-ladder-census`, `re-pin-tokens`, `doc-pointer-census`,
   `dead-code-census`, `focus-contract`, `inbox-states`,
-  `landing-images`, `focus-outline`) —
+  `landing-images`, `focus-outline`, `preflight-faces`) —
   comment-stripped source reads; a literal pinned by a comment alone is
   vacuous.
 - **E2E (Playwright, `tests/e2e/*.spec.ts`)** — the standalone

@@ -492,3 +492,82 @@ members exactly for this reason.
 the scoped retired forms) and `tests/e2e/keyboard.spec.ts`'s round-13
 computed pin (the focused auth input computes `solid 2px rgba(0, 0, 0, 0)`
 + offset 2px on the standalone artifact).
+
+## Appendix: Project Trap Log — Trap 8: The `transition-colors` Property-List Expansion (round 14)
+
+**The bug class.** The reference (v3-era CSS) compiles
+`transition-colors` to the six-property list:
+
+```css
+transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+```
+
+v4.3 emits the EXPANDED list — `outline-color` plus the three gradient
+custom properties appended:
+
+```css
+transition-property: color, background-color, border-color, outline-color,
+  text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via,
+  --tw-gradient-to;
+```
+
+The class string byte-mirrors; the computed `transition-property` face
+diverges on every carrier (34 in `src/`), and the behavior differs:
+ours ANIMATES outline-color and gradient-var changes where the reference
+snaps them.
+
+**The mechanism has THREE layers (all verified in v4.3.3's dist):**
+
+1. The list is a HARDCODED static value in the functional utility's
+   registration (`dist/lib.mjs`: `colors:[a("transition-property",
+   "color, background-color, border-color, outline-color, …,
+   --tw-gradient-to")]`) — NOT resolved from the `--transition-property-*`
+   theme namespace. An `@theme { --transition-property-colors: … }`
+   override does NOTHING (only the bare `transition` utility reads the
+   `--transition-property` theme keys).
+2. A custom `@utility transition-colors` colliding with the functional
+   built-in is **SILENTLY DROPPED from the build** — found live (the
+   round-14 harness lesson): the first cure attempt shipped exactly that
+   override, the unit pin passed (the block existed in source), and the
+   compiled CSS carried ONLY the built-in's expanded list; the live
+   computed re-read caught the face still wrong.
+3. The cure is the **UNLAYERED rule** — unlayered author styles outrank
+   every `@layer` (including utilities) in the cascade, so a plain
+   `.transition-colors { transition-property: <the v3 list> }` rule at
+   the file's top level wins over the generated utility at equal
+   specificity. Only the `transition-property` declaration rides in the
+   override; the utility's own timing/duration declarations
+   (`var(--tw-ease/--tw-duration)`) still apply from the utilities
+   layer, so every `duration-200/300/700` carrier keeps its face.
+
+**The inverse doctrine — the load-bearing decode (never re-pin
+`transition-transform`).** v4's `transition-transform` emits
+`transform, translate, scale, rotate` (v3: bare `transform`), and the
+divergence is REQUIRED: v4 compiles `translate-x-1`/`scale-110` to the
+INDIVIDUAL `translate`/`scale` properties (not into `transform` as v3
+did), so re-pinning the list to v3's bare `transform` would kill the
+hover motions (the hero CTA arrow, the project-image zoom, the submit
+arrow). This is the trap-6 genus INVERTED: the class string mirrors,
+the property list MUST differ to render the same visible motion. A
+keeps-out pin guards it.
+
+**The sibling preflight faces (found by the same census).** Two more
+v3→v4 preflight divergences rode the same audit: (1) the placeholder
+ink — the reference's v3 preflight paints
+`input::placeholder, textarea::placeholder` gray-400 (#9ca3af →
+rgb(156,163,175)); v4's paints
+`::placeholder { color: color-mix(in oklab, currentcolor 50%, transparent) }`
+(`index.css:843-847`) — a VISIBLE divergence on the landing's contact
+form; (2) the form background — the v3 preflight left the UA `field`
+default (white); v4's resets `background-color: transparent`
+(`preflight.css:255`). Both cured by scoped `#contact` rules (the
+two-bundle doctrine: the auth family's inputs carry their own explicit
+faces; the superset surfaces keep the v4 defaults by design).
+
+**Pinned by** `tests/preflight-faces.test.ts` (the scoped-rule literals
++ the unlayered re-pin + the keeps-out + the class-string purity) and
+`tests/e2e/landing.spec.ts`'s round-14 computed pin (the placeholder
+ink, the input background and the nav link's transition-property
+pinned against the reference's v3-preflight faces on the standalone
+artifact); `scripts/drift-199.ts`'s preflight census carries the live
+bar (born-RED on the pre-fix tree, NO DRIFT after).

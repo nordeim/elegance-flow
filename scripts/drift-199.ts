@@ -6,7 +6,12 @@
 // face) + the round-13 LOGIN-FACE census (the auth card's at-rest
 // computed faces — the class that let the base44 semantic-token
 // refresh drift invisibly: no probe read /login since the 2026-11-03
-// byte-verification) — beyond the parity script's computed-style face.
+// byte-verification) + the round-14 PREFLIGHT-FACE census (the form
+// faces the preflights own: the placeholder ink, the input background,
+// the transition-property list — the class that let the v3→v4
+// preflight divergences ship invisibly: parity reads the elements'
+// own styles, never pseudo-elements or transition lists) — beyond the
+// parity script's computed-style face.
 // Diffs the live reference against OUR dev build (:3000).
 //
 // Run: bun scripts/drift-199.ts   (expects our dev server on :3000)
@@ -159,6 +164,42 @@ async function loginFace(url: string): Promise<LoginFace> {
   return base;
 }
 
+// The round-14 PREFLIGHT-FACE census: the form faces the preflights
+// own on the landing (the v3 preflight painted ::placeholder gray-400
+// and left the UA field background; v4's preflight paints currentcolor
+// @50% and resets the background to transparent — and v4's
+// transition-colors list expanded). Read at 1280: the name input's
+// placeholder + background, the textarea's placeholder, the nav link's
+// transition-property.
+type PreflightFace = {
+  inputPlaceholder: string;
+  inputBg: string;
+  textareaPlaceholder: string;
+  navTransition: string;
+};
+
+async function preflightFace(url: string): Promise<PreflightFace> {
+  const browser = await chromium.launch();
+  const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+  await page.goto(url, { waitUntil: "networkidle" });
+  await page.waitForTimeout(1000);
+  const base = await page.evaluate(() => {
+    const cs = (el: Element | null | undefined) => (el ? getComputedStyle(el as HTMLElement) : null);
+    const input = document.querySelector("#contact input");
+    const ta = document.querySelector("#contact textarea");
+    // a NAV ITEM link (not the wordmark — it carries no transition class)
+    const navItem = document.querySelectorAll("header nav ul a")[0];
+    return {
+      inputPlaceholder: input ? getComputedStyle(input, "::placeholder").color : "",
+      inputBg: cs(input)?.backgroundColor ?? "",
+      textareaPlaceholder: ta ? getComputedStyle(ta, "::placeholder").color : "",
+      navTransition: cs(navItem)?.transitionProperty ?? "",
+    };
+  });
+  await browser.close();
+  return base;
+}
+
 const [ref, ours] = await Promise.all([face(REF, 390, 844), face(OURS, 390, 844)]);
 const out: string[] = [];
 diff("[390]", ref.title, ours.title, "title", out);
@@ -183,10 +224,18 @@ diff("[login]", refLogin.dividerColor, oursLogin.dividerColor, "dividerColor", o
 diff("[login]", refLogin.inputPad, oursLogin.inputPad, "inputPad", out);
 diff("[login]", refLogin.submitPad, oursLogin.submitPad, "submitPad", out);
 
+// The round-14 preflight-face leg (the landing's form faces at 1280)
+const [refPreflight, oursPreflight] = await Promise.all([preflightFace(REF), preflightFace(OURS)]);
+diff("[preflight]", refPreflight.inputPlaceholder, oursPreflight.inputPlaceholder, "inputPlaceholder (the v3 gray-400)", out);
+diff("[preflight]", refPreflight.inputBg, oursPreflight.inputBg, "inputBg (the UA field default)", out);
+diff("[preflight]", refPreflight.textareaPlaceholder, oursPreflight.textareaPlaceholder, "textareaPlaceholder", out);
+diff("[preflight]", refPreflight.navTransition, oursPreflight.navTransition, "navTransition (the v3 property list)", out);
+
 if (out.length === 0) {
   console.log("[390] CONTENT + MOBILE-MENU FACE: NO DRIFT — the reference matches our byte-mirror");
   console.log("[login] AUTH-CARD FACE: NO DRIFT — the reference matches our login mirror");
+  console.log("[preflight] FORM-FACE: NO DRIFT — the reference matches our preflight mirror");
 } else {
-  console.log(`[390 + login] DRIFT DETECTED — ${out.length} field(s):`);
+  console.log(`[390 + login + preflight] DRIFT DETECTED — ${out.length} field(s):`);
   for (const line of out) console.log(line);
 }

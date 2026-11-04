@@ -407,6 +407,34 @@
        stock CardTitle computed 14px vs the reference's 16px). */
   }
 
+  /* Round-14 (the preflight-face census): the reference's v3-preflight
+     form faces, scoped to the landing's mirrored contact form. Two
+     mechanisms diverged under the byte-equal class strings: (1) the
+     placeholder ink — the reference's v3 preflight paints
+     `input::placeholder, textarea::placeholder` gray-400 (#9ca3af →
+     rgb(156,163,175)); v4's preflight paints
+     `::placeholder { color: color-mix(in oklab, currentcolor 50%,
+     transparent) }` (node_modules/tailwindcss/index.css:843-847) — our
+     placeholders computed zinc-950@50% (near-black) where the reference
+     renders light gray, VISIBLY, on the parity-gated public surface.
+     (2) the form background — the v3 preflight left the UA `field`
+     default (white) on inputs/textareas; v4's preflight resets
+     `background-color: transparent` (preflight.css:255). Same paint
+     over the white contact section, but a computed-face divergence by
+     the doctrine's letter. The scoping is the two-bundle doctrine: the
+     auth family's inputs carry their own explicit faces
+     (placeholder:text-slate-* + bg-slate-50/50, round-13 pinned); the
+     superset surfaces keep the v4 defaults by design. The select keeps
+     its byte-mirrored bg-white class — untouched here. */
+  #contact input::placeholder,
+  #contact textarea::placeholder {
+    color: #9ca3af;
+  }
+  #contact input,
+  #contact textarea {
+    background-color: #fff;
+  }
+
   /* Session-22 (S22-P3): the ::selection rule is RETIRED — the
      reference's stylesheet contains zero selection rules (the browser
      default selection color); our blue 0.18 tint was a scaffold-era
@@ -432,4 +460,32 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Round-14 (trap ⑧ — the transition-colors property-list expansion):
+   v4.3's functional utility HARDCODES the expanded list `color,
+   background-color, border-color, outline-color, text-decoration-color,
+   fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to`
+   (a static value in dist/lib.mjs — NOT theme-driven; an @theme
+   --transition-property-colors override does nothing, and a custom
+   `@utility transition-colors` colliding with the functional built-in
+   is SILENTLY DROPPED from the build — found live: the first cure
+   attempt shipped the @utility override and the compiled CSS still
+   carried only the built-in's expanded list). The reference's v3-era
+   list omits outline-color + the gradient vars. The cure is this
+   UNLAYERED rule: unlayered author styles outrank every @layer
+   (including utilities) in the cascade, so the re-pinned list wins
+   over the generated utility at equal specificity. Only the
+   transition-property declaration rides here — the utility's own
+   timing/duration declarations (var(--tw-ease/--tw-duration)) still
+   apply from the utilities layer, so every duration-200/300 carrier
+   keeps its face. NOTE: transition-transform's v4 list (transform,
+   translate, scale, rotate) is the LOAD-BEARING decode — v4 compiles
+   the translate-x and scale utilities to the individual properties, so
+   re-pinning it to v3's bare `transform` would kill the hover motions
+   (the hero CTA arrow, the project-image zoom, the submit arrow).
+   Never override transition-transform (pinned by
+   tests/preflight-faces.test.ts ④). */
+.transition-colors {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
 }

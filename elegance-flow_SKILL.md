@@ -78,7 +78,7 @@ script's filter.
 
 ## 3. The Tailwind v4 re-pin traps (all live in globals.css @theme)
 
-The reference ships v3-era CSS; v4 diverges unless pinned. Seven re-pin
+The reference ships v3-era CSS; v4 diverges unless pinned. Eight re-pin
 members (see `docs/Tailwind-V4-Validation-Report.md`, required reading):
 
 1. **Palette**: every (family, step) pair used in `src/` re-pinned to the v3
@@ -100,6 +100,16 @@ members (see `docs/Tailwind-V4-Validation-Report.md`, required reading):
    `outline-hidden` is ALSO style:none (the transparent outline
    forced-colors-only). Only the `outline-2 outline-transparent
    outline-offset-2` composition computes the v3 face.
+8. **The `transition-colors` property-list expansion (round-14)**: v4
+   adds `outline-color` + the gradient custom properties to the list;
+   v4.3 HARDCODES it (not theme-driven — and a custom `@utility`
+   colliding with the functional built-in is silently dropped from the
+   build, found live). The cure: the UNLAYERED `.transition-colors`
+   rule re-pinning the v3 six-property list. The inverse doctrine:
+   `transition-transform`'s v4 list (`transform, translate, scale,
+   rotate`) is the LOAD-BEARING decode — v4 compiles translate-x/scale
+   to the individual properties, so re-pinning it to v3's bare
+   `transform` would kill the hover motions. Never override it.
 
 New colors must join the re-pin block (or be verified byte-equal); the
 landing unit battery pins the zinc family.
@@ -169,7 +179,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 425 checks / 33 files**: the seam batteries (auth,
+- **Unit — Vitest, 436 checks / 34 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
@@ -220,16 +230,28 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   outline forced-colors-only — only the outline-2/transparent/offset-2
   composition computes the reference's face), and the auth-card ink
   re-pins (the base44 semantic-token refresh: the Google button's
-  #0f0e0e/#e9e6e0 + hover pair, the divider's #5d5d5d) —
+  #0f0e0e/#e9e6e0 + hover pair, the divider's #5d5d5d) — and
+  preflight-faces — the round-14 battery that pins the landing's
+  preflight-owned form faces (the ::placeholder ink — the v3
+  preflight's gray-400 #9ca3af vs v4's currentcolor@50% color-mix, a
+  VISIBLE divergence on the parity-gated surface that no gate could
+  see: parity reads elements, never pseudo-elements; the input/
+  textarea background — the UA field default vs v4's transparent
+  reset; the transition-colors property-list re-pin — the EIGHTH v4
+  trap, cured by the UNLAYERED rule; the transition-transform
+  keeps-out — the load-bearing decode that must never be re-pinned) —
   comment-stripped source reads; a literal pinned by a comment alone is
   vacuous.
-- **E2E — Playwright, 74 checks / 8 specs**: the standalone artifact on
+- **E2E — Playwright, 75 checks / 8 specs**: the standalone artifact on
   :3100 with `db/e2e.db`; ONE shared login (`auth.setup.ts` →
   storageState — the auth endpoints are rate-limited 10/IP/15-min); one
   worker; alphabetical file order → every spec SELF-SUFFICIENT (its own
   probe rows on an isolated `x-forwarded-for` bucket). The specs:
   landing (round-12 gains the image-census check — the landing's full
-  rendered img set pinned against the reference's live photographs),
+  rendered img set pinned against the reference's live photographs;
+  round-14 gains the preflight-face check — the form's placeholder ink,
+  background and the nav link's transition-property pinned against the
+  reference's v3-preflight computed faces),
   mobile-navigation (THE operator's standing emphasis — the full
   390×844 battery), auth, reset-password, dashboard-inbox, keyboard
   (the round-10 keyboard-operability battery — the keyboard rides plus
