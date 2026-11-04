@@ -46,8 +46,8 @@ re-pinned to the reference's v3 palette).
    seams in `src/lib/` rather than inlining logic. Keep lint green as
    you go.
 5. **VERIFY** — Run the full gate: `bun run lint` → `bun run typecheck`
-   → `bun run test` (484) → `bun run build` → `./scripts/smoke-test.sh`
-   (14) → `CI=1 bun run test:e2e` (83). The `gate` script chains them.
+   → `bun run test` (491) → `bun run build` → `./scripts/smoke-test.sh`
+   (14) → `CI=1 bun run test:e2e` (84). The `gate` script chains them.
 6. **DOCUMENT** — Update the touched docs (`README.md`, this file, the
    PAD, `worklog.md`) in the same change; the counts in the docs must
    match the suites (the lockstep doctrine — doc claims about the tree
@@ -67,7 +67,7 @@ outright and cite no sanctioned matchers.
 ### Superset Doctrine
 
 Deviations must be functional supersets, documented: persisted
-inquiries (vs. toast-only), the authenticated inbox, the designed 404
+inquiries (vs. the reference's POST-less panel swap), the authenticated inbox, the designed 404
 with a true 404 status (vs. the reference's blank SPA shells), the
 SEO metadata family (the reference ships none), deep-linkable
 `/signup` + `/reset-password`.
@@ -78,8 +78,8 @@ SEO metadata family (the reference ships none), deep-linkable
 
 ```bash
 bun run dev        # :3000
-bun run test       # vitest (484 checks / 38 files)
-bun run test:e2e   # playwright (83 checks / 8 specs) — build first
+bun run test       # vitest (491 checks / 39 files)
+bun run test:e2e   # playwright (84 checks / 8 specs) — build first
 bun run gate       # the full chain, in order
 bun run db:census  # MUST print "pristine: MATCH" before you trust any db read
 ```
@@ -115,7 +115,7 @@ in production — the boot gate refuses to serve without it),
 
 ## Testing Strategy
 
-- **Unit (Vitest, 38 files / 484 checks)** — the seam batteries (auth,
+- **Unit (Vitest, 39 files / 491 checks)** — the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (`site-content`,
@@ -125,9 +125,9 @@ in production — the boot gate refuses to serve without it),
   `count-ladder-census`, `re-pin-tokens`, `doc-pointer-census`,
   `dead-code-census`, `focus-contract`, `inbox-states`,
   `landing-images`, `focus-outline`, `preflight-faces`,
-  `motion-glyph`, `geometry-faces`, `auth-validation`, `head-faces`) —
-  comment-stripped source reads; a literal pinned by a comment alone is
-  vacuous.
+  `motion-glyph`, `geometry-faces`, `auth-validation`, `head-faces`,
+  `interaction-faces`) — comment-stripped source reads; a literal pinned
+  by a comment alone is vacuous.
 - **E2E (Playwright, `tests/e2e/*.spec.ts`)** — the standalone
   artifact on :3100 with `db/e2e.db`; ONE shared login
   (`auth.setup.ts` → storageState); one worker; alphabetical file

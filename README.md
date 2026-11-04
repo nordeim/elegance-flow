@@ -2,7 +2,7 @@
 
 ![Next.js](https://img.shields.io/badge/Next.js-16-black) ![React](https://img.shields.io/badge/React-19-blue) ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6) ![Prisma](https://img.shields.io/badge/Prisma-6-2D3748) ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4) ![License](https://img.shields.io/badge/License-MIT-green)
 
-A production-grade clone of [the EleganceFlow reference site](https://colossal-elevate-service-flow.base44.app/) — a premium creative-studio marketing site — built as a single Next.js 16 application, plus a **functional superset**: the reference's contact form only shows a toast; EleganceFlow persists every inquiry and gives the studio team a real inbox behind the login.
+A production-grade clone of [the EleganceFlow reference site](https://colossal-elevate-service-flow.base44.app/) — a premium creative-studio marketing site — built as a single Next.js 16 application, plus a **functional superset**: the reference's contact form swaps to an in-place success panel without persisting anything (round-19's live ride); EleganceFlow mirrors that panel AND persists every inquiry and gives the studio team a real inbox behind the login.
 
 **Visual parity is proven, not claimed:** every class string, text node, and icon size on the public landing was extracted from the live reference's DOM by nine Playwright probes, and a computed-style parity probe diffs both apps at desktop (1280) and phone (390) width — every probed face computes identical.
 
@@ -16,7 +16,7 @@ A production-grade clone of [the EleganceFlow reference site](https://colossal-e
 | 🔐 Email + password auth | Hand-rolled scrypt + HMAC cookie sessions, email-verification funnel, hashed single-use password-reset funnel, session revocation via `tokenVersion` |
 | 🛡️ Hardened API | Zod validation at every body-parsing seam, per-IP rate limits with `Retry-After`, CSRF content-type gate, bounded body reads, honest `{ ok, error }` envelopes |
 | ♿ WCAG 2.2 AA | Structural axe violations zero; every interactive control renders a visible focus ring (keyboard-operability e2e battery); reference-byte-parity colors cite a sanctioned register; the superset's own surfaces pass AA outright |
-| 🧪 Full test pyramid | 484 unit checks (38 files), 83 e2e checks (8 specs), a 14-rung smoke ladder against the production artifact, and the live parity probe |
+| 🧪 Full test pyramid | 491 unit checks (39 files), 84 e2e checks (8 specs), a 14-rung smoke ladder against the production artifact, and the live parity probe |
 
 ## Quick start
 
@@ -44,7 +44,7 @@ inbox.
 ### The full gate
 
 ```bash
-bun run gate   # lint → typecheck → test (484) → build → smoke (14) → e2e (83)
+bun run gate   # lint → typecheck → test (491) → build → smoke (14) → e2e (84)
 ```
 
 ## Architecture
@@ -100,7 +100,7 @@ elegance-flow/
 │   ├── 📄 api.ts                      # the envelope + parseBody seam
 │   └── 📄 db-path.ts                  # the repo-root db resolution
 ├── 📂 prisma/                         # schema (User · Inquiry) + seed
-├── 📂 tests/                          # 38 unit files + e2e/ (8 specs)
+├── 📂 tests/                          # 39 unit files + e2e/ (8 specs)
 ├── 📂 scripts/                        # smoke ladder · parity probe · captures
 └── 📂 docs/                           # plans · screenshots · skills · the Tailwind v4 report
 ```
@@ -116,8 +116,8 @@ NEXT_PUBLIC_SITE_URL="http://localhost:3000"  # canonical origin; INLINED AT BUI
 ## Testing
 
 ```bash
-bun run test                     # 484 checks — pure seams + source contracts
-bun run test:e2e                 # 83 checks — standalone artifact, seeded db/e2e.db
+bun run test                     # 491 checks — pure seams + source contracts
+bun run test:e2e                 # 84 checks — standalone artifact, seeded db/e2e.db
 ./scripts/smoke-test.sh          # 14 rungs — artifact on :3210 with db/smoke.db
 bun scripts/parity-199.ts        # live parity vs the reference (dev server on :3000)
 ```

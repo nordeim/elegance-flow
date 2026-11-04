@@ -182,7 +182,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 484 checks / 38 files**: the seam batteries (auth,
+- **Unit — Vitest, 491 checks / 39 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
@@ -295,9 +295,25 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   login-ONLY viewport-fit=cover — the reference's /login viewport
   declares it while its landing and signup-URL viewports carry none;
   the keeps: the landing's JSON-LD purity, the signup's plain
-  viewport, the every-page theme-color) — comment-stripped source
-  reads; a literal pinned by a comment alone is vacuous.
-- **E2E — Playwright, 83 checks / 8 specs**: the standalone artifact on
+  viewport, the every-page theme-color) — and interaction-faces — the
+  round-19 battery that pins the INTERACTIVE BEHAVIORS no probe ever
+  rode against the live reference (F-19a: the contact form's SUCCESS
+  STATE — the reference's submit fires NO domain POST and REMOVES the
+  form at ~400ms, rendering the persistent in-place centered panel
+  (the 48px amber circle-check-big + the h3 "Message sent!"/p "We'll
+  be in touch within 24 hours." pair); OURS had shown a floating
+  shadcn toast bottom-right and kept the cleared form — a different
+  visible construction on the parity-gated surface; the provenance
+  corrected: the byte-verified pair is the panel's h3/p, not a
+  toast's; F-19b: the contact grid's bare right-column wrapper div —
+  the reference's grid > div > form vs our grid > form, invisible at
+  rest but load-bearing for the panel's h-full; the keeps: the honest
+  error toasts (the reference cannot fail — no request fires), the
+  native-validation gate, the controlled inputs, the pending guard;
+  the panel's role="status" is OUR a11y superset — the reference's
+  panel is screen-reader-silent) — comment-stripped source reads; a
+  literal pinned by a comment alone is vacuous.
+- **E2E — Playwright, 84 checks / 8 specs**: the standalone artifact on
   :3100 with `db/e2e.db`; ONE shared login (`auth.setup.ts` →
   storageState — the auth endpoints are rate-limited 10/IP/15-min); one
   worker; alphabetical file order → every spec SELF-SUFFICIENT (its own
@@ -314,7 +330,10 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   hero), the leading-decode computed faces (36px/28px at md+,
   33px/29.25px at phone), the native-validation + glyph pins (the
   empty submit never leaves the page, the reference's palette and
-  phone shapes)),
+  phone shapes); round-19 gains the success-panel check — the submit
+  REMOVES the form and renders the reference's in-place panel (the
+  48px icon, the h3/p pair, no floating toast, the bare right-column
+  wrapper)),
   mobile-navigation (THE operator's standing emphasis — the full
   390×844 battery), auth, reset-password, dashboard-inbox, keyboard
   (the round-10 keyboard-operability battery — the keyboard rides plus

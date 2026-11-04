@@ -68,6 +68,7 @@ import {
   ArrowUpRight,
   Camera,
   ChevronDown,
+  CircleCheckBig,
   MapPin,
   Menu,
   Monitor,
@@ -90,7 +91,7 @@ import {
   HEADER_CTA,
   HEADER_SCROLL,
   HERO,
-  INQUIRY_TOAST,
+  INQUIRY_SUCCESS,
   MOBILE_PANEL,
   NAV_ITEMS,
   PROJECTS,
@@ -133,6 +134,12 @@ export function LandingPage() {
   const [service, setService] = React.useState("");
   const [message, setMessage] = React.useState("");
   const [pending, setPending] = React.useState(false);
+  // Round-19 (the interaction-behavior census — F-19a): the reference's
+  // submit REMOVES the form and renders the persistent in-place success
+  // panel (live-ridden: no floating toast, no field clears, no revert).
+  // The persisted-row superset is unchanged — only the success UI
+  // mirrors the reference.
+  const [submitted, setSubmitted] = React.useState(false);
 
   React.useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 0);
@@ -159,12 +166,13 @@ export function LandingPage() {
         );
         return;
       }
-      // The reference's byte-verified success toast.
-      toast.success(INQUIRY_TOAST.title, INQUIRY_TOAST.description);
-      setName("");
-      setEmail("");
-      setService("");
-      setMessage("");
+      // Round-19 (the interaction-behavior census — F-19a): the
+      // reference's success face is the IN-PLACE PANEL — the form is
+      // removed at ~400ms, no floating toast, no clears (live-ridden;
+      // the byte-verified "Message sent!" pair is the panel's h3/p,
+      // not a toast's — the session-199 record mis-read the vehicle).
+      // Our superset — the persisted row — rides the same POST.
+      setSubmitted(true);
     } catch {
       toast.error(
         "Message could not be sent",
@@ -591,7 +599,35 @@ export function LandingPage() {
               </div>
             </div>
           </div>
-          {/* Round-16 (the attribute/geometry census): the reference's
+          {/* Round-19 (the interaction-behavior census — F-19b): the
+              reference's contact grid wraps BOTH columns in bare <div>
+              grid items (grid > div > form); ours had mounted the form
+              directly (grid > form) — invisible at rest (the round-16
+              geometry census passed) but a DOM-mirror divergence, and
+              load-bearing: the success panel's h-full rides this
+              wrapper. Pinned by interaction-faces ④. */}
+          <div>
+            {submitted ? (
+              /* Round-19 (the interaction-behavior census — F-19a): the
+                 reference's success face — the persistent in-place
+                 panel, byte-mirrored (live-ridden: the 48px amber
+                 CircleCheckBig — our lucide 0.525 ships the reference's
+                 exact path data; the h3/p pair from INQUIRY_SUCCESS).
+                 The role="status" is OUR a11y superset — the reference's
+                 panel is screen-reader-silent. Pinned by
+                 interaction-faces ①②⑤ + the e2e panel leg. */
+              <div
+                className="h-full flex flex-col items-center justify-center text-center py-16"
+                role="status"
+              >
+                <CircleCheckBig size={48} className="mb-5 text-amber-500" />
+                <h3 className="text-2xl font-black text-zinc-950 mb-3">
+                  {INQUIRY_SUCCESS.title}
+                </h3>
+                <p className="text-zinc-500">{INQUIRY_SUCCESS.description}</p>
+              </div>
+            ) : (
+              /* Round-16 (the attribute/geometry census): the reference's
               form NATIVE-VALIDATES (its four required controls block an
               empty submit — no submit event, no POST, the browser's own
               bubbles; live-probed on both apps). Our noValidate let an
@@ -599,8 +635,8 @@ export function LandingPage() {
               visible behavioral divergence. The native gate is the
               byte-mirror face; the Zod 400 backstop stays for
               non-empty-but-invalid payloads. Pinned by geometry-faces ⑤
-              + the drift geometry leg. */}
-          <form className="flex flex-col gap-5" onSubmit={onSubmit}>
+              + the drift geometry leg. */
+              <form className="flex flex-col gap-5" onSubmit={onSubmit}>
             <div className="grid sm:grid-cols-2 gap-5">
               <div>
                 <label
@@ -691,6 +727,8 @@ export function LandingPage() {
               />
             </button>
           </form>
+            )}
+          </div>
         </div>
       </section>
 

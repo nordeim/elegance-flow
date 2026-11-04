@@ -121,18 +121,60 @@ test.describe("the EleganceFlow landing (desktop 1280)", () => {
     expect(new Set([first, second, third]).size).toBe(3);
   });
 
-  test("the contact form submits → the byte-verified toast + the PERSISTED row (the superset)", async ({ page }) => {
+  test("the contact form submits → the panel pair + the PERSISTED row (the superset)", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto("/");
     await page.getByLabel("Name").fill("E2E Playwright");
     await page.getByLabel("Email").fill("e2e@playwright.test");
     await page.getByLabel("Service").selectOption("Brand Strategy");
-    await page.getByLabel("Message").fill("The landing battery's real submit — verifying the toast + the persisted row.");
+    await page.getByLabel("Message").fill("The landing battery's real submit — verifying the panel + the persisted row.");
     await page.getByRole("button", { name: /send inquiry/i }).click();
     await expect(page.getByText("Message sent!")).toBeVisible();
     await expect(page.getByText("We'll be in touch within 24 hours.")).toBeVisible();
     // The honest superset proof: the row landed in the DB (the authed
     // inbox spec sees it through the seeded session).
+  });
+
+  test("the success state swaps the form for the reference's in-place panel (round-19 — F-19a/F-19b)", async ({ page }) => {
+    // Round-19 (the interaction-behavior census): live-ridden on the
+    // reference — the submit fires NO domain POST and at ~400ms
+    // REMOVES the form, rendering the persistent centered panel (the
+    // 48px amber circle-check-big + the h3/p pair); no floating toast,
+    // no clear, no revert. Ours had shown a floating shadcn toast and
+    // kept the cleared form — a different visible construction. The
+    // form also rides the bare right-column wrapper div (F-19b: grid >
+    // div > form, the reference's structure — ours had grid > form).
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+    // F-19b: the form's parent is the bare wrapper DIV, not the grid
+    const formParent = await page.evaluate(() => document.querySelector("#contact form")?.parentElement?.tagName);
+    expect(formParent).toBe("DIV");
+    const gridKids = await page.evaluate(() => document.querySelector("#contact .grid")?.children.length);
+    expect(gridKids).toBe(2);
+    // the ride
+    await page.getByLabel("Name").fill("E2E Panel Probe");
+    await page.getByLabel("Email").fill("panel-probe@playwright.test");
+    await page.getByLabel("Service").selectOption("Brand Strategy");
+    await page.getByLabel("Message").fill("The round-19 panel leg — the form is removed, the panel renders.");
+    await page.getByRole("button", { name: /send inquiry/i }).click();
+    // the panel renders: the wrapper class, the 48px icon, the h3/p
+    const panel = page.locator("#contact div.h-full.py-16");
+    await expect(panel).toBeVisible();
+    await expect(page.locator("#contact h3", { hasText: "Message sent!" })).toBeVisible();
+    await expect(page.getByText("We'll be in touch within 24 hours.")).toBeVisible();
+    const icon = page.locator("#contact svg[class*='circle-check-big']");
+    await expect(icon).toBeVisible();
+    await expect(icon).toHaveAttribute("width", "48");
+    // the form is GONE — removed, not cleared
+    await expect(page.locator("#contact form")).toHaveCount(0);
+    await expect(page.locator("#contact input, #contact textarea, #contact select")).toHaveCount(0);
+    // NO floating toast fires (the reference fires none) — the toast
+    // viewport stays empty; the panel is the only status surface
+    await expect(page.locator('[class*="max-h-screen"] [role="status"]')).toHaveCount(0);
+    // the panel persists (the reference's face — no revert)
+    await page.waitForTimeout(1500);
+    await expect(page.locator("#contact h3", { hasText: "Message sent!" })).toBeVisible();
+    await expect(page.locator("#contact form")).toHaveCount(0);
   });
 
   test("the form faces the preflights own compute the reference's v3-preflight faces (round-14)", async ({ page }) => {

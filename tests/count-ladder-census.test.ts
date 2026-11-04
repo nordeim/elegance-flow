@@ -168,6 +168,7 @@ const SOURCE_CONTRACTS = [
   "geometry-faces",
   "auth-validation",
   "head-faces",
+  "interaction-faces",
 ];
 
 const fileOf = (family: string) => `${family}.test.ts`;

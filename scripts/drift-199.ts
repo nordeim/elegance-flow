@@ -492,6 +492,143 @@ async function headFace(url: string, page: import("@playwright/test").Page) {
   return faces;
 }
 
+// The round-19 INTERACTION-BEHAVIOR census: the live rides no probe
+// ever made against the reference — the contact form's submit (the
+// reference fires NO domain POST and at ~400ms REMOVES the form,
+// rendering the persistent in-place success panel; ours had shown a
+// floating toast and kept the cleared form — F-19a; the reference's
+// grid wraps the form in a bare right-column div — F-19b), plus the
+// positive-census rides (the filter chips' computed active face — the
+// reference paints inline styles, our class decode computes the same;
+// the carousel selector swap; the header's two scroll states). OURS
+// rides with a route-fulfilled POST (the dev db takes no probe row);
+// the reference's ride is side-effect-free by construction (no POST
+// fires — live-captured at round-19).
+async function interactFace(url: string, ours: boolean) {
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  try {
+    if (ours) {
+      await context.route("**/api/inquiry", (route) =>
+        route.fulfill({
+          status: 201,
+          contentType: "application/json",
+          body: JSON.stringify({ ok: true, data: { inquiry: { id: "drift-probe" } } }),
+        }),
+      );
+    }
+    const page = await context.newPage();
+    await page.goto(url + "/", { waitUntil: "networkidle" });
+    await page.waitForTimeout(1200);
+
+    // the header's two scroll states — read TOP first, before any ride
+    // that auto-scrolls (the round-19 probe-order lesson)
+    const headerTop = await page.evaluate(() => document.querySelector("header")?.className ?? "(none)");
+
+    // F-19b: the form's parent — the reference's bare wrapper div
+    const pre = await page.evaluate(() => {
+      const grid = document.querySelector("#contact .grid");
+      const form = document.querySelector("#contact form");
+      return {
+        formParentClass: form?.parentElement ? (form.parentElement.getAttribute("class") ?? "(no-class)") : "(no form)",
+        gridChildren: grid ? [...grid.children].map((c) => c.tagName) : [],
+      };
+    });
+
+    // the filter ride: Branding — the surviving set + the ACTIVE chip's
+    // COMPUTED face (the reference paints inline styles; our class
+    // decode must compute the same — the F-15b genus, pinned live)
+    await page.locator("#portfolio button", { hasText: /^\s*Branding\s*$/ }).first().click();
+    await page.waitForTimeout(500);
+    const filterRide = await page.evaluate(() => {
+      const sec = document.querySelector("#portfolio") ?? document.body;
+      const grid = sec.querySelector(".grid");
+      const titles = grid
+        ? [...grid.querySelectorAll("h3")].filter((h) => (h as HTMLElement).offsetParent !== null).map((h) => (h.textContent ?? "").trim())
+        : [];
+      const active = [...sec.querySelectorAll("button")].find((b) => /tracking-widest/.test(b.className) && (b.textContent ?? "").trim() === "Branding");
+      const s = active ? getComputedStyle(active) : null;
+      return { titles, activeBg: s?.backgroundColor ?? "", activeColor: s?.color ?? "" };
+    });
+
+    // the carousel ride: the 2nd selector — the swapped quote
+    await page.evaluate(() => {
+      const sec = document.querySelector("#testimonials") ?? document.body;
+      const sels = [...sec.querySelectorAll("button")].filter((b) => /border/.test(b.className));
+      (sels[1] as HTMLElement).click();
+    });
+    await page.waitForTimeout(500);
+    const carouselRide = await page.evaluate(() => {
+      const sec = document.querySelector("#testimonials") ?? document.body;
+      const quote = sec.querySelector(".md\\:col-span-3 p");
+      return quote ? (quote.textContent ?? "").trim() : "(no quote)";
+    });
+
+    // the contact-form ride: fill (structural selectors — the
+    // reference's labels are unassociated, our label bindings the
+    // documented a11y superset) + submit + the post-swap face
+    const sec = page.locator("#contact");
+    await sec.locator('input[type="text"], input:not([type])').first().fill("Drift Probe");
+    await sec.locator('input[type="email"]').first().fill("drift@session199.test");
+    await sec.locator("select").first().selectOption({ label: "Brand Strategy" });
+    await sec.locator("textarea").first().fill("The round-19 drift leg — the interaction census ride.");
+    await sec.getByRole("button", { name: /send/i }).click();
+    await page.waitForTimeout(1400);
+    const postSwap = await page.evaluate(() => {
+      const c = document.querySelector("#contact");
+      const panel = c?.querySelector("h3")?.parentElement ?? null;
+      const icon = panel?.querySelector("svg") ?? null;
+      const h3 = c?.querySelector("h3");
+      const p = panel?.querySelector("p") ?? null;
+      const iconS = icon ? getComputedStyle(icon) : null;
+      return {
+        hasForm: !!c?.querySelector("form"),
+        inputCount: c ? c.querySelectorAll("input, select, textarea").length : -1,
+        panelClass: panel?.getAttribute("class") ?? "(none)",
+        panelParentClass: panel?.parentElement ? (panel.parentElement.getAttribute("class") ?? "(no-class)") : "(none)",
+        h3Class: h3?.getAttribute("class") ?? "(none)",
+        pClass: p?.getAttribute("class") ?? "(none)",
+        iconWidth: icon?.getAttribute("width") ?? "(none)",
+        iconColor: iconS?.color ?? "(none)",
+        floatingToasts: document.querySelectorAll('[class*="max-h-screen"] [role="status"], [data-sonner-toast]').length,
+      };
+    });
+
+    // the header's scrolled state (the page is down at the contact
+    // section after the rides; make it explicit)
+    await page.evaluate(() => window.scrollTo(0, 600));
+    await page.waitForTimeout(500);
+    const headerScrolled = await page.evaluate(() => document.querySelector("header")?.className ?? "(none)");
+
+    return { headerTop, headerScrolled, ...pre, filterRide, carouselRide, ...postSwap };
+  } finally {
+    await context.close();
+  }
+}
+
+// The round-19 interact leg — sequential on ONE context per app (the
+// rides auto-scroll; the header-top read must precede them).
+{
+  const refInteract = await interactFace(REF, false);
+  const oursInteract = await interactFace(OURS, true);
+  diff("[interact]", refInteract.headerTop, oursInteract.headerTop, "headerTop (the two-state family — the at-top face)", out);
+  diff("[interact]", refInteract.headerScrolled, oursInteract.headerScrolled, "headerScrolled (the flip face)", out);
+  diff("[interact]", refInteract.formParentClass, oursInteract.formParentClass, "formParentClass (F-19b: the bare right-column wrapper)", out);
+  diff("[interact]", refInteract.gridChildren.join(","), oursInteract.gridChildren.join(","), "gridChildren (the two bare columns)", out);
+  diff("[interact]", refInteract.filterRide.titles, oursInteract.filterRide.titles, "filterBrandingTitles (the surviving set)", out);
+  diff("[interact]", refInteract.filterRide.activeBg, oursInteract.filterRide.activeBg, "filterActiveBg (the inline-style genus — computed)", out);
+  diff("[interact]", refInteract.filterRide.activeColor, oursInteract.filterRide.activeColor, "filterActiveColor (computed)", out);
+  diff("[interact]", refInteract.carouselRide, oursInteract.carouselRide, "carouselQuote (the selector-2 swap)", out);
+  diff("[interact]", refInteract.hasForm, oursInteract.hasForm, "postSubmitHasForm (F-19a: the form is REMOVED)", out);
+  diff("[interact]", refInteract.inputCount, oursInteract.inputCount, "postSubmitInputCount", out);
+  diff("[interact]", refInteract.panelClass, oursInteract.panelClass, "panelClass (the reference's in-place face)", out);
+  diff("[interact]", refInteract.panelParentClass, oursInteract.panelParentClass, "panelParentClass (the wrapper)", out);
+  diff("[interact]", refInteract.h3Class, oursInteract.h3Class, "panelH3Class", out);
+  diff("[interact]", refInteract.pClass, oursInteract.pClass, "panelPClass", out);
+  diff("[interact]", refInteract.iconWidth, oursInteract.iconWidth, "panelIconWidth (48)", out);
+  diff("[interact]", refInteract.iconColor, oursInteract.iconColor, "panelIconColor (the amber — computed, the inline-style genus)", out);
+  diff("[interact]", refInteract.floatingToasts, oursInteract.floatingToasts, "floatingToasts (the reference fires NONE — F-19a)", out);
+}
+
 if (out.length === 0) {
   console.log("[390] CONTENT + MOBILE-MENU FACE: NO DRIFT — the reference matches our byte-mirror");
   console.log("[login] AUTH-CARD FACE: NO DRIFT — the reference matches our login mirror");
@@ -500,8 +637,9 @@ if (out.length === 0) {
   console.log("[geometry] STRUCTURE/GEOMETRY FACE: NO DRIFT — the reference matches our geometry mirror");
   console.log("[auth-validation] AUTH-VALIDATION FACE: NO DRIFT — the reference matches our validation-mode mirror");
   console.log("[head] HEAD/METADATA FACE: NO DRIFT — the reference matches our document mirror");
+  console.log("[interact] INTERACTION-BEHAVIOR FACE: NO DRIFT — the reference matches our interaction mirror");
 } else {
-  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head] DRIFT DETECTED — ${out.length} field(s):`);
+  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact] DRIFT DETECTED — ${out.length} field(s):`);
   for (const line of out) console.log(line);
 }
 

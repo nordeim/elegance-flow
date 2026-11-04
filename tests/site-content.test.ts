@@ -8,7 +8,7 @@ import {
   HEADER_CTA,
   HEADER_SCROLL,
   HERO,
-  INQUIRY_TOAST,
+  INQUIRY_SUCCESS,
   MOBILE_PANEL,
   NAV_ITEMS,
   PROJECTS,
@@ -244,8 +244,8 @@ describe("contact contracts", () => {
     expect(CONTACT.submit).toBe("Send Inquiry");
   });
 
-  it("the success toast pair (live-verified after a REAL submit)", () => {
-    expect(INQUIRY_TOAST).toEqual({
+  it("the success panel pair (the reference's in-place h3/p — live-ridden at round-19)", () => {
+    expect(INQUIRY_SUCCESS).toEqual({
       title: "Message sent!",
       description: "We'll be in touch within 24 hours.",
     });

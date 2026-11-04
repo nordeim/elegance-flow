@@ -3,7 +3,9 @@
 EleganceFlow — a Next.js 16 App Router site cloned byte-mirrored from
 `https://colossal-elevate-service-flow.base44.app` (a premium
 creative-studio marketing one-pager) with a **functional superset**:
-the reference's contact form only toasts; ours persists every inquiry
+the reference's contact form swaps to an in-place success panel (no
+POST ever fires — round-19's live ride); ours mirrors the panel AND
+persists every inquiry
 and serves an authenticated studio inbox at `/dashboard`.
 
 The repo followed the domain-transformation doctrine at session-199
@@ -24,8 +26,8 @@ bun run start                    # the standalone server (production)
 
 bun run lint                     # eslint --max-warnings 0 (the 0/0 standard)
 bun run typecheck                # tsc --noEmit
-bun run test                     # vitest run  (484 checks / 38 files)
-bun run test:e2e                 # playwright (83 checks / 8 specs; needs build)
+bun run test                     # vitest run  (491 checks / 39 files)
+bun run test:e2e                 # playwright (84 checks / 8 specs; needs build)
 CI=1 bun run test:e2e            # force a fresh server (never reuse stale)
 
 bun run db:push                  # prisma db push (SQLite at repo/db/custom.db)

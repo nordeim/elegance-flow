@@ -147,10 +147,15 @@ describe("session-199: the landing construction (the byte-extracted reference cl
     expect(src).toContain("text-white/20 text-xs");
   });
 
-  it("the submit posts to the REAL route (the superset) and fires the byte-verified toast", () => {
+  it("the submit posts to the REAL route (the superset) and swaps to the in-place success panel (round-19)", () => {
     const src = landing();
     expect(src).toContain('fetch("/api/inquiry"');
-    expect(src).toContain("toast.success(INQUIRY_TOAST.title, INQUIRY_TOAST.description)");
+    // Round-19 (the interaction-behavior census — F-19a): the success
+    // face is the reference's IN-PLACE PANEL (the form is removed; the
+    // floating success toast is retired). Pinned here at the mechanism
+    // level; interaction-faces ①②③ owns the full family.
+    expect(src).toContain("setSubmitted(true);");
+    expect(src).not.toContain("toast.success");
     // failures answer the honest error toast, never a silent catch
     expect(src).toContain("toast.error(");
   });

@@ -51,6 +51,33 @@ async function main() {
   await mob.waitForTimeout(400);
   await mob.screenshot({ path: `${OUT}/ours-mobile-menu-closed-390.png` });
 
+  // ---- the contact SUCCESS PANEL (round-19 — F-19a's face) -----------------
+  // The reference's submit REMOVES the form and renders the persistent
+  // in-place panel; the capture rides OUR form with the POST
+  // route-fulfilled (the dev db takes no probe row — the panel is
+  // client-side state after the fetch resolves).
+  const panelCtx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  await panelCtx.route("**/api/inquiry", (route) =>
+    route.fulfill({
+      status: 201,
+      contentType: "application/json",
+      body: JSON.stringify({ ok: true, data: { inquiry: { id: "capture" } } }),
+    }),
+  );
+  const panelPage = await panelCtx.newPage();
+  await panelPage.goto(OURS, { waitUntil: "networkidle" });
+  await panelPage.waitForTimeout(1000);
+  const csec = panelPage.locator("#contact");
+  await csec.scrollIntoViewIfNeeded();
+  await csec.locator('input[type="text"], input:not([type])').first().fill("Capture Probe");
+  await csec.locator('input[type="email"]').first().fill("capture@session199.test");
+  await csec.locator("select").first().selectOption({ label: "Brand Strategy" });
+  await csec.locator("textarea").first().fill("The round-19 success-panel capture.");
+  await csec.getByRole("button", { name: /send/i }).click();
+  await panelPage.waitForTimeout(1200);
+  await panelPage.screenshot({ path: `${OUT}/ours-contact-success-1280.png` });
+  await panelCtx.close();
+
   await browser.close();
   console.log("captures saved under", OUT);
 }

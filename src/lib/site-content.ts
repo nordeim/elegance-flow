@@ -282,8 +282,14 @@ export const CONTACT = {
   submit: "Send Inquiry",
 } as const;
 
-/** The reference's success toast, byte-verified live after a real submit. */
-export const INQUIRY_TOAST = {
+/** Round-19 (the interaction-behavior census): the reference's contact
+ *  success face — the IN-PLACE PANEL's h3/p. Live-ridden on the
+ *  reference: the submit fires NO domain POST (only base44 telemetry)
+ *  and at ~400ms REMOVES the form, rendering this pair inside the
+ *  persistent centered panel (no floating toast, no clear, no revert).
+ *  The session-199 record called it a "toast" — the bytes were always
+ *  the panel's; the vehicle was never read until round-19. */
+export const INQUIRY_SUCCESS = {
   title: "Message sent!",
   description: "We'll be in touch within 24 hours.",
 } as const;
