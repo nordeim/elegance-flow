@@ -605,6 +605,84 @@ async function interactFace(url: string, ours: boolean) {
   }
 }
 
+// The round-20 [authfail] leg — the AUTH-FAILURE/RESPONSE census: the
+// response-header family (the session-20 pins were read against the OLD
+// NEO-CRM reference; this leg re-reads them against the CURRENT one on
+// every run) + the reset-submit ride (a GHOST email — valid format, no
+// mailbox, no account: zero side effects on either app, no db row on
+// our unknown-email path). The login-FAILURE ride stays a census
+// record, not a standing leg (R-20e: the platform's rate-limit face is
+// unknown and deliberately not hunted — today's 3 rides all identical).
+async function authFailFace(url: string) {
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  try {
+    // The header family on the five document surfaces — read ONLY the
+    // reference's keys (our framework vary/cache-control are invisible
+    // supersets, never diffed). R-20f (the round-20 find): the CURRENT
+    // reference ships x-content-type-options ONLY on / and /login — its
+    // sitemap/robots/manifest carry none (the session-20 pins were
+    // measured against the OLD CRM reference, which shipped nosniff on
+    // every response). OURS keeps nosniff on all five (the security
+    // superset, the session-20 rationale) — so nosniff is diffed only
+    // on the two surfaces the reference itself ships it; our extra
+    // coverage stays the unit-pinned superset (tests/http-headers).
+    const headerFace: Record<string, string> = {};
+    for (const path of ["/", "/login", "/sitemap.xml", "/robots.txt", "/manifest.json"]) {
+      const diffNosniff = path === "/" || path === "/login";
+      try {
+        const res = await context.request.get(url + path, { maxRedirects: 2, timeout: 30000 });
+        const h = res.headers();
+        const fields = [
+          String(res.status()),
+          h["content-type"] ?? "(none)",
+          h["referrer-policy"] ?? "(none)",
+          h["strict-transport-security"] ?? "(none)",
+        ];
+        if (diffNosniff) fields.push(h["x-content-type-options"] ?? "(none)");
+        headerFace[path] = fields.join(" | ");
+      } catch {
+        headerFace[path] = "(request failed)";
+      }
+    }
+
+    // The reset-submit ride: swap to the reset view, submit a ghost
+    // email, read the sent card's face (structural selectors — the
+    // reference's labels are unassociated).
+    const page = await context.newPage();
+    let forgotStatus = -1;
+    page.on("response", (r) => {
+      if (r.request().method() === "POST" && /forgot-password|reset-password-request/.test(r.url())) {
+        forgotStatus = r.status();
+      }
+    });
+    await page.goto(url + "/login", { waitUntil: "networkidle" });
+    await page.waitForTimeout(600);
+    await page.getByText(/forgot password/i).first().click();
+    await page.waitForTimeout(900);
+    await page.locator('input[type="email"]').first().fill("no-such-user-drift@example.com");
+    await page.locator("form").first().locator('button[type="submit"], button:not([type="button"])').first().click();
+    await page.waitForTimeout(2200);
+    const sent = await page.evaluate(() => {
+      const callout = Array.from(document.querySelectorAll<HTMLElement>("*")).find(
+        (n) => (n.getAttribute("class") ?? "").includes("bg-green-50"),
+      );
+      const h2 = document.querySelector("h2");
+      const back = Array.from(document.querySelectorAll("button")).map((b) => (b.textContent ?? "").trim()).find((t) => /back to sign in/i.test(t)) ?? "(none)";
+      return {
+        h2: h2 ? (h2.textContent ?? "").trim() : "(none)",
+        calloutRole: callout?.getAttribute("role") ?? "(no role)",
+        calloutClass: callout?.getAttribute("class") ?? "(none)",
+        calloutTextClass: callout?.firstElementChild?.getAttribute("class") ?? "(none)",
+        backButton: back,
+      };
+    });
+    await page.close();
+    return { headerFace, forgotStatus, ...sent };
+  } finally {
+    await context.close();
+  }
+}
+
 // The round-19 interact leg — sequential on ONE context per app (the
 // rides auto-scroll; the header-top read must precede them).
 {
@@ -629,6 +707,24 @@ async function interactFace(url: string, ours: boolean) {
   diff("[interact]", refInteract.floatingToasts, oursInteract.floatingToasts, "floatingToasts (the reference fires NONE — F-19a)", out);
 }
 
+// The round-20 [authfail] leg — sequential on ONE context per app.
+{
+  const refAuthFail = await authFailFace(REF);
+  const oursAuthFail = await authFailFace(OURS);
+  for (const path of ["/", "/login", "/sitemap.xml", "/robots.txt", "/manifest.json"]) {
+    const keys = path === "/" || path === "/login"
+      ? "status | content-type | referrer-policy | hsts | nosniff"
+      : "status | content-type | referrer-policy | hsts (nosniff: the ours-only superset — R-20f)";
+    diff("[authfail]", refAuthFail.headerFace[path], oursAuthFail.headerFace[path], `headers ${path} (${keys} — the session-20 family re-read on the CURRENT reference)`, out);
+  }
+  diff("[authfail]", refAuthFail.forgotStatus, oursAuthFail.forgotStatus, "forgotPostStatus (the ghost-email 200 both)", out);
+  diff("[authfail]", refAuthFail.h2, oursAuthFail.h2, "sentH2 (Check your email)", out);
+  diff("[authfail]", refAuthFail.calloutRole, oursAuthFail.calloutRole, "sentCalloutRole (F-20a: the platform callouts all announce)", out);
+  diff("[authfail]", refAuthFail.calloutClass, oursAuthFail.calloutClass, "sentCalloutClass (the green banner family)", out);
+  diff("[authfail]", refAuthFail.calloutTextClass, oursAuthFail.calloutTextClass, "sentCalloutTextClass (the bare-text inner div)", out);
+  diff("[authfail]", refAuthFail.backButton, oursAuthFail.backButton, "sentBackButton", out);
+}
+
 if (out.length === 0) {
   console.log("[390] CONTENT + MOBILE-MENU FACE: NO DRIFT — the reference matches our byte-mirror");
   console.log("[login] AUTH-CARD FACE: NO DRIFT — the reference matches our login mirror");
@@ -638,8 +734,9 @@ if (out.length === 0) {
   console.log("[auth-validation] AUTH-VALIDATION FACE: NO DRIFT — the reference matches our validation-mode mirror");
   console.log("[head] HEAD/METADATA FACE: NO DRIFT — the reference matches our document mirror");
   console.log("[interact] INTERACTION-BEHAVIOR FACE: NO DRIFT — the reference matches our interaction mirror");
+  console.log("[authfail] AUTH-FAILURE/RESPONSE FACE: NO DRIFT — the reference matches our failure/header mirror");
 } else {
-  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact] DRIFT DETECTED — ${out.length} field(s):`);
+  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact + authfail] DRIFT DETECTED — ${out.length} field(s):`);
   for (const line of out) console.log(line);
 }
 

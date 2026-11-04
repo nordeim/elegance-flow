@@ -169,6 +169,36 @@ test.describe("the full reset round-trip (the in-app delivery)", () => {
     expect(meBody.data?.email).toBe(scratchEmail);
   });
 
+  test("the ghost email's sent card ANNOUNCES the callout (role=alert) with no link — the round-20 F-20a pin", async ({ page }) => {
+    // Round-20 (the auth-failure/response census): the sent view's green
+    // callout carries role="alert" — the platform's own callout idiom
+    // (live-ridden on the reference: its red failure banner AND its green
+    // sent banner both announce), completing our Error/Info/sent family.
+    // The ghost email (valid format, no mailbox, no account) proves the
+    // no-enumeration 200 swap AND the graceful link degrade in one ride —
+    // the unknown path writes no row, so the e2e DB stays clean.
+    await page.goto("/login");
+    await page.getByRole("button", { name: "Forgot password?" }).click();
+    await page.getByLabel("Email").fill("no-such-user-round20@example.com");
+    await page.getByRole("button", { name: "Send reset link" }).click();
+
+    // The sent card's faces (the round-20 census: byte-identical on both
+    // apps — the h2, the email line, the back button).
+    await expect(page.getByRole("heading", { name: "Check your email" })).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText(/We've sent password reset instructions to/)).toBeVisible();
+    await expect(page.getByRole("button", { name: "Back to sign in" })).toBeVisible();
+
+    // F-20a: the callout ANNOUNCES (role=alert) with the exact text.
+    const callout = page.getByRole("alert").filter({
+      hasText: "Please check your email for the password reset link. It may take a few minutes to arrive.",
+    });
+    await expect(callout).toBeVisible();
+
+    // The graceful degrade: NO reset link on the ghost path (the null
+    // resetUrl renders nothing — the knob-off production posture).
+    await expect(page.getByRole("link", { name: /reset link/i })).toHaveCount(0);
+  });
+
   test("a pre-reset session dies at the version comparison (the S67-A eviction, behavioral)", async ({ page }) => {
     // The eviction's honest behavioral pin: mint a session, reset the
     // password through the API, then the OLD cookie no longer resolves a

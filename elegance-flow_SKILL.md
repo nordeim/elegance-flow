@@ -182,7 +182,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 491 checks / 39 files**: the seam batteries (auth,
+- **Unit — Vitest, 496 checks / 40 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
@@ -311,9 +311,26 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   error toasts (the reference cannot fail — no request fires), the
   native-validation gate, the controlled inputs, the pending guard;
   the panel's role="status" is OUR a11y superset — the reference's
-  panel is screen-reader-silent) — comment-stripped source reads; a
+  panel is screen-reader-silent) — and auth-failure-faces — the
+  round-20 battery that pins the live FAILURE behaviors + the
+  response-header family no current-reference probe ever read (F-20a:
+  the sent view's green callout carried NO ROLE — the success
+  announcement was screen-reader-silent; the reference's platform
+  callouts ALL carry role="alert" (live-ridden: the red failure
+  banner AND the green sent banner), and our own Error/Info callout
+  idiom already mirrored it — the sent callout was the role-less
+  straggler; the positive censuses: the login-failure ride
+  byte-identical (the banner's full class + inner shape + text, the
+  in-form mount, the persistence, the single-alert retry, the kept
+  password), the reset-submit ride identical modulo the role, the
+  header family re-proven on the current reference (the session-20
+  pins hold on / and /login; the reference ships nosniff ONLY there —
+  ours keeps it on all five surfaces, the security superset R-20f;
+  the records: the platform's 400 vs our canonical 401, the endpoint
+  shapes, the real-account sent card unverifiable — no email side
+  effects)) — comment-stripped source reads; a
   literal pinned by a comment alone is vacuous.
-- **E2E — Playwright, 84 checks / 8 specs**: the standalone artifact on
+- **E2E — Playwright, 85 checks / 8 specs**: the standalone artifact on
   :3100 with `db/e2e.db`; ONE shared login (`auth.setup.ts` →
   storageState — the auth endpoints are rate-limited 10/IP/15-min); one
   worker; alphabetical file order → every spec SELF-SUFFICIENT (its own

@@ -78,6 +78,24 @@ async function main() {
   await panelPage.screenshot({ path: `${OUT}/ours-contact-success-1280.png` });
   await panelCtx.close();
 
+  // ---- the reset SENT CARD (round-20 — F-20a's face) -----------------------
+  // The ghost-email ride: valid format, no mailbox, no account — the
+  // no-enumeration 200 swaps the card in place (no db row on the
+  // unknown path), the ANNOUNCED green callout (role=alert, the
+  // platform's own idiom — the round-20 cure) renders under the h2,
+  // and the null resetUrl degrades to no link.
+  const sentCtx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const sentPage = await sentCtx.newPage();
+  await sentPage.goto(`${OURS}/login`, { waitUntil: "networkidle" });
+  await sentPage.waitForTimeout(600);
+  await sentPage.getByRole("button", { name: "Forgot password?" }).click();
+  await sentPage.waitForTimeout(900);
+  await sentPage.getByLabel("Email").fill("no-such-user-round20@example.com");
+  await sentPage.getByRole("button", { name: "Send reset link" }).click();
+  await sentPage.waitForTimeout(1600);
+  await sentPage.screenshot({ path: `${OUT}/ours-reset-sent-1280.png` });
+  await sentCtx.close();
+
   await browser.close();
   console.log("captures saved under", OUT);
 }

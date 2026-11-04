@@ -46,8 +46,8 @@ re-pinned to the reference's v3 palette).
    seams in `src/lib/` rather than inlining logic. Keep lint green as
    you go.
 5. **VERIFY** — Run the full gate: `bun run lint` → `bun run typecheck`
-   → `bun run test` (491) → `bun run build` → `./scripts/smoke-test.sh`
-   (14) → `CI=1 bun run test:e2e` (84). The `gate` script chains them.
+   → `bun run test` (496) → `bun run build` → `./scripts/smoke-test.sh`
+   (14) → `CI=1 bun run test:e2e` (85). The `gate` script chains them.
 6. **DOCUMENT** — Update the touched docs (`README.md`, this file, the
    PAD, `worklog.md`) in the same change; the counts in the docs must
    match the suites (the lockstep doctrine — doc claims about the tree
@@ -78,8 +78,8 @@ SEO metadata family (the reference ships none), deep-linkable
 
 ```bash
 bun run dev        # :3000
-bun run test       # vitest (491 checks / 39 files)
-bun run test:e2e   # playwright (84 checks / 8 specs) — build first
+bun run test       # vitest (496 checks / 40 files)
+bun run test:e2e   # playwright (85 checks / 8 specs) — build first
 bun run gate       # the full chain, in order
 bun run db:census  # MUST print "pristine: MATCH" before you trust any db read
 ```
@@ -115,7 +115,7 @@ in production — the boot gate refuses to serve without it),
 
 ## Testing Strategy
 
-- **Unit (Vitest, 39 files / 491 checks)** — the seam batteries (auth,
+- **Unit (Vitest, 40 files / 496 checks)** — the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (`site-content`,
@@ -126,7 +126,7 @@ in production — the boot gate refuses to serve without it),
   `dead-code-census`, `focus-contract`, `inbox-states`,
   `landing-images`, `focus-outline`, `preflight-faces`,
   `motion-glyph`, `geometry-faces`, `auth-validation`, `head-faces`,
-  `interaction-faces`) — comment-stripped source reads; a literal pinned
+  `interaction-faces`, `auth-failure-faces`) — comment-stripped source reads; a literal pinned
   by a comment alone is vacuous.
 - **E2E (Playwright, `tests/e2e/*.spec.ts`)** — the standalone
   artifact on :3100 with `db/e2e.db`; ONE shared login

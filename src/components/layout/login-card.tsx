@@ -611,7 +611,16 @@ export function LoginCard({ mode = "signin" }: { mode?: Mode }) {
                             </p>
                           </div>
                         </div>
-                        <div className={LOGIN_RESET_LAYOUT.sentCallout}>
+                        {/* Round-20 (F-20a, the auth-failure/response
+                            census): the sent callout ANNOUNCES — the
+                            reference's platform callouts ALL carry
+                            role="alert" (live-ridden: the red failure
+                            banner AND this green sent banner), and our
+                            card's own ErrorCallout/InfoCallout idiom
+                            already mirrors it; this div was the role-less
+                            straggler (the success announcement was
+                            screen-reader-silent). */}
+                        <div role="alert" className={LOGIN_RESET_LAYOUT.sentCallout}>
                           {/* Session-79 (N-79c13): the reference's callout
                               text is a BARE text node — the [&_p] arm stays
                               inert (its line-height never fires there). */}
