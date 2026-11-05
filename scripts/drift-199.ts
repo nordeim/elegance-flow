@@ -1088,6 +1088,73 @@ function sha1Hex(buf: Buffer): string {
   return createHash("sha1").update(buf).digest("hex");
 }
 
+// The round-25 [routes] leg — the URL/ROUTE-MECHANICS census: the
+// 404's own TITLE-DERIVATION family (the reference's CURRENT build
+// derives the unknown-route title from the pathname — "Verify Email |
+// EleganceFlow" at /verify-email — the round-25 record correction of
+// the stale D-194a4 "bare brand on the 404" record; OURS mirrors it
+// through src/lib/route-title.ts + the NotFoundBody write/re-win),
+// the quoted-path body family, and the query passthrough — all diffed
+// REF vs OURS. The per-side mechanics ride RECORDED constants (the
+// google-leg expectConst pattern): the STATUS family (the reference's
+// SPA answers 200 everywhere vs OUR true-404 superset), the
+// trailing-slash family (the reference's /login/ falls to its
+// designed 404 — its own platform defect; OURS 308-normalizes to the
+// canonical login), and the guest /dashboard adjudication (the
+// reference renders its designed 404 directly — no wall, no from_url;
+// OURS rides OUR OWN from_url login wall, the superset inbox's guard).
+async function routesFace(url: string) {
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const page = await context.newPage();
+  const titles: Record<string, string> = {};
+  const statuses: Record<string, number | null> = {};
+  const quoted: Record<string, string | null> = {};
+  for (const p of [
+    "/verify-email",
+    "/nonexistent-xyz",
+    "/foo/bar",
+    "/MiXeD-cAsE",
+    "/UPPER-CASE",
+    "/with_underscore",
+    "/digits-123",
+    "/-leading-hyphen",
+    "/nonexistent-xyz?q=1",
+  ]) {
+    const resp = await page.goto(url + p, { waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(1200); // the SPA's runtime title injection + our write/re-win settle
+    titles[p] = await page.title();
+    statuses[p] = resp ? resp.status() : null;
+    const body = (await page.locator("body").innerText().catch(() => "")) || "";
+    quoted[p] = /The page "([^"]+)"/.exec(body)?.[1] ?? null;
+  }
+  // the trailing-slash mechanics + the query passthrough + the guest wall
+  const respSlash = await page.goto(url + "/login/", { waitUntil: "domcontentloaded" });
+  await page.waitForTimeout(1200);
+  const slash = {
+    finalPath: new URL(page.url()).pathname,
+    title: await page.title(),
+    status: respSlash ? respSlash.status() : null,
+    quoted: /The page "([^"]+)"/.exec((await page.locator("body").innerText().catch(() => "")) || "")?.[1] ?? null,
+  };
+  await page.goto(url + "/login?x=1", { waitUntil: "domcontentloaded" });
+  await page.waitForTimeout(1200);
+  const query = {
+    finalPath: new URL(page.url()).pathname + new URL(page.url()).search,
+    title: await page.title(),
+  };
+  await page.goto(url + "/dashboard", { waitUntil: "domcontentloaded" });
+  await page.waitForTimeout(1500); // the client-guard settle (OURS' from_url wall)
+  const u = new URL(page.url());
+  const dash = {
+    finalPath: u.pathname,
+    fromUrlTarget: u.searchParams.get("from_url") ?? null,
+    title: await page.title(),
+    quoted: /The page "([^"]+)"/.exec((await page.locator("body").innerText().catch(() => "")) || "")?.[1] ?? null,
+  };
+  await context.close();
+  return { titles, statuses, quoted, slash, query, dash };
+}
+
 // The round-19 interact leg — sequential on ONE context per app (the
 // rides auto-scroll; the header-top read must precede them).
 {
@@ -1384,6 +1451,63 @@ async function deepLinkFace(url: string) {
   expectConst("[docs]", "OURS", { width: "1200", height: "630", alt: null }, oursDocs.ogImageMeta, out);
 }
 
+// The round-25 [routes] leg — the mirrored families diffed directly;
+// the per-side mechanics (status, trailing slash, the guest wall)
+// pinned per side.
+{
+  const refRoutes = await routesFace(REF);
+  const oursRoutes = await routesFace(OURS);
+  // the derived-title family — IDENTICAL both apps after the round-25
+  // cure (the reference derives; ours mirrors through the seam)
+  for (const p of Object.keys(refRoutes.titles)) {
+    diff("[routes]", refRoutes.titles[p], oursRoutes.titles[p], `derivedTitle ${p} (the pathname-derived 404 title — F-25a)`, out);
+    diff("[routes]", refRoutes.quoted[p], oursRoutes.quoted[p], `quotedPath ${p} (the designed 404's interpolated path)`, out);
+  }
+  // the STATUS family — per-side constants (the reference's SPA
+  // answers 200 everywhere — its own platform artifact; OURS keeps
+  // the TRUE 404 status, the documented superset)
+  expectConst("[routes]", "REF", Object.fromEntries(
+    Object.keys(refRoutes.statuses).map((p) => [p, 200]),
+  ), refRoutes.statuses, out);
+  expectConst("[routes]", "OURS", Object.fromEntries(
+    Object.keys(oursRoutes.statuses).map((p) => [p, 404]),
+  ), oursRoutes.statuses, out);
+  // the trailing-slash family — per-side constants (the reference's
+  // /login/ falls to its designed 404; OURS 308-normalizes to the
+  // canonical /login — the web-correct superset, never broken to match)
+  expectConst("[routes]", "REF", {
+    finalPath: "/login/",
+    title: "Login | EleganceFlow",
+    status: 200,
+    quoted: "login/",
+  }, refRoutes.slash, out);
+  expectConst("[routes]", "OURS", {
+    finalPath: "/login",
+    title: "EleganceFlow",
+    status: 200,
+    quoted: null,
+  }, oursRoutes.slash, out);
+  // the query passthrough — diffed (IDENTICAL both apps: the real
+  // login family, the bare-brand title)
+  diff("[routes]", refRoutes.query.finalPath, oursRoutes.query.finalPath, "queryPassthrough finalPath (F-25d)", out);
+  diff("[routes]", refRoutes.query.title, oursRoutes.query.title, "queryPassthrough title (F-25d)", out);
+  // the guest /dashboard adjudication — per-side constants (the
+  // reference's designed 404 with its derived title vs OUR from_url
+  // wall — the superset inbox's own guard)
+  expectConst("[routes]", "REF", {
+    finalPath: "/dashboard",
+    fromUrlTarget: null,
+    title: "Dashboard | EleganceFlow",
+    quoted: "dashboard",
+  }, refRoutes.dash, out);
+  expectConst("[routes]", "OURS", {
+    finalPath: "/login",
+    fromUrlTarget: "http://localhost:3000/dashboard",
+    title: "EleganceFlow",
+    quoted: null,
+  }, oursRoutes.dash, out);
+}
+
 if (out.length === 0) {
   console.log("[390] CONTENT + MOBILE-MENU FACE: NO DRIFT — the reference matches our byte-mirror");
   console.log("[login] AUTH-CARD FACE: NO DRIFT — the reference matches our login mirror");
@@ -1398,8 +1522,9 @@ if (out.length === 0) {
   console.log("[viewport] INTERMEDIATE-VIEWPORT FACE: NO DRIFT — the sm/md boundaries compute identical on both apps (R-22a: the positive census; the mobile menu's retirement boundary clean)");
   console.log("[anchors] ANCHOR-NAVIGATION/DEEP-LINK FACE: NO DRIFT — the desktop nav rides + the logo ride identical on both apps; the deep-link boot matches each side's recorded constant (R-23a + the R-23b superset record)");
   console.log("[docs] DOCUMENT-ASSET/META FACE: NO DRIFT — the root rendered head family, the manifest contents, the robots bytes, the login tab order and the fonts family all mirror (the og-image BYTES identical both sides); the sitemap superset + the favicon-link/icon-src families match their per-side recorded constants (R-24a–e)");
+  console.log("[routes] ROUTE-MECHANICS FACE: NO DRIFT — the unknown-route derived-title family and the quoted-path bodies mirror (both apps derive — F-25a); the query passthrough identical (F-25d); the status family, the trailing slash and the guest /dashboard adjudication match their per-side recorded constants (the true-404 + 308 + from_url supersets — F-25b/c)");
 } else {
-  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact + authfail + google + viewport + anchors + docs] DRIFT DETECTED — ${out.length} field(s):`);
+  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact + authfail + google + viewport + anchors + docs + routes] DRIFT DETECTED — ${out.length} field(s):`);
   for (const line of out) console.log(line);
 }
 

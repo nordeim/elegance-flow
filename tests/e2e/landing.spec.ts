@@ -534,4 +534,60 @@ test.describe("the EleganceFlow landing (desktop 1280)", () => {
     expect(hashAfterLogo).toBe("");
     await expect(page.locator("header")).toHaveClass(/bg-transparent py-6/);
   });
+
+  test("round-25: the unknown-route DERIVED title family — the reference's own 404 face with OUR true 404 status (F-25a)", async ({ page }) => {
+    // Round-25 (F-25a — the record correction): the reference's CURRENT
+    // build DERIVES the unknown-route title from the pathname
+    // ("Verify Email | EleganceFlow" at /verify-email — live-probed
+    // settled 2026-11-05); ours had shipped the bare brand (the stale
+    // D-194a4 record). OURS keeps the TRUE 404 STATUS (the reference's
+    // SPA answers 200 everywhere — its own platform artifact). The
+    // title flips at hydration (the reference's own runtime-injection
+    // idiom), so the assertion rides the auto-retrying toHaveTitle.
+    // Source pins: tests/route-mechanics.test.ts ①③.
+    const res = await page.goto("/verify-email");
+    expect(res?.status()).toBe(404);
+    await expect(page).toHaveTitle("Verify Email | EleganceFlow");
+    await expect(page.getByText("Page Not Found")).toBeVisible();
+    await expect(page.getByText('"verify-email"')).toBeVisible();
+  });
+
+  test("round-25: the derivation rule's load-bearing decodes — the last segment, the camel-split, the query strip (F-25a)", async ({ page }) => {
+    // The three decodes that pin the RULE (not just one face):
+    // /foo/bar → "Bar" (the LAST segment only); /MiXeD-cAsE →
+    // "Mi Xe D C As E" (the camelCase split); /nonexistent-xyz?q=1 →
+    // the query ignored. All live-verified on the reference; the seam
+    // battery (tests/route-mechanics.test.ts ①) pins the full family.
+    await page.goto("/foo/bar");
+    await expect(page).toHaveTitle("Bar | EleganceFlow");
+    await page.goto("/MiXeD-cAsE");
+    await expect(page).toHaveTitle("Mi Xe D C As E | EleganceFlow");
+    await page.goto("/nonexistent-xyz?q=1");
+    await expect(page).toHaveTitle("Nonexistent Xyz | EleganceFlow");
+  });
+
+  test("round-25: the trailing-slash 308 — /login/ normalizes to the real login (OUR web-correct superset, F-25b)", async ({ page }) => {
+    // Round-25 (F-25b): the reference's /login/ falls to its DESIGNED
+    // 404 ("The page "login/" could not be found") — its own platform
+    // defect (the trailing slash breaks its SPA route match). OURS
+    // 308-normalizes to the canonical /login (Next's default
+    // trailingSlash: false — the web-correct form). The superset is
+    // ours, documented and kept; never break it to match.
+    await page.goto("/login/");
+    await expect(page).toHaveURL(/\/login$/);
+    await expect(page.getByRole("heading", { name: "Welcome to EleganceFlow" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
+  });
+
+  test("round-25: the query passthrough — /login?x=1 serves the real login family (F-25d, the positive census)", async ({ page }) => {
+    // Round-25 (F-25d): the query passthrough computes IDENTICAL on
+    // both apps (live-probed): an unknown query rides the real route —
+    // the settled bare-brand title (the query never leaks into the
+    // title family) and the real card face.
+    await page.goto("/login?x=1");
+    await expect(page).toHaveURL(/\/login\?x=1$/);
+    await expect(page).toHaveTitle("EleganceFlow");
+    await expect(page.getByRole("heading", { name: "Welcome to EleganceFlow" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Continue with Google" })).toBeVisible();
+  });
 });

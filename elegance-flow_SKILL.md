@@ -10,7 +10,7 @@ description: >
   doctrine, the Tailwind v4 re-pin traps, the mobile inline menu, the auth
   seams, the testing pyramid and the debugging playbook. Use it to extend,
   debug, onboard, or replicate this architecture.
-version: 1.212.0
+version: 1.213.0
 last_updated: 2026-11-05
 ---
 
@@ -191,7 +191,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 513 checks / 44 files**: the seam batteries (auth,
+- **Unit — Vitest, 518 checks / 45 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
@@ -393,10 +393,24 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   copy; the battery pins the byte-mirrored logo/og-image sha1s + IHDR
   dims, the SITE_DESCRIPTION mirror, the de-spaced signup title + the
   bare reset title + the factory's social titles following the
-  absolute title, and the no-icons-field favicon-link keep) —
+  absolute title, and the no-icons-field favicon-link keep) — and
+  route-mechanics — the round-25 battery that pins the URL/ROUTE-
+  MECHANICS family no probe ever rode (the 404's own TITLE
+  derivation: the reference's CURRENT build derives the unknown-route
+  title from the pathname — "Verify Email | EleganceFlow" at
+  /verify-email — the D-194a4 "bare brand on the 404" record was
+  stale for the current bundle; the battery pins the ten-case
+  derivation rule (last-segment, [-_]→space, camel-split,
+  title-case), the empty-word edges, the NotFoundBody write + the
+  event-driven re-win (the round's live decode: FOUR candidate
+  wirings revert — the bare assignment, the rendered element, the
+  foreign prepend, the zero-tick timer — the late asynchronous title
+  write beats them all; the MutationObserver re-wins from any
+  mechanism at any latency), and the not-found no-metadata +
+  layout-default keeps) —
   comment-stripped source reads; a
   literal pinned by a comment alone is vacuous.
-- **E2E — Playwright, 97 checks / 8 specs**: the standalone artifact on
+- **E2E — Playwright, 101 checks / 8 specs**: the standalone artifact on
   :3100 with `db/e2e.db`; ONE shared login (`auth.setup.ts` →
   storageState — the auth endpoints are rate-limited 10/IP/15-min); one
   worker; alphabetical file order → every spec SELF-SUFFICIENT (its own

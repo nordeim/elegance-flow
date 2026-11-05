@@ -11,9 +11,13 @@
 // Session-199 (the rebrand): the reference app is EleganceFlow
 // (colossal-elevate-service-flow.base44.app) — its <title> is the
 // absolute "EleganceFlow" on / and /login and /reset-password and the
-// "%s | EleganceFlow" template on its named routes (/signup "Signup | …",
-// /dashboard "Dashboard | …" — live-verified; round-24 corrected the
-// reset-password shape and the signup spacing).
+// "%s | EleganceFlow" template on its named routes (/signup "Signup | …".
+// Round-25 correction: the reference has NO /dashboard route — its
+// "/dashboard" face is the DESIGNED 404 carrying the DERIVED title
+// ("Dashboard | EleganceFlow" — the route-title census family,
+// src/lib/route-title.ts); OUR /dashboard is the real superset route
+// whose title happens to ride the same "| EleganceFlow" convention.
+// Round-24 corrected the reset-password shape and the signup spacing).
 //
 // Round-24 (the record correction): the reference's RENDERED head
 // ships the FULL meta family on every public route — meta description

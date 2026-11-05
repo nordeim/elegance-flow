@@ -3,6 +3,7 @@
 import * as React from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { deriveNotFoundTitle } from "@/lib/route-title";
 import { NOT_FOUND_LAYOUT } from "@/lib/page-layout";
 
 /**
@@ -43,6 +44,33 @@ import { NOT_FOUND_LAYOUT } from "@/lib/page-layout";
  * view is its platform template's own origin — the one non-lucide
  * icon family in its tree). OUR aria-hidden stays (the s19 superset
  * family — the reference's svg carries none, its own a11y gap).
+ *
+ * Round-25 (F-25a — the 404 TITLE family): the reference's CURRENT
+ * build DERIVES the unknown-route title from the pathname
+ * ("Verify Email | EleganceFlow" at /verify-email — the D-194a4
+ * "bare brand" record was stale for the current bundle). The flip
+ * rides THIS component (the only place the pathname lives) through
+ * the pure seam (src/lib/route-title.ts — the ten-case census rule)
+ * written directly and RE-WON event-driven. Why the observer (the
+ * round's live decode — four failed candidates probed): a bare
+ * `document.title = …` in an effect is reverted by the LATE title
+ * write (the effect fired, the value computed right, the assignment
+ * read back derived — and the title still settled to the bare
+ * brand); a RENDERED <title> element hoists AFTER Next's metadata
+ * title (the browser reads the first) and the two-phase value
+ * change appends a THIRD instance — the metadata title still wins;
+ * a FOREIGN prepended <title> node lands first, but the late write
+ * mutates the FIRST title element — the foreign node itself
+ * (live-probed: both head titles read the bare brand); a zero-tick
+ * TIMER write lands after every sync effect and still gets reverted
+ * (the reverter is asynchronous — it fires after the timer, when the
+ * streamed flight payload's head segment acquires the title
+ * singleton and patches its text to the layout's bare brand). The
+ * MutationObserver re-wins deterministically: every revert (from any
+ * mechanism, at any latency) re-fires the rewrite, converging once
+ * the last patch lands; it disconnects on unmount, and a navigation
+ * away re-fires the next route's own assertion (the Go Home ride
+ * lands the landing with its own face).
  */
 export function NotFoundBody() {
   const pathname = usePathname();
@@ -66,6 +94,39 @@ export function NotFoundBody() {
     const t = setTimeout(() => setMounted(true), 0);
     return () => clearTimeout(t);
   }, []);
+  // Round-25 (F-25a): the derived title — the reference's own 404 face
+  // ("Verify Email | EleganceFlow"), written directly and RE-WON
+  // event-driven (the module record above decodes why every simpler
+  // candidate loses to the late title revert). Gated on mounted so the
+  // first write lands after the mounted-flip commit; the observer
+  // handles every later revert.
+  React.useEffect(() => {
+    if (!mounted) return;
+    // The timer lands AFTER every sync effect — including Next's own
+    // client-side metadata title assertion (a parent-level effect that
+    // runs after this child effect on every commit and overwrites any
+    // bare assignment or prepended node; live-probed this round). The
+    // LAST writer wins, and nothing writes after the timer: the page
+    // is inert post-mount (no further commits), and a navigation away
+    // re-fires Next's metadata assertion for the next route.
+    const want = deriveNotFoundTitle(pathname);
+    document.title = want;
+    // The re-win: the reference's own SPA injects its titles at runtime;
+    // OUR runtime has a reverter (the late head-hydration patch —
+    // live-probed this round: the write lands, reads back derived, then
+    // flips back to the layout's bare brand once the streamed flight
+    // payload acquires the title singleton). Event-driven, self-limiting:
+    // every revert re-fires the rewrite, converging once the last patch
+    // lands; the observer disconnects on unmount and the next route's
+    // own assertion owns the title from there.
+    const mo = new MutationObserver(() => {
+      if (document.title !== want) document.title = want;
+    });
+    mo.observe(document.head, { childList: true, subtree: true, characterData: true });
+    return () => {
+      mo.disconnect();
+    };
+  }, [mounted, pathname]);
   const shownPath = mounted ? pathname.replace(/^\//, "") : "_not-found";
   return (
     <div className={NOT_FOUND_LAYOUT.page}>
