@@ -1982,6 +1982,136 @@ for (const [w, h] of [[1280, 800], [390, 844]] as const) {
   expectConst(label, "OURS", { about: "0.8s", services: "0.3s" }, oursReveal.transitionDuration, out);
 }
 
+// The round-29 [motion-prefs] leg — the PREFERS-REDUCED-MOTION census
+// (the 17th): the media condition no probe ever emulated (the parity
+// probe, every prior leg, the e2e suite and the captures all run at
+// default emulation). Under `reduce` the reference ships ZERO handling
+// — its raf-driven reveal STILL animates the full progression (0.19 →
+// 0.43 → 0.68 → 0.96 → 1 live-sampled) and its CSS transitions run at
+// full duration (services 0.3s, header 0.5s) — while OURS collapses
+// every CSS transition to 0.01ms (computed 1e-05s — the CRM-era
+// globals block beating the reveal family's inline durations by the
+// cascade; the deliberate a11y superset, F-29a, pinned by
+// tests/reduced-motion-faces.test.ts). The IDENTICAL faces (the
+// at-rest hidden family, the settled hero/mount family, the
+// post-reveal end state, the scroll-behavior) are DIFFED; the
+// divergence rides per-side recorded constants (the expectConst
+// pattern — the scroll-behavior-smooth superset precedent). Runs at
+// 1280 only: the family is viewport-independent global CSS.
+type MotionPrefsFace = {
+  reduceRules: string[];
+  atRest: { about: string[]; services: string[]; contact: string[] };
+  heroSettled: string[];
+  mountSettled: { portfolio: string[]; testimonials: string[] };
+  wheelSamples: string[];
+  postReveal: string[];
+  scrollBehavior: string;
+  durations: { services: string; header: string };
+};
+async function motionPrefsFace(url: string): Promise<MotionPrefsFace> {
+  const context = await browser.newContext({ reducedMotion: "reduce", viewport: { width: 1280, height: 800 } });
+  const page = await context.newPage();
+  try {
+    await page.goto(url, { waitUntil: "commit" });
+    await page.waitForSelector("#contact > div > div", { timeout: 20000 });
+    // the reduce-rules census: does the app's own CSS carry a
+    // prefers-reduced-motion block at all? (REF: none; OURS: the one)
+    const reduceRules = await page.evaluate(() => {
+      const found: string[] = [];
+      for (const sheet of Array.from(document.styleSheets)) {
+        let rules: CSSRuleList;
+        try {
+          rules = sheet.cssRules;
+        } catch {
+          continue; // cross-origin sheet without CORS
+        }
+        for (const rule of Array.from(rules)) {
+          if (rule instanceof CSSMediaRule && rule.media.mediaText.includes("prefers-reduced-motion")) {
+            for (const inner of Array.from(rule.cssRules)) {
+              found.push(`${rule.conditionText} :: ${(inner as CSSStyleRule).selectorText}`);
+            }
+          }
+        }
+      }
+      return found;
+    });
+    // wait out both the reference's raf family and our hydration +
+    // mount family (the [reveal] leg's own settle window) — read the
+    // settled faces BEFORE any wheel (hydration-safe ordering)
+    await page.waitForTimeout(2600);
+    const atRest = await page.evaluate(() => {
+      const f = (sel: string) =>
+        [...document.querySelectorAll(sel)].map((k) => `${getComputedStyle(k).opacity}|${getComputedStyle(k).transform}`);
+      return { about: f("#about > div > div"), services: f("#services .grid > div"), contact: f("#contact > div > div") };
+    });
+    const heroSettled = await page.evaluate(() =>
+      [".max-w-3xl", ".max-w-3xl > p", "h1 span"].map((s) => {
+        const el = document.querySelector(s);
+        return el ? `${getComputedStyle(el).opacity}|${getComputedStyle(el).transform}` : "MISSING";
+      }),
+    );
+    const mountSettled = await page.evaluate(() => {
+      const f = (sel: string) =>
+        [...document.querySelectorAll(sel)].map((k) => `${getComputedStyle(k).opacity}|${getComputedStyle(k).transform}`);
+      return { portfolio: f("#portfolio .grid > div").slice(0, 2), testimonials: f("#testimonials .md\\:col-span-3 > div") };
+    });
+    // the wheel ride, sampled fine: REF animates (0 < o < 1 windows);
+    // OURS snaps (0-or-1 samples only — no mid-flight window)
+    await page.mouse.wheel(0, 900);
+    const wheelSamples: string[] = [];
+    let waited = 0;
+    for (const t of [120, 140, 160, 280, 420, 700, 1100]) {
+      await page.waitForTimeout(t - waited);
+      waited = t;
+      wheelSamples.push(await page.evaluate(() => [...document.querySelectorAll("#about > div > div")].map((k) => getComputedStyle(k).opacity).join(",")));
+    }
+    await page.waitForTimeout(1300);
+    const postReveal = await page.evaluate(() =>
+      [...document.querySelectorAll("#about > div > div")].map((k) => `${getComputedStyle(k).opacity}|${getComputedStyle(k).transform}`),
+    );
+    // the settled-mode durations (the inline styles cleared at settle —
+    // read the services card's OWN class + the header's own class)
+    const durations = await page.evaluate(() => {
+      const card = document.querySelector("#services .grid > div");
+      const h = document.querySelector("header");
+      return {
+        services: card ? getComputedStyle(card).transitionDuration : "MISSING",
+        header: h ? getComputedStyle(h).transitionDuration : "MISSING",
+      };
+    });
+    const scrollBehavior = await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior);
+    return { reduceRules, atRest, heroSettled, mountSettled, wheelSamples, postReveal, scrollBehavior, durations };
+  } finally {
+    await context.close();
+  }
+}
+
+{
+  const [refMp, oursMp] = await Promise.all([motionPrefsFace(REF), motionPrefsFace(OURS)]);
+  const label = "[motion-prefs]";
+  // the IDENTICAL faces — real diffs (must match under reduce)
+  diff(label, refMp.atRest.about, oursMp.atRest.about, "atRest.about under reduce (hidden family identical)", out);
+  diff(label, refMp.heroSettled, oursMp.heroSettled, "heroSettled under reduce (1/none — the cascade settles by snap)", out);
+  diff(label, refMp.mountSettled.portfolio, oursMp.mountSettled.portfolio, "mountSettled.portfolio under reduce", out);
+  diff(label, refMp.mountSettled.testimonials, oursMp.mountSettled.testimonials, "mountSettled.testimonials under reduce", out);
+  diff(label, refMp.postReveal, oursMp.postReveal, "postReveal.about under reduce (1/none — never stuck hidden)", out);
+  diff(label, refMp.scrollBehavior, oursMp.scrollBehavior, "scrollBehavior under reduce (smooth on both — the superset rides)", out);
+  // the deliberate-superset divergence — per-side recorded constants
+  expectConst(label, "REF", { rules: 0 }, { rules: refMp.reduceRules.length }, out);
+  expectConst(label, "OURS", { rules: 1 }, { rules: oursMp.reduceRules.length }, out);
+  expectConst(label, "REF", { services: "0.3s", header: "0.5s" }, refMp.durations, out);
+  expectConst(label, "OURS", { services: "1e-05s", header: "1e-05s" }, oursMp.durations, out);
+  // the mid-flight presence per side: REF animates (a strictly-between
+  // sample exists); OURS snaps (every sample 0-or-1, the family
+  // completes — the reduce-mode contract)
+  const refAnimates = refMp.wheelSamples.some((s) => s.split(",").some((o) => Number(o) > 0 && Number(o) < 1));
+  const oursSnaps =
+    oursMp.wheelSamples.every((s) => s.split(",").every((o) => o === "0" || o === "1")) &&
+    oursMp.wheelSamples[oursMp.wheelSamples.length - 1].split(",").every((o) => o === "1");
+  expectConst(label, "REF", { midFlight: "animates" }, { midFlight: refAnimates ? "animates" : "no-motion" }, out);
+  expectConst(label, "OURS", { midFlight: "snaps" }, { midFlight: oursSnaps ? "snaps" : "animates" }, out);
+}
+
 if (out.length === 0) {
   console.log("[390] CONTENT + MOBILE-MENU FACE: NO DRIFT — the reference matches our byte-mirror");
   console.log("[login] AUTH-CARD FACE: NO DRIFT — the reference matches our login mirror (round-27: the LOGO family now censused — the reference's real img mirrored: the alt, the object-fit cover, the 96×96 box, the byte-class circle span, the blue-dot regression; the spanRadius/imgSrc ride their per-side constants — F-27a)");
@@ -1999,8 +2129,9 @@ if (out.length === 0) {
   console.log("[routes] ROUTE-MECHANICS FACE: NO DRIFT — the unknown-route derived-title family and the quoted-path bodies mirror (both apps derive — F-25a); the query passthrough identical (F-25d); the status family, the trailing slash and the guest /dashboard adjudication match their per-side recorded constants (the true-404 + 308 + from_url supersets — F-25b/c); the post-Go-Home title ride IDENTICAL both apps (the F-27d stale-title cure: both reset to the bare brand — the reference's own face)");
   console.log("[reset] PLATFORM-RESET FACE: NO DRIFT — the /reset-password family mirrors on both states after the F-26a/b/c cure (the Title-Case quartet, the BreadcrumbList JSON-LD third carrier, the flat gray-50 page, the white rounded-lg shadow-lg card, the FIXED 48/48/40 inner, the 24px h2 headings, the h-11/6px gray controls with the zinc-500 placeholder, the per-state strip/icon family, the tab order, the announced error box); the input/error oklab-vs-rgba fills match their per-side recorded constants (the s18 serialization class, numerically equal paint)");
   console.log("[reveal] SCROLL-REVEAL/MOTION FACE: NO DRIFT — the twenty-element family finally censused (F-28a): the at-rest hidden faces (opacity 0 + the live-probed ∓40X/+30Y/scale(0.96)/∓30X offsets) IDENTICAL both viewports, the mid-flight motion present on both apps, the post-reveal end state IDENTICAL (the static face every prior probe landed on); the transition mechanism rides per-side constants (the reference's raf 0s vs OUR CSS 0.8s decode — the services cards' own 0.3s class transition IDENTICAL)");
+  console.log("[motion-prefs] REDUCED-MOTION FACE: NO DRIFT — the media condition no probe ever emulated finally censused (F-29a): under reduce the at-rest hidden family, the settled hero/mount family, the post-reveal end state and the scroll-behavior IDENTICAL; the divergence rides the recorded per-side constants (the reference ships ZERO reduce handling — its raf reveal still animates, services 0.3s / header 0.5s at full duration — vs OUR 0.01ms collapse (computed 1e-05s), the deliberate a11y superset pinned by tests/reduced-motion-faces.test.ts; OUR reveal snaps with no mid-flight window, never stuck hidden)");
 } else {
-  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact + authfail + google + viewport + anchors + docs + routes + reset + reveal] DRIFT DETECTED — ${out.length} field(s):`);
+  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact + authfail + google + viewport + anchors + docs + routes + reset + reveal + motion-prefs] DRIFT DETECTED — ${out.length} field(s):`);
   for (const line of out) console.log(line);
 }
 

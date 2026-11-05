@@ -783,3 +783,70 @@ test.describe("the EleganceFlow landing (desktop 1280)", () => {
     expect((html.match(/opacity:0/g) ?? []).length).toBeGreaterThanOrEqual(20);
   });
 });
+
+test.describe("round-29: the landing under prefers-reduced-motion (the reduce-mode contract)", () => {
+  // F-29a: under `reduce` the CRM-era globals block collapses every CSS
+  // transition to 0.01ms — the reveal family SNAPS (no rideable
+  // mid-flight window), and the content NEVER sticks hidden: the
+  // observer-driven family reveals by snap after the wheel, and the
+  // mount-time families settle through their (still-honored) delays.
+  // The reference ships zero reduce handling (its raf reveal animates
+  // the full progression) — the recorded per-side divergence lives in
+  // the drift [motion-prefs] leg; this leg pins OUR contract on the
+  // standalone artifact.
+  test.use({ contextOptions: { reducedMotion: "reduce" } });
+
+  test("the reveal family snaps under reduce — at-rest hidden, no mid-flight window, the end state identical, never stuck", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+    // the at-rest family is hidden exactly as in normal mode (the SSR
+    // initials + the observer not yet fired)
+    await page.waitForSelector("#about > div > div");
+    const atRest = await page.evaluate(() =>
+      [...document.querySelectorAll("#about > div > div")].map((k) => getComputedStyle(k).opacity),
+    );
+    expect(atRest.every((o) => o === "0")).toBe(true);
+    // the live computed duration collapses (the block's 0.01ms beats
+    // the inline 800ms by the cascade — author !important > inline)
+    const dur = await page.evaluate(() => getComputedStyle(document.querySelector("#about > div > div")!).transitionDuration);
+    expect(dur).toBe("1e-05s");
+    // the ride: wheel to the about section — the snap contract means
+    // opacity reaches 1 with NO intermediate value ever observable
+    await page.mouse.wheel(0, 900);
+    const seen: string[] = [];
+    for (let i = 0; i < 8; i++) {
+      seen.push(await page.evaluate(() => getComputedStyle(document.querySelector("#about > div > div")!).opacity));
+      await page.waitForTimeout(80);
+    }
+    // every sampled value is 0 or 1 — the snap: no 0 < o < 1 window
+    expect(seen.every((o) => o === "0" || o === "1")).toBe(true);
+    // and the family completes: 1/none, never stuck hidden
+    await expect
+      .poll(async () => page.evaluate(() => [...document.querySelectorAll("#about > div > div")].map((k) => `${getComputedStyle(k).opacity}|${getComputedStyle(k).transform}`).join(",")), { timeout: 4000 })
+      .toBe("1|none,1|none");
+  });
+
+  test("the mount-time families settle under reduce — the stagger delays still space the snaps", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+    // the hero cascade settles to the reference's post-reveal pair (the
+    // delays ride the inline style — the block kills durations only)
+    await expect
+      .poll(async () => page.evaluate(() => [document.querySelector(".max-w-3xl"), document.querySelector("h1 span")].map((el) => getComputedStyle(el!).opacity).join(",")), { timeout: 4000 })
+      .toBe("1,1");
+    const settled = await page.evaluate(() =>
+      [document.querySelector(".max-w-3xl"), document.querySelector(".max-w-3xl > p"), document.querySelector("h1 span")].map((el) => ({
+        op: el ? getComputedStyle(el).opacity : "-1",
+        tf: el ? getComputedStyle(el).transform : "-1",
+      })),
+    );
+    for (const s of settled) {
+      expect(s.op).toBe("1");
+      expect(s.tf).toBe("none");
+    }
+    // the portfolio mount family: settled by ~400ms + the delay window
+    await expect
+      .poll(async () => page.evaluate(() => [...document.querySelectorAll("#portfolio .grid > div")].slice(0, 2).map((k) => getComputedStyle(k).opacity).join(",")), { timeout: 4000 })
+      .toBe("1,1");
+  });
+});

@@ -191,7 +191,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 542 checks / 48 files**: the seam batteries (auth,
+- **Unit — Vitest, 551 checks / 49 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
@@ -426,6 +426,17 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   testimonials/contact reveal specs, the two inline states, the
   services own-class decode, the settle cleanup, the no-wiring
   negatives, and the SSR no-FOUC contract) — and
+  reduced-motion-faces — the round-29 battery that pins the
+  PREFERS-REDUCED-MOTION census (the media condition no probe ever
+  emulated: the reference ships zero reduce handling — its raf reveal
+  still animates under reduce, services 0.3s / header 0.5s at full
+  duration — vs OUR globals-block 0.01ms collapse (computed 1e-05s),
+  the deliberate a11y superset; the delay-survival contract — the
+  block kills durations, never delays, so the cascade's staggered
+  snaps still space; the seam purity — no matchMedia, no
+  motion-reduce, the reduce behavior flows from the global block
+  alone; and the PAD doc-stratum cures — the 18-module Layer-1 list
+  and the reveal-family REPRODUCED record) — and
   error-faces — the round-27 battery that pins the CRM-BLUE/
   RESILIENCE-BOUNDARY family no probe ever censused (the token-axis
   blind spot of the session-199 domain transformation: the login card's
@@ -441,7 +452,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   boundaries' comments always claimed) —
   comment-stripped source reads; a
   literal pinned by a comment alone is vacuous.
-- **E2E — Playwright, 111 checks / 8 specs**: the standalone artifact on
+- **E2E — Playwright, 113 checks / 8 specs**: the standalone artifact on
   :3100 with `db/e2e.db`; ONE shared login (`auth.setup.ts` →
   storageState — the auth endpoints are rate-limited 10/IP/15-min); one
   worker; alphabetical file order → every spec SELF-SUFFICIENT (its own
