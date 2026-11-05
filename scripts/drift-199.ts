@@ -123,6 +123,13 @@ function diff(label: string, a: unknown, b: unknown, path: string, out: string[]
 // hover pair, the divider ink, the input/submit pads). The hover pair
 // rides a real .hover() + settle (the transition-all duration-200
 // lesson — a mid-transition read is a false face).
+// Round-27 (F-27a) EXTENSION: the LOGO family — the circle span's chrome
+// (radius/overflow/shadow) + the logo img's face (alt/object-fit/box) —
+// the face the leg never read (ours shipped the CRM-era blue dot while
+// the reference renders its real logo img; live-probed 2026-11-05).
+// The img's SRC rides per-side constants (theirs the base44 CDN vs ours
+// /icon.png — the round-24 never-their-CDN doctrine, the expectConst
+// pattern).
 type LoginFace = {
   cardColor: string;
   google: { color: string; border: string };
@@ -130,6 +137,18 @@ type LoginFace = {
   dividerColor: string;
   inputPad: string;
   submitPad: string;
+  logo: {
+    spanRadius: string;
+    spanOverflow: string;
+    spanShadow: string;
+    spanBg: string;
+    imgAlt: string;
+    imgSrc: string;
+    imgFit: string;
+    imgBox: string;
+    imgDisplay: string;
+    innerRoundSpans: number;
+  };
 };
 
 async function loginFace(url: string): Promise<LoginFace> {
@@ -148,6 +167,13 @@ async function loginFace(url: string): Promise<LoginFace> {
     const google = Array.from(document.querySelectorAll("button")).find((b) => /google/i.test(b.textContent ?? ""));
     const btn = Array.from(document.querySelectorAll("button")).find((b) => /sign in|log in/i.test(b.textContent ?? ""));
     const divider = Array.from(document.querySelectorAll("*")).find((el) => /^or$/i.test((el.textContent ?? "").trim()) && el.children.length === 0);
+    // Round-27 (F-27a): the LOGO family — the reference's real img inside
+    // the circle span (ours pre-cure: a 40×40 blue-dot span). The circle:
+    // the h1's preceding round sibling; the img: the alt-bearing logo.
+    const logoImg = document.querySelector("img[alt*='logo']") as HTMLImageElement | null;
+    const logoSpan = logoImg?.parentElement ?? null;
+    const span = logoSpan && getComputedStyle(logoSpan);
+    const imgBox = logoImg ? logoImg.getBoundingClientRect() : null;
     return {
       cardColor: cs(card)?.color ?? "",
       google: {
@@ -158,6 +184,18 @@ async function loginFace(url: string): Promise<LoginFace> {
       dividerColor: cs(divider)?.color ?? "",
       inputPad: cs(email)?.padding ?? "",
       submitPad: cs(btn)?.padding ?? "",
+      logo: {
+        spanRadius: span?.borderRadius ?? "",
+        spanOverflow: span?.overflow ?? "",
+        spanShadow: span?.boxShadow.slice(0, 100) ?? "",
+        spanBg: span?.backgroundColor ?? "",
+        imgAlt: logoImg?.alt ?? "",
+        imgSrc: logoImg?.getAttribute("src") ?? "",
+        imgFit: logoImg ? getComputedStyle(logoImg).objectFit : "",
+        imgBox: imgBox ? `${Math.round(imgBox.width)}x${Math.round(imgBox.height)}` : "",
+        imgDisplay: logoImg ? getComputedStyle(logoImg).display : "",
+        innerRoundSpans: logoSpan ? logoSpan.querySelectorAll(":scope > span").length : -1,
+      },
     };
   });
   // The hover pair: a real hover ride + settle (the transition lesson)
@@ -385,6 +423,39 @@ diff("[login]", refLogin.googleHover, oursLogin.googleHover, "googleHover (bg/bo
 diff("[login]", refLogin.dividerColor, oursLogin.dividerColor, "dividerColor", out);
 diff("[login]", refLogin.inputPad, oursLogin.inputPad, "inputPad", out);
 diff("[login]", refLogin.submitPad, oursLogin.submitPad, "submitPad", out);
+// Round-27 (F-27a) EXTENSION: the LOGO family — the circle span's chrome +
+// the real logo img's face, diffed both apps. The spanRadius and the
+// spanShadow ride PER-SIDE constants (the s18/round-26 serialization
+// classes: v3 computes the rounded-full 9999px where v4 computes
+// 33554400px — the numeric-paint-equal read, never diffed; the
+// ring-4/shadow-lg composite serializes oklab-vs-rgba) — as does the
+// imgSrc (the round-24 never-their-CDN doctrine: theirs the base44 CDN,
+// ours the byte-mirrored /icon.png).
+diff("[login]", refLogin.logo.spanOverflow, oursLogin.logo.spanOverflow, "logo.spanOverflow", out);
+diff("[login]", refLogin.logo.spanBg, oursLogin.logo.spanBg, "logo.spanBg (the dot-era bg-white retired)", out);
+diff("[login]", refLogin.logo.imgAlt, oursLogin.logo.imgAlt, "logo.imgAlt (the reference's real alt)", out);
+diff("[login]", refLogin.logo.imgFit, oursLogin.logo.imgFit, "logo.imgFit (the byte class object-cover)", out);
+diff("[login]", refLogin.logo.imgBox, oursLogin.logo.imgBox, "logo.imgBox (96×96 at 1280)", out);
+diff("[login]", refLogin.logo.imgDisplay, oursLogin.logo.imgDisplay, "logo.imgDisplay (the preflight block)", out);
+diff("[login]", refLogin.logo.innerRoundSpans, oursLogin.logo.innerRoundSpans, "logo.innerRoundSpans (the CRM blue dot never returns)", out);
+expectConst("[login]", "REF", "9999px", refLogin.logo.spanRadius, out);
+expectConst("[login]", "OURS", "3.35544e+07px", oursLogin.logo.spanRadius, out);
+expectConst("[login]", "REF", "EleganceFlow logo", refLogin.logo.imgAlt, out);
+expectConst("[login]", "OURS", "EleganceFlow logo", oursLogin.logo.imgAlt, out);
+expectConst("[login]", "REF", "cover", refLogin.logo.imgFit, out);
+expectConst("[login]", "OURS", "cover", oursLogin.logo.imgFit, out);
+expectConst("[login]", "REF", "96x96", refLogin.logo.imgBox, out);
+expectConst("[login]", "OURS", "96x96", oursLogin.logo.imgBox, out);
+expectConst("[login]", "REF", 0, refLogin.logo.innerRoundSpans, out);
+expectConst("[login]", "OURS", 0, oursLogin.logo.innerRoundSpans, out);
+expectConst(
+  "[login]",
+  "REF",
+  "https://media.base44.com/images/public/69ca8f9d112e0923462fae91/283cae1f1_logo.png/v1/fit/w_192,h_192/283cae1f1_logo.webp",
+  refLogin.logo.imgSrc,
+  out,
+);
+expectConst("[login]", "OURS", "/icon.png", oursLogin.logo.imgSrc, out);
 
 // The round-14 preflight-face leg (the landing's form faces at 1280)
 const [refPreflight, oursPreflight] = await Promise.all([preflightFace(REF), preflightFace(OURS)]);
@@ -1151,8 +1222,27 @@ async function routesFace(url: string) {
     title: await page.title(),
     quoted: /The page "([^"]+)"/.exec((await page.locator("body").innerText().catch(() => "")) || "")?.[1] ?? null,
   };
+  // Round-27 (F-27d) EXTENSION: the post-Go-Home TITLE ride — the
+  // stale-title drift the round's discovery probe found (OURS' derived
+  // 404 title PERSISTED on the landing after the Go Home client nav;
+  // the reference's SPA resets to the bare brand). The reference's Go
+  // Home is a BUTTON (its SPA JS-router idiom — the D-194a2 record);
+  // ours is the WCAG-correct <Link> — the ride clicks whichever control
+  // carries the name on each side.
+  await page.goto(url + "/probe-27", { waitUntil: "domcontentloaded" });
+  await page.waitForTimeout(1200);
+  const goHomeTitleBefore = await page.title();
+  const homeCtl = page.getByRole("link", { name: "Go Home" }).or(page.getByRole("button", { name: "Go Home" })).first();
+  await homeCtl.click();
+  await page.waitForTimeout(2500);
+  const gu = new URL(page.url());
+  const goHome = {
+    before: goHomeTitleBefore,
+    finalPath: gu.pathname,
+    title: await page.title(),
+  };
   await context.close();
-  return { titles, statuses, quoted, slash, query, dash };
+  return { titles, statuses, quoted, slash, query, dash, goHome };
 }
 
 // The round-19 interact leg — sequential on ONE context per app (the
@@ -1506,6 +1596,13 @@ async function deepLinkFace(url: string) {
     title: "EleganceFlow",
     quoted: null,
   }, oursRoutes.dash, out);
+  // Round-27 (F-27d) EXTENSION: the post-Go-Home title ride — diffed
+  // both apps (IDENTICAL after the cure: both reset to the bare brand
+  // at "/"; the pre-cure OURS face read "Probe 27 | EleganceFlow"
+  // PERSISTED on the landing — the React title-skip decode)
+  diff("[routes]", refRoutes.goHome.before, oursRoutes.goHome.before, "goHome titleBefore (the derived 404 title)", out);
+  diff("[routes]", refRoutes.goHome.finalPath, oursRoutes.goHome.finalPath, "goHome finalPath (the landing)", out);
+  diff("[routes]", refRoutes.goHome.title, oursRoutes.goHome.title, "goHome titleAfter (the stale-title cure — the bare brand)", out);
 }
 
 // The round-26 [reset] leg — the PLATFORM RESET FAMILY census: the
@@ -1743,7 +1840,7 @@ async function resetFace(url: string) {
 
 if (out.length === 0) {
   console.log("[390] CONTENT + MOBILE-MENU FACE: NO DRIFT — the reference matches our byte-mirror");
-  console.log("[login] AUTH-CARD FACE: NO DRIFT — the reference matches our login mirror");
+  console.log("[login] AUTH-CARD FACE: NO DRIFT — the reference matches our login mirror (round-27: the LOGO family now censused — the reference's real img mirrored: the alt, the object-fit cover, the 96×96 box, the byte-class circle span, the blue-dot regression; the spanRadius/imgSrc ride their per-side constants — F-27a)");
   console.log("[preflight] FORM-FACE: NO DRIFT — the reference matches our preflight mirror");
   console.log("[motion] MOTION/GLYPH FACE: NO DRIFT — the reference matches our motion/glyph mirror");
   console.log("[geometry] STRUCTURE/GEOMETRY FACE: NO DRIFT — the reference matches our geometry mirror");
@@ -1755,7 +1852,7 @@ if (out.length === 0) {
   console.log("[viewport] INTERMEDIATE-VIEWPORT FACE: NO DRIFT — the sm/md boundaries compute identical on both apps (R-22a: the positive census; the mobile menu's retirement boundary clean)");
   console.log("[anchors] ANCHOR-NAVIGATION/DEEP-LINK FACE: NO DRIFT — the desktop nav rides + the logo ride identical on both apps; the deep-link boot matches each side's recorded constant (R-23a + the R-23b superset record)");
   console.log("[docs] DOCUMENT-ASSET/META FACE: NO DRIFT — the root rendered head family, the manifest contents, the robots bytes, the login tab order and the fonts family all mirror (the og-image BYTES identical both sides); the sitemap superset + the favicon-link/icon-src families match their per-side recorded constants (R-24a–e)");
-  console.log("[routes] ROUTE-MECHANICS FACE: NO DRIFT — the unknown-route derived-title family and the quoted-path bodies mirror (both apps derive — F-25a); the query passthrough identical (F-25d); the status family, the trailing slash and the guest /dashboard adjudication match their per-side recorded constants (the true-404 + 308 + from_url supersets — F-25b/c)");
+  console.log("[routes] ROUTE-MECHANICS FACE: NO DRIFT — the unknown-route derived-title family and the quoted-path bodies mirror (both apps derive — F-25a); the query passthrough identical (F-25d); the status family, the trailing slash and the guest /dashboard adjudication match their per-side recorded constants (the true-404 + 308 + from_url supersets — F-25b/c); the post-Go-Home title ride IDENTICAL both apps (the F-27d stale-title cure: both reset to the bare brand — the reference's own face)");
   console.log("[reset] PLATFORM-RESET FACE: NO DRIFT — the /reset-password family mirrors on both states after the F-26a/b/c cure (the Title-Case quartet, the BreadcrumbList JSON-LD third carrier, the flat gray-50 page, the white rounded-lg shadow-lg card, the FIXED 48/48/40 inner, the 24px h2 headings, the h-11/6px gray controls with the zinc-500 placeholder, the per-state strip/icon family, the tab order, the announced error box); the input/error oklab-vs-rgba fills match their per-side recorded constants (the s18 serialization class, numerically equal paint)");
 } else {
   console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact + authfail + google + viewport + anchors + docs + routes + reset] DRIFT DETECTED — ${out.length} field(s):`);

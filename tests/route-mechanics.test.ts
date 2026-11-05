@@ -105,6 +105,20 @@ describe("session-199 round-25: the route-mechanics/404-title census", () => {
     // there — the Go Home ride lands the landing with its own face)
     expect(stripped).toContain("if (!mounted) return;");
     expect(stripped).toContain("mo.disconnect();");
+    // Round-27 (F-27d) re-pin: the GUARDED bare-brand reset in the cleanup —
+    // React's <title> reconciliation skips the write when the incoming
+    // route resolves the same string its record owns (the 404 and the
+    // landing BOTH resolve the layout-default "EleganceFlow"), so the
+    // derived 404 title would otherwise PERSIST on the landing after the
+    // Go Home ride (live-probed on the artifact; the reference's SPA
+    // resets to the bare brand). The guard converges in every commit
+    // order: only when the DOM still carries OUR derived value does the
+    // cleanup hand the bare brand back — a titled next route (React
+    // writes its own differing value, before or after this cleanup)
+    // never gets clobbered.
+    expect(stripped).toContain(
+      'if (document.title === want) document.title = "EleganceFlow";',
+    );
   });
 
   it("not-found.tsx ships no metadata export — the bare-brand default renders, the client flip rides on top (the D-194a4 retirement stands)", () => {

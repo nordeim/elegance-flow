@@ -125,6 +125,20 @@ export function NotFoundBody() {
     mo.observe(document.head, { childList: true, subtree: true, characterData: true });
     return () => {
       mo.disconnect();
+      // Round-27 (F-27d — the stale-title decode, live-probed on the
+      // artifact): React's <title> reconciliation SKIPS the DOM write
+      // when the incoming route resolves the SAME string its record
+      // already owns — the 404 (no metadata export, the D-194a4
+      // retirement) and the landing BOTH resolve the layout-default
+      // "EleganceFlow", so after the Go Home ride React never rewrites
+      // the node our observer mutated, and the derived 404 title
+      // PERSISTS on the landing (the reference's SPA resets to the bare
+      // brand, live-ridden). The GUARDED reset converges in every
+      // commit order: only when the DOM still carries OUR derived value
+      // (nothing else has written since) do we hand the bare brand back
+      // — a titled next route (React writes its own differing value,
+      // either before or after this cleanup) never gets clobbered.
+      if (document.title === want) document.title = "EleganceFlow";
     };
   }, [mounted, pathname]);
   const shownPath = mounted ? pathname.replace(/^\//, "") : "_not-found";

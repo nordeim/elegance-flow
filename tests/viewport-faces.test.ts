@@ -122,8 +122,14 @@ describe("the round-22 viewport-faces census (F-22a + the keeps)", () => {
       '"flex h-11 w-full items-center justify-center gap-1 px-3 py-2 rounded-xl bg-slate-900 font-medium text-white shadow-sm transition-all duration-200 hover:bg-slate-800 disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-transparent focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 text-sm sm:h-12"',
     );
     expect(layout).toContain(
-      '"relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white shadow-lg ring-4 ring-white/50 transition-all duration-300 group-hover:shadow-xl sm:h-24 sm:w-24"',
+      '"relative flex h-20 w-20 shrink-0 overflow-hidden rounded-full shadow-lg ring-4 ring-white/50 transition-all duration-300 group-hover:shadow-xl sm:h-24 sm:w-24"',
     );
+    // Round-27 (F-27a) re-pin: the logo img member — the reference's byte
+    // class (aspect-square h-full w-full object-cover), self-hosted at
+    // /icon.png with the real alt "EleganceFlow logo"; the CRM-era
+    // bg-white/items-center/justify-center dot-era extras retired with
+    // the blue dot.
+    expect(layout).toContain('"aspect-square h-full w-full object-cover"');
     expect(layout).toContain('"text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight"');
     expect(layout).toContain('"text-slate-500 text-sm sm:text-base font-medium"');
     expect(layout).toContain('"p-8 sm:p-10 md:pt-12 md:pb-10 md:px-10"');

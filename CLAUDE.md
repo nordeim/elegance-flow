@@ -46,8 +46,8 @@ re-pinned to the reference's v3 palette).
    seams in `src/lib/` rather than inlining logic. Keep lint green as
    you go.
 5. **VERIFY** — Run the full gate: `bun run lint` → `bun run typecheck`
-   → `bun run test` (523) → `bun run build` → `./scripts/smoke-test.sh`
-   (14) → `CI=1 bun run test:e2e` (105). The `gate` script chains them.
+   → `bun run test` (528) → `bun run build` → `./scripts/smoke-test.sh`
+   (14) → `CI=1 bun run test:e2e` (107). The `gate` script chains them.
 6. **DOCUMENT** — Update the touched docs (`README.md`, this file, the
    PAD, `worklog.md`) in the same change; the counts in the docs must
    match the suites (the lockstep doctrine — doc claims about the tree
@@ -84,8 +84,8 @@ deep-linkable `/signup` + `/reset-password`.
 
 ```bash
 bun run dev        # :3000
-bun run test       # vitest (523 checks / 46 files)
-bun run test:e2e   # playwright (105 checks / 8 specs) — build first
+bun run test       # vitest (528 checks / 47 files)
+bun run test:e2e   # playwright (107 checks / 8 specs) — build first
 bun run gate       # the full chain, in order
 bun run db:census  # MUST print "pristine: MATCH" before you trust any db read
 ```
@@ -121,7 +121,7 @@ in production — the boot gate refuses to serve without it),
 
 ## Testing Strategy
 
-- **Unit (Vitest, 46 files / 523 checks)** — the seam batteries (auth,
+- **Unit (Vitest, 47 files / 528 checks)** — the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (`site-content`,
@@ -134,7 +134,11 @@ in production — the boot gate refuses to serve without it),
   `motion-glyph`, `geometry-faces`, `auth-validation`, `head-faces`,
   `interaction-faces`, `auth-failure-faces`, `google-fallback`,
   `viewport-faces`, `anchor-faces`, `document-assets`,
-  `route-mechanics`, `reset-faces`) — comment-stripped source reads; a literal pinned
+  `route-mechanics`, `reset-faces`, `error-faces` — the round-27 battery: the
+  CRM-blue/resilience-boundary census, pinning the ERROR_LAYOUT seam + the
+  WCAG ratios COMPUTED from the live @theme hex (the boundaries' AA cure),
+  the seven retired CRM-blue tokens, the boundaries-ride-the-seam posture,
+  and the login-logo img cure) — comment-stripped source reads; a literal pinned
   by a comment alone is vacuous.
 - **E2E (Playwright, `tests/e2e/*.spec.ts`)** — the standalone
   artifact on :3100 with `db/e2e.db`; ONE shared login

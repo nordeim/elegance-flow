@@ -99,7 +99,13 @@ describe("session-131 parity pins (the toast family walk — F-131c1: the refere
   it("the icon family (h-4.5 w-4.5 + the three token rides — live-censused 18px rgb(16,185,129) success)", () => {
     expect(src).toContain("h-4.5 w-4.5 text-success");
     expect(src).toContain("h-4.5 w-4.5 text-danger");
-    expect(src).toContain("h-4.5 w-4.5 text-primary");
+    // Round-27 (F-27e) re-pin: the info icon rides the Feedback family's
+    // --color-info (#06b6d4 — the conventional info status ink, redundant
+    // with the toast's text so WCAG 1.4.11 exempts it); the CRM-blue
+    // --color-primary retired with the rest of the brand token family
+    // (tests/error-faces.test.ts ③).
+    expect(src).toContain("h-4.5 w-4.5 text-info");
+    expect(src).not.toContain("text-primary");
   });
 
   it("the hover-pause seam (the onMouseEnter/Leave pair — live-proven: holds at 6.5s, dismisses ~4.1s after the unpause)", () => {

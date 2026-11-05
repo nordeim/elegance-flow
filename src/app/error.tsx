@@ -10,18 +10,25 @@
 // card is the honest surface (the digest is the operator's correlation
 // handle — Next attaches it server-side and in the logs).
 //
-// The styling mirrors the reference's own 404 family (the slate
-// centered card + divider + the bordered pill — the NOT_FOUND_LAYOUT
-// idiom): the boundary is a SUPERSET surface (the reference ships
-// none), so it speaks the house dialect the 404 already established.
+// Round-27 (F-27b/c, the CRM-blue/resilience-boundary census): the card
+// NOW rides the ERROR_LAYOUT seam — the 404's own construction + its Go
+// Home pill family, the house dialect this comment always claimed. The
+// pre-round-27 card rode INLINE literals with a `bg-primary`-blue
+// Try-again button (the NEO-CRM #2563eb brand family that survived the
+// domain transformation only because this family never carried a face
+// pin) and a slate-300 h1 that computed 1.42:1 — a WCAG 1.4.3 fail on
+// OUR OWN surface. The seam's h1 rides slate-500 (AA outright); the
+// 404's own "404" numeral keeps the reference's sanctioned slate-300.
 //
 // Deliberately imports NOTHING from the component tree beyond the
-// recovery seam — a resilience surface must not depend on the tree that
-// might be broken.
+// recovery seam and the pure layout constants — a resilience surface
+// must not depend on the tree that might be broken (page-layout is a
+// leaf constant module, the same class as chunk-recovery).
 
 import { useEffect } from "react";
 import { RotateCcw } from "lucide-react";
 import { reloadOnStaleChunk } from "@/lib/chunk-recovery";
+import { ERROR_LAYOUT } from "@/lib/page-layout";
 
 export default function ErrorPage({
   error,
@@ -35,27 +42,23 @@ export default function ErrorPage({
   }, [error]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50">
-      <div className="max-w-md w-full">
-        <div className="text-center space-y-6">
-          <div className="space-y-2">
-            <h1 className="text-4xl font-light text-slate-300">Something went wrong</h1>
-            <div className="h-0.5 w-16 bg-slate-200 mx-auto" aria-hidden="true" />
+    <div className={ERROR_LAYOUT.page}>
+      <div className={ERROR_LAYOUT.card}>
+        <div className={ERROR_LAYOUT.center}>
+          <div className={ERROR_LAYOUT.headingGroup}>
+            <h1 className={ERROR_LAYOUT.h1}>Something went wrong</h1>
+            <div className={ERROR_LAYOUT.divider} aria-hidden="true" />
           </div>
-          <div className="space-y-3">
-            <h2 className="text-2xl font-medium text-slate-800">An unexpected error occurred</h2>
-            <p className="text-slate-600 leading-relaxed">
+          <div className={ERROR_LAYOUT.textGroup}>
+            <h2 className={ERROR_LAYOUT.h2}>An unexpected error occurred</h2>
+            <p className={ERROR_LAYOUT.p}>
               We have logged the issue{error.digest ? ` (ref: ${error.digest})` : ""}. Please
               try again.
             </p>
           </div>
-          <div className="pt-6">
-            <button
-              type="button"
-              onClick={reset}
-              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-            >
-              <RotateCcw className="h-4 w-4 mr-2" aria-hidden="true" />
+          <div className={ERROR_LAYOUT.buttonGroup}>
+            <button type="button" onClick={reset} className={ERROR_LAYOUT.button}>
+              <RotateCcw className={ERROR_LAYOUT.buttonIcon} aria-hidden="true" />
               Try again
             </button>
           </div>

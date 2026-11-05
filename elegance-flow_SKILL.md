@@ -10,7 +10,7 @@ description: >
   doctrine, the Tailwind v4 re-pin traps, the mobile inline menu, the auth
   seams, the testing pyramid and the debugging playbook. Use it to extend,
   debug, onboard, or replicate this architecture.
-version: 1.213.0
+version: 1.214.0
 last_updated: 2026-11-05
 ---
 
@@ -191,7 +191,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 523 checks / 46 files**: the seam batteries (auth,
+- **Unit — Vitest, 528 checks / 47 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
@@ -419,10 +419,23 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   card; the session-163 login-family expression retired; the battery
   pins the RESET_LAYOUT seam literals + the DOM-case text family + the
   BreadcrumbList third carrier + the a11y superset keeps + the
-  retired-form regression) —
+  retired-form regression) — and
+  error-faces — the round-27 battery that pins the CRM-BLUE/
+  RESILIENCE-BOUNDARY family no probe ever censused (the token-axis
+  blind spot of the session-199 domain transformation: the login card's
+  logo was the CRM-era bg-sidebar #2563eb blue dot where the reference
+  renders its real 283cae1f1_logo img — the same asset the round-24
+  icons byte-mirror, self-hosted at /icon.png, never their CDN; the
+  error boundaries' Try-again buttons rode the NEO-CRM bg-primary
+  blue family; the boundary h1 computed 1.42:1 — a WCAG 1.4.3 fail on
+  OUR OWN surface — now slate-500, the ratios COMPUTED from the live
+  @theme hex; the seven CRM-blue @theme tokens retired, the toast's
+  info icon re-pinned to --color-info; the ERROR_LAYOUT seam = the
+  404's own construction + its pill family, the house dialect the
+  boundaries' comments always claimed) —
   comment-stripped source reads; a
   literal pinned by a comment alone is vacuous.
-- **E2E — Playwright, 105 checks / 8 specs**: the standalone artifact on
+- **E2E — Playwright, 107 checks / 8 specs**: the standalone artifact on
   :3100 with `db/e2e.db`; ONE shared login (`auth.setup.ts` →
   storageState — the auth endpoints are rate-limited 10/IP/15-min); one
   worker; alphabetical file order → every spec SELF-SUFFICIENT (its own

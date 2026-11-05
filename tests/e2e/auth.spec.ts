@@ -27,6 +27,37 @@ test.describe("the EleganceFlow login card (logged-out)", () => {
     await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
   });
 
+  // Round-27 (F-27a — the login-logo census): the reference's login card
+  // renders its REAL logo — an <img alt="EleganceFlow logo"> at 96×96
+  // (object-fit cover) inside the byte-class circle span. Ours shipped the
+  // CRM-era blue dot (bg-sidebar #2563eb) since the scaffold; the drift
+  // [login] leg never read the logo. The img is the round-24 byte-mirror
+  // self-hosted at /icon.png — NEVER their CDN.
+  test("round-27: the logo is the reference's real img (self-hosted, no blue dot)", async ({ page }) => {
+    await page.goto("/login");
+    const logo = page.locator("img[alt='EleganceFlow logo']");
+    await expect(logo).toBeVisible();
+    // the self-hosted face (the round-24 byte-mirror, never the CDN)
+    await expect(logo).toHaveAttribute("src", "/icon.png");
+    // the reference's byte class (aspect-square h-full w-full object-cover)
+    await expect(logo).toHaveCSS("object-fit", "cover");
+    const box = await logo.boundingBox();
+    expect(Math.round(box?.width ?? 0)).toBe(96);
+    expect(Math.round(box?.height ?? 0)).toBe(96);
+    // the circle span: the byte-class chrome, and the CRM blue dot never
+    // returns inside it (the dot-era bg-white retired with the dot)
+    const circle = page.locator("span.rounded-full.ring-4");
+    await expect(circle.first()).toBeVisible();
+    const inner = await circle.first().evaluate((el) => ({
+      childImgs: el.querySelectorAll("img").length,
+      childRounds: Array.from(el.querySelectorAll(":scope > span")).length,
+      bg: getComputedStyle(el).backgroundColor,
+    }));
+    expect(inner.childImgs).toBe(1);
+    expect(inner.childRounds).toBe(0); // the 40×40 blue dot is gone
+    expect(inner.bg).toBe("rgba(0, 0, 0, 0)");
+  });
+
   // Round-8 (the trap-③ computed pin, restored from the lineage
   // session-7 spec): the glass card's backdrop-blur-sm must compute
   // blur(4px) — the --blur-sm: 4px @theme re-pin's computed face. If the

@@ -66,7 +66,12 @@ function useToasts(): ToastItem[] {
 const ICONS: Record<ToastVariant, React.ReactNode> = {
   success: <CheckCircle2 className="h-4.5 w-4.5 text-success" />,
   error: <AlertCircle className="h-4.5 w-4.5 text-danger" />,
-  info: <Info className="h-4.5 w-4.5 text-primary" />,
+  // Round-27 (F-27e): the info icon rides the Feedback family's
+  // --color-info (#06b6d4 — the conventional info status ink; the icon
+  // is redundant with the toast's title/description text so WCAG
+  // 1.4.11 exempts it) — the CRM-blue --color-primary retired with the
+  // rest of the brand token family (tests/error-faces.test.ts ③).
+  info: <Info className="h-4.5 w-4.5 text-info" />,
 };
 
 function Toaster() {

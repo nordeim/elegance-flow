@@ -18,8 +18,12 @@
 
 /** Login card — the reference's slate design: borderless glass card with a
  *  gradient accent strip, centered logo/title, white Google button and
- *  `h-11 sm:h-12` slate inputs. The logo is a CSS brand mark (the reference
- *  hotlinks a screenshot; we keep the same white-circle shape). */
+ *  `h-11 sm:h-12` slate inputs. Round-27 (F-27a): the logo is the
+ *  reference's REAL img — the same 283cae1f1_logo the round-24 asset cure
+ *  byte-mirrors to src/app/icon.png — self-hosted at /icon.png (never their
+ *  CDN), riding the reference's byte classes (the circle span's own class
+ *  set + the img's aspect-square h-full w-full object-cover) with its real
+ *  alt "EleganceFlow logo"; the CRM-era blue-dot construction retired. */
 export const LOGIN_LAYOUT = {
   page: "min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4",
   card: "relative overflow-hidden rounded-2xl border-0 bg-white/95 shadow-2xl backdrop-blur-sm",
@@ -29,7 +33,15 @@ export const LOGIN_LAYOUT = {
   logoWrap: "relative group",
   logoGlow:
     "absolute inset-0 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 opacity-30 blur-xl transition-opacity duration-300 group-hover:opacity-40",
-  logo: "relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white shadow-lg ring-4 ring-white/50 transition-all duration-300 group-hover:shadow-xl sm:h-24 sm:w-24",
+  // Round-27 (F-27a): the reference's byte class (its own order kept
+  // from the live DOM read): flex shrink-0 overflow-hidden rounded-full
+  // relative h-20 w-20 sm:h-24 sm:w-24 shadow-lg ring-4 ring-white/50
+  // group-hover:shadow-xl transition-all duration-300 — the dot-era
+  // extras (bg-white items-center justify-center) retired with the dot.
+  logo: "relative flex h-20 w-20 shrink-0 overflow-hidden rounded-full shadow-lg ring-4 ring-white/50 transition-all duration-300 group-hover:shadow-xl sm:h-24 sm:w-24",
+  // the reference's img: aspect-square h-full w-full object-cover (its
+  // byte class) — self-hosted /icon.png, alt "EleganceFlow logo"
+  logoImg: "aspect-square h-full w-full object-cover",
   title: "text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight",
   subtitle: "text-slate-500 text-sm sm:text-base font-medium",
   google:
@@ -139,4 +151,34 @@ export const NOT_FOUND_LAYOUT = {
     "inline-flex items-center px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500",
   homeIcon: "w-4 h-4 mr-2",
   homeHref: "/",
+} as const;
+
+/** Error boundary — round-27 (the CRM-blue/resilience-boundary census):
+ *  the boundary family's own comments always claimed "the house dialect
+ *  the 404 established" — but rode INLINE literals with a
+ *  `bg-primary`-blue Try-again button (the NEO-CRM #2563eb brand family
+ *  the round-24 asset cure retired from the icons; the token survived the
+ *  domain transformation only because the boundary never carried a face
+ *  pin). The seam is the 404's own construction + its Go Home pill family,
+ *  with ONE deliberate ink change: the h1 rides slate-500 (4.55:1 — AA
+ *  outright, the house doctrine for OUR OWN surfaces) where the 404's
+ *  "404" numeral keeps the reference's own slate-300 (the s12 byte-pin,
+ *  the sanctioned class). The pre-round-27 boundaries computed 1.42:1 on
+ *  the h1 — a WCAG 1.4.3 fail. Pinned by tests/error-faces.test.ts (the
+ *  contrast ratios COMPUTED from the live @theme hex, never
+ *  comment-pinned). */
+export const ERROR_LAYOUT = {
+  page: "min-h-screen flex items-center justify-center p-6 bg-slate-50",
+  card: "max-w-md w-full",
+  center: "text-center space-y-6",
+  headingGroup: "space-y-2",
+  h1: "text-4xl font-light text-slate-500",
+  divider: "h-0.5 w-16 bg-slate-200 mx-auto",
+  textGroup: "space-y-3",
+  h2: "text-2xl font-medium text-slate-800",
+  p: "text-slate-600 leading-relaxed",
+  buttonGroup: "pt-6",
+  button:
+    "inline-flex items-center px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500",
+  buttonIcon: "h-4 w-4 mr-2",
 } as const;

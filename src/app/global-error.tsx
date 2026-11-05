@@ -8,16 +8,23 @@
 // bare prose (the Next docs' own caveat — the import is the robust
 // form; it is deduplicated when the stylesheet is already loaded).
 //
+// Round-27 (F-27b/c): rides the ERROR_LAYOUT seam (the 404's house
+// construction + its pill family; the AA h1 ink) — same contract as the
+// segment boundary. The CRM-blue bg-primary button and the 1.42:1
+// slate-300 h1 are retired (tests/error-faces.test.ts).
+//
 // Same contract as the segment boundary (src/app/error.tsx): the
 // stale-chunk self-heal in useEffect, the digest correlation handle,
 // the reset() affordance, and ZERO component-tree imports — the root
-// failure must not stand on the tree that broke.
+// failure must not stand on the tree that broke (the pure seam + the
+// leaf constant module are the sanctioned exceptions).
 
 import "./globals.css";
 
 import { useEffect } from "react";
 import { RotateCcw } from "lucide-react";
 import { reloadOnStaleChunk } from "@/lib/chunk-recovery";
+import { ERROR_LAYOUT } from "@/lib/page-layout";
 
 export default function GlobalError({
   error,
@@ -33,29 +40,23 @@ export default function GlobalError({
   return (
     <html lang="en">
       <body className="min-h-screen bg-slate-50 font-sans text-slate-900">
-        <div className="min-h-screen flex items-center justify-center p-6">
-          <div className="max-w-md w-full">
-            <div className="text-center space-y-6">
-              <div className="space-y-2">
-                <h1 className="text-4xl font-light text-slate-300">Something went wrong</h1>
-                <div className="h-0.5 w-16 bg-slate-200 mx-auto" aria-hidden="true" />
+        <div className={ERROR_LAYOUT.page}>
+          <div className={ERROR_LAYOUT.card}>
+            <div className={ERROR_LAYOUT.center}>
+              <div className={ERROR_LAYOUT.headingGroup}>
+                <h1 className={ERROR_LAYOUT.h1}>Something went wrong</h1>
+                <div className={ERROR_LAYOUT.divider} aria-hidden="true" />
               </div>
-              <div className="space-y-3">
-                <h2 className="text-2xl font-medium text-slate-800">
-                  An unexpected error occurred
-                </h2>
-                <p className="text-slate-600 leading-relaxed">
+              <div className={ERROR_LAYOUT.textGroup}>
+                <h2 className={ERROR_LAYOUT.h2}>An unexpected error occurred</h2>
+                <p className={ERROR_LAYOUT.p}>
                   We have logged the issue{error.digest ? ` (ref: ${error.digest})` : ""}.
                   Please try again.
                 </p>
               </div>
-              <div className="pt-6">
-                <button
-                  type="button"
-                  onClick={reset}
-                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-hover transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-                >
-                  <RotateCcw className="h-4 w-4 mr-2" aria-hidden="true" />
+              <div className={ERROR_LAYOUT.buttonGroup}>
+                <button type="button" onClick={reset} className={ERROR_LAYOUT.button}>
+                  <RotateCcw className={ERROR_LAYOUT.buttonIcon} aria-hidden="true" />
                   Try again
                 </button>
               </div>

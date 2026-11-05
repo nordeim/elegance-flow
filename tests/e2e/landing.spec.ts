@@ -552,6 +552,31 @@ test.describe("the EleganceFlow landing (desktop 1280)", () => {
     await expect(page.getByText('"verify-email"')).toBeVisible();
   });
 
+  test("round-27: the Go Home ride resets the derived title to the bare brand (F-27d, the stale-title decode)", async ({ page }) => {
+    // Round-27 (F-27d — live-probed on the artifact, both apps): after
+    // the Go Home client nav from a 404, OURS' derived title PERSISTED
+    // on the landing ("Probe 404 | EleganceFlow" at "/") while the
+    // reference's SPA resets to "EleganceFlow". The root cause: React's
+    // <title> reconciliation SKIPS the DOM write when the incoming
+    // route resolves the SAME string its record owns (the 404 — no
+    // metadata export, the D-194a4 retirement — and the landing BOTH
+    // resolve the layout-default "EleganceFlow"), so React never
+    // rewrites the node the observer mutated. The cure: the not-found
+    // effect's cleanup carries the GUARDED bare-brand reset (disconnect
+    // first, then reset only if the DOM still holds OUR derived value).
+    // Source pin: tests/route-mechanics.test.ts ③ (the re-pin).
+    await page.goto("/probe-27");
+    await expect(page).toHaveTitle("Probe 27 | EleganceFlow");
+    await expect(page.getByText("Page Not Found")).toBeVisible();
+    // the ride: the Go Home link client-navigates to the landing
+    await page.getByRole("link", { name: "Go Home" }).click();
+    await expect(page).toHaveURL(/^http:\/\/localhost:\d+\/$/);
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Work that speaks");
+    // THE CURE'S BAR: the landing owns the bare brand again — the
+    // derived 404 title never persists past the route it belongs to
+    await expect(page).toHaveTitle("EleganceFlow");
+  });
+
   test("round-25: the derivation rule's load-bearing decodes — the last segment, the camel-split, the query strip (F-25a)", async ({ page }) => {
     // The three decodes that pin the RULE (not just one face):
     // /foo/bar → "Bar" (the LAST segment only); /MiXeD-cAsE →

@@ -28,32 +28,23 @@
 --------------------------------------------------------------------------- */
 
 @theme {
-  /* Brand palette (measured from the reference app; session-7 live
-     computed-color probe: primary buttons render rgb(37,99,235) = blue-600
-     with blue-700 hover — NOT blue-500 as pinned in earlier sessions). */
-  --color-sidebar: #2563eb;
-  --color-sidebar-hover: #3b6ff0;
-  --color-sidebar-active: #4d7ef5;
-  --color-primary: #2563eb;
-  --color-primary-hover: #1d4ed8;
-  /* Session-142 (D-142a1): the reference's MARKETING token — its landing
-     page ships `--brand: 221 83% 53%` (computed #2563eb, live-probed on
-     its new index-Dc6wvGtA.js bundle), consumed by the landing surface's
-     bg-brand / text-brand / border-brand / ring-brand utilities (with
-     alpha modifiers: bg-brand/5, bg-brand/10, bg-brand/80, hover:bg-
-     brand/90, border-brand/20, ring-brand/20). Same blue as --color-
-     primary; the separate token keeps the marketing family byte-shaped
-     like the reference (its landing classes carry `brand`, not
-     `primary`). */
-  --color-brand: #2563eb;
-  /* Session-119 (D-119a1, the 119-c contacts-family walk's systemic
-     find F-119c2): the reference's --primary-foreground is the shadcn
-     stock hsl(0 0% 98%) = #fafafa — live-computed rgb(250,250,250) on
-     EVERY blue primary (New Contact/New Account/New Lead/New Event/
-     the Filter buttons, the dialog submits) while our scaffold-era
-     #ffffff pinned pure white. The s13 plan's badge record ("fg
-     #fafafa ✓") already carried the reference's value. */
-  --color-primary-foreground: #fafafa;
+  /* Round-27 (F-27e — the CRM-blue/resilience-boundary census): the
+     entire NEO-CRM brand token family RETIRED. The seven names
+     (--color-sidebar/-hover/-active, --color-primary/-hover/
+     -foreground, --color-brand) were the CRM-era #2563eb blue family
+     that survived the session-199 domain transformation ONLY because
+     their last consumers were the surfaces no probe ever censused:
+     the login card's logo blue dot (bg-sidebar — cured to the
+     reference's real <img>, F-27a), the error boundaries' Try-again
+     buttons (bg-primary — cured to the ERROR_LAYOUT house dialect,
+     F-27b), and the toast's info icon (text-primary — re-pinned to the
+     Feedback family's --color-info, the conventional info status ink).
+     The EleganceFlow domain carries NO blue anywhere: the reference's
+     own families are zinc/amber (landing), slate (the auth card), gray
+     (the platform reset), the black template logo. The prior
+     "Brand palette … session-7 live computed-color probe" record was
+     the CRM-era reference's — retired with the tokens
+     (tests/error-faces.test.ts ③, the mutation-proof pin). */
 
   /* Neutrals — session-199 (the domain transformation): the
      reference's marketing site is WHITE at the body level

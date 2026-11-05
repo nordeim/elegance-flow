@@ -57,8 +57,14 @@ const INFO_BANNER_MS = 3000;
  * slate design. A borderless glass card (`bg-white/95 backdrop-blur-sm
  * shadow-2xl`) with a gradient accent strip, centered logo/title column,
  * white Google button, `h-11 sm:h-12` slate inputs and a slate-900 submit.
- * The logo is a CSS brand mark (the reference hotlinks a screenshot image;
- * we reproduce the white-circle + blue-dot shape with no external asset).
+ * Round-27 (F-27a): the logo is the reference's REAL <img> — its own logo
+ * (the 283cae1f1_logo the round-24 asset cure byte-mirrors to
+ * src/app/icon.png) at aspect-square h-full w-full object-cover inside the
+ * byte-class circle span, alt "EleganceFlow logo" — self-hosted at
+ * /icon.png, NEVER their CDN. The prior "CSS brand mark (white circle +
+ * blue dot)" construction (a 40×40 bg-sidebar #2563eb dot) was the
+ * CRM-era sidebar-blue straggler the domain transformation missed —
+ * live-probed 2026-11-05, the drift [login] leg never read the logo.
  *
  * Session-11 (S11-P1): the card swaps IN PLACE through the reset flow
  * (reset → sent) — the URL never changes.
@@ -654,12 +660,13 @@ export function LoginCard({ mode = "signin" }: { mode?: Mode }) {
               </>
             ) : (
               <>
-            {/* Logo — CSS brand mark (white circle + blue dot) with a soft
-                slate glow, ringed and shadowed like the reference avatar. */}
+            {/* Logo — the reference's real img (round-27 F-27a) inside the
+                byte-class circle span with its soft slate glow, ringed and
+                shadowed like the reference avatar; self-hosted /icon.png. */}
             <div className={LOGIN_LAYOUT.logoWrap}>
               <div className={LOGIN_LAYOUT.logoGlow} aria-hidden="true" />
-              <span className={LOGIN_LAYOUT.logo} aria-hidden="true">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-sidebar sm:h-12 sm:w-12" />
+              <span className={LOGIN_LAYOUT.logo}>
+                <img src="/icon.png" alt="EleganceFlow logo" className={LOGIN_LAYOUT.logoImg} />
               </span>
             </div>
 
