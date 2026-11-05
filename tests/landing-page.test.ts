@@ -68,7 +68,9 @@ describe("session-199: the landing construction (the byte-extracted reference cl
       "absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/80 to-transparent",
     );
     expect(src).toContain("absolute left-0 top-0 bottom-0 w-1 bg-amber-500");
-    expect(src).toContain('<span className="block">{HERO.headingLines[0]}</span>');
+    // round-28: the spans carry the reveal wiring (the ref/style pair) —
+    // the class + the content keep the byte-pin shape
+    expect(src).toContain('<span className="block" ref={hero.ref(2)} style={hero.style(2)}>');
     expect(src).toContain("absolute bottom-10 left-6 flex items-center gap-3");
     expect(src).toContain("w-8 h-px bg-white/30");
   });

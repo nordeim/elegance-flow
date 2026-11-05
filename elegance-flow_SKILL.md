@@ -191,7 +191,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 528 checks / 47 files**: the seam batteries (auth,
+- **Unit — Vitest, 542 checks / 48 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
@@ -420,6 +420,12 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   pins the RESET_LAYOUT seam literals + the DOM-case text family + the
   BreadcrumbList third carrier + the a11y superset keeps + the
   retired-form regression) — and
+  reveal-faces — the round-28 battery that pins the SCROLL-REVEAL
+  family no probe ever censused (the reference's twenty-element motion
+  identity: the hero mount cascade, the about/services/portfolio/
+  testimonials/contact reveal specs, the two inline states, the
+  services own-class decode, the settle cleanup, the no-wiring
+  negatives, and the SSR no-FOUC contract) — and
   error-faces — the round-27 battery that pins the CRM-BLUE/
   RESILIENCE-BOUNDARY family no probe ever censused (the token-axis
   blind spot of the session-199 domain transformation: the login card's
@@ -435,7 +441,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   boundaries' comments always claimed) —
   comment-stripped source reads; a
   literal pinned by a comment alone is vacuous.
-- **E2E — Playwright, 107 checks / 8 specs**: the standalone artifact on
+- **E2E — Playwright, 111 checks / 8 specs**: the standalone artifact on
   :3100 with `db/e2e.db`; ONE shared login (`auth.setup.ts` →
   storageState — the auth endpoints are rate-limited 10/IP/15-min); one
   worker; alphabetical file order → every spec SELF-SUFFICIENT (its own

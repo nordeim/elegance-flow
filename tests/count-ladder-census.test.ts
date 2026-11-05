@@ -177,6 +177,7 @@ const SOURCE_CONTRACTS = [
   "route-mechanics",
   "reset-faces",
   "error-faces",
+  "reveal-faces",
 ];
 
 const fileOf = (family: string) => `${family}.test.ts`;

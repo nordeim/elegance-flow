@@ -130,8 +130,10 @@ describe("session-199 round-19 parity pins (the interaction-behavior census — 
   });
 
   it("④ the contact grid's right column is the bare wrapper div (F-19b — the reference's grid > div > form)", () => {
-    // the wrapper <div> directly carries the submitted conditional
-    expect(landing).toMatch(/<div>\s*\{submitted \? \(/);
+    // the wrapper <div> directly carries the submitted conditional;
+    // round-28: the reveal wiring (the ref/style pair) rides the same
+    // bare div — still no class, still grid > div > (form | panel)
+    expect(landing).toMatch(/<div ref=\{contact\.ref\(1\)\} style=\{contact\.style\(1\)\}>\s*\{submitted \? \(/);
   });
 
   it("⑤ the panel's role=status — OUR a11y superset over the reference's silent panel", () => {

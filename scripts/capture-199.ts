@@ -11,6 +11,21 @@ import { chromium } from "@playwright/test";
 const OURS = "http://localhost:3000";
 const OUT = "docs/screenshots";
 
+/**
+ * Round-28 (F-28a): the landing's below-fold sections rest at opacity 0
+ * (the scroll-reveal family — the reference's own motion identity). A
+ * full-page capture would shoot them hidden, so every LANDING capture
+ * warms the reveals first — a scroll ride through the page and back,
+ * waiting out the ~800ms animations — then shoots the SETTLED page
+ * (the same face every prior round captured).
+ */
+async function warmReveals(page: import("@playwright/test").Page) {
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await page.waitForTimeout(1400);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(400);
+}
+
 async function main() {
   mkdirSync(OUT, { recursive: true });
   const browser = await chromium.launch();
@@ -19,6 +34,7 @@ async function main() {
   const desk = await browser.newPage({ viewport: { width: 1280, height: 800 } });
   await desk.goto(OURS, { waitUntil: "networkidle" });
   await desk.waitForTimeout(1500);
+  await warmReveals(desk);
   await desk.screenshot({ path: `${OUT}/ours-landing-desktop-1280-fullpage.png`, fullPage: true });
 
   // ---- desktop login -------------------------------------------------------
@@ -40,6 +56,7 @@ async function main() {
   const mob = await browser.newPage({ viewport: { width: 390, height: 844 } });
   await mob.goto(OURS, { waitUntil: "networkidle" });
   await mob.waitForTimeout(1200);
+  await warmReveals(mob);
   await mob.screenshot({ path: `${OUT}/ours-landing-mobile-390-fullpage.png`, fullPage: true });
 
   // ---- phone menu OPEN (the operator's emphasis) ----------------------------
@@ -143,6 +160,7 @@ async function main() {
   const b768 = await browser.newPage({ viewport: { width: 768, height: 900 } });
   await b768.goto(OURS, { waitUntil: "networkidle" });
   await b768.waitForTimeout(1200);
+  await warmReveals(b768);
   await b768.screenshot({ path: `${OUT}/ours-landing-768.png`, fullPage: true });
 
   const b640 = await browser.newPage({ viewport: { width: 640, height: 900 } });

@@ -320,6 +320,26 @@ async function geometryFace(url: string, w: number, h: number): Promise<Geometry
   const page = await context.newPage();
   await page.goto(url, { waitUntil: "networkidle" });
   await page.waitForTimeout(1000);
+  // Round-28 (F-28a): the hero cascade shifts descendant client rects
+  // while it runs (a translated ancestor moves the h1's box) — settle
+  // the reveals before reading boxes. Both apps settle at transform:
+  // none (the reference's post-cascade inline face = our settled DOM).
+  await page
+    .waitForFunction(
+      () => {
+        const wrap = document.querySelector(".max-w-3xl");
+        const span = document.querySelector("h1 span");
+        return (
+          wrap !== null &&
+          span !== null &&
+          getComputedStyle(wrap).transform === "none" &&
+          getComputedStyle(span).transform === "none"
+        );
+      },
+      undefined,
+      { timeout: 8000 },
+    )
+    .catch(() => {});
   const base = await page.evaluate(() => {
     const rect = (el: Element | null): number[] => {
       if (!el) return [-1, -1, -1, -1];
@@ -1838,6 +1858,130 @@ async function resetFace(url: string) {
   }
 }
 
+// The round-28 [reveal] leg — the SCROLL-REVEAL/MOTION census: the
+// twenty-element family no probe ever rode at rest (the parity probe's
+// pick() reads bg/color/fs/fw/lh — transform-independent; every drift
+// leg reads faces/attrs/class strings; full-page captures auto-reveal;
+// Playwright's visible is opacity-agnostic — F-28c, the coverage
+// catch). Read on BOTH apps at 1280 + 390: the at-rest hidden family
+// (opacity 0 + the live-probed offsets), the mid-flight motion
+// presence (a real wheel scroll → opacity strictly between 0 and 1 —
+// the motion EXISTS on both apps), the post-reveal end state (opacity
+// 1 / transform none — our prior static face, the reason every
+// at-load probe passed while the motion was absent), and the
+// transition-mechanism constants per side (the reference animates via
+// a raf loop — its computed transition stays 0s; OURS decodes the same
+// two properties through a CSS transition — 0.8s — the expectConst
+// pattern; the services cards ride the cards' OWN class transition on
+// both apps: `all 0.3s cubic-bezier(0.4, 0, 0.2, 1)` IDENTICAL).
+type RevealFace = {
+  atRest: {
+    about: string[];
+    services: string[];
+    contact: string[];
+  };
+  heroSettled: string[];
+  mountSettled: { portfolio: string[]; testimonials: string[] };
+  midFlight: string[];
+  postReveal: string[];
+  transitionDuration: { about: string; services: string };
+};
+
+async function revealFace(url: string, w: number, h: number): Promise<RevealFace> {
+  const context = await browser.newContext({ viewport: { width: w, height: h } });
+  const page = await context.newPage();
+  try {
+    // THE EARLY READ — the at-rest initial family at the FIRST STYLED
+    // MOMENT (waitForSelector on the LAST family member = the whole
+    // landing DOM parsed; ours is the pre-hydration SSR, theirs is the
+    // SPA mount). Reading here — NOT at networkidle+900 — dodges the
+    // reference's own racy auto-reveal (the portfolio/testimonials
+    // members flip to revealed ~1-3s after mount on ~half its loads:
+    // F-28d, recorded in the plan doc; the mount-time initial styles
+    // are the stable 3/3 face).
+    await page.goto(url, { waitUntil: "commit" });
+    await page.waitForSelector("#contact > div > div", { timeout: 20000 });
+    const atRest = await page.evaluate(() => {
+      const f = (sel: string) =>
+        [...document.querySelectorAll(sel)].map(
+          (k) => `${getComputedStyle(k).opacity}|${getComputedStyle(k).transform}`,
+        );
+      // the DETERMINISTIC scroll family only — about/services/contact
+      // stay hidden until scrolled on every load; the portfolio/
+      // testimonials mount family is read LATE (settled) below
+      return {
+        about: f("#about > div > div"),
+        services: f("#services .grid > div"),
+        contact: f("#contact > div > div"),
+      };
+    });
+    // the transition-mechanism constants, read while the inline styles
+    // are live (ours hidden-with-inline-transition = 0.8s; the
+    // reference's raf family = 0s — its computed transition never
+    // changes; the services cards' OWN class = 0.3s on both)
+    const transitionDuration = await page.evaluate(() => ({
+      about: getComputedStyle(document.querySelector("#about > div > div")!).transitionDuration,
+      services: getComputedStyle(document.querySelector("#services .grid > div")!).transitionDuration,
+    }));
+    // the hero cascade settles (~1.6s after mount) — read the
+    // post-cascade state (1/none on both apps) PLUS the mount family
+    // (portfolio/testimonials: the reference's own dominant load
+    // behavior — auto-revealed by ~400ms post-mount; ours the wired
+    // mount-time family — both settled 1/none at this read)
+    await page.waitForTimeout(2600);
+    const heroSettled = await page.evaluate(() =>
+      [document.querySelector(".max-w-3xl"), document.querySelector(".max-w-3xl > p"), document.querySelector("h1 span")].map(
+        (el) => (el ? `${getComputedStyle(el).opacity}|${getComputedStyle(el).transform}` : "MISSING"),
+      ),
+    );
+    const mountSettled = await page.evaluate(() => {
+      const f = (sel: string) =>
+        [...document.querySelectorAll(sel)].map(
+          (k) => `${getComputedStyle(k).opacity}|${getComputedStyle(k).transform}`,
+        );
+      return {
+        portfolio: f("#portfolio .grid > div").slice(0, 2),
+        testimonials: f("#testimonials .md\\:col-span-3 > div"),
+      };
+    });
+    // the ride: a REAL wheel scroll to the about section — sample mid-flight
+    await page.mouse.wheel(0, Math.round(h * 1.1));
+    await page.waitForTimeout(380);
+    const midFlight = await page.evaluate(() =>
+      [...document.querySelectorAll("#about > div > div")].map((k) => getComputedStyle(k).opacity),
+    );
+    // the end state: wait out the animation (~800ms family)
+    await page.waitForTimeout(1300);
+    const postReveal = await page.evaluate(() =>
+      [...document.querySelectorAll("#about > div > div")].map(
+        (k) => `${getComputedStyle(k).opacity}|${getComputedStyle(k).transform}`,
+      ),
+    );
+    return { atRest, heroSettled, mountSettled, midFlight, postReveal, transitionDuration };
+  } finally {
+    await context.close();
+  }
+}
+
+for (const [w, h] of [[1280, 800], [390, 844]] as const) {
+  const [refReveal, oursReveal] = await Promise.all([revealFace(REF, w, h), revealFace(OURS, w, h)]);
+  const label = `[reveal${w}]`;
+  diff(label, refReveal.atRest.about, oursReveal.atRest.about, "atRest.about (∓40X, opacity 0 — F-28a)", out);
+  diff(label, refReveal.atRest.services, oursReveal.atRest.services, "atRest.services (+30Y, opacity 0)", out);
+  diff(label, refReveal.atRest.contact, oursReveal.atRest.contact, "atRest.contact (∓30X, opacity 0)", out);
+  diff(label, refReveal.heroSettled, oursReveal.heroSettled, "heroSettled (post-cascade 1/none — in view at load)", out);
+  diff(label, refReveal.mountSettled.portfolio, oursReveal.mountSettled.portfolio, "mountSettled.portfolio (1/none — the mount family, live-sampled ~400ms post-mount)", out);
+  diff(label, refReveal.mountSettled.testimonials, oursReveal.mountSettled.testimonials, "mountSettled.testimonials (1/none — the mount family)", out);
+  diff(label, refReveal.postReveal, oursReveal.postReveal, "postReveal.about (1/none — the static face)", out);
+  // the motion EXISTS on both apps: mid-flight strictly between 0 and 1
+  const refMotion = refReveal.midFlight.every((o) => Number(o) > 0 && Number(o) < 1);
+  const oursMotion = oursReveal.midFlight.every((o) => Number(o) > 0 && Number(o) < 1);
+  diff(label, refMotion, oursMotion, "midFlight motion presence (0 < opacity < 1 on both apps)", out);
+  // the transition-mechanism constants per side (the raf vs CSS decode)
+  expectConst(label, "REF", { about: "0s", services: "0.3s" }, refReveal.transitionDuration, out);
+  expectConst(label, "OURS", { about: "0.8s", services: "0.3s" }, oursReveal.transitionDuration, out);
+}
+
 if (out.length === 0) {
   console.log("[390] CONTENT + MOBILE-MENU FACE: NO DRIFT — the reference matches our byte-mirror");
   console.log("[login] AUTH-CARD FACE: NO DRIFT — the reference matches our login mirror (round-27: the LOGO family now censused — the reference's real img mirrored: the alt, the object-fit cover, the 96×96 box, the byte-class circle span, the blue-dot regression; the spanRadius/imgSrc ride their per-side constants — F-27a)");
@@ -1854,8 +1998,9 @@ if (out.length === 0) {
   console.log("[docs] DOCUMENT-ASSET/META FACE: NO DRIFT — the root rendered head family, the manifest contents, the robots bytes, the login tab order and the fonts family all mirror (the og-image BYTES identical both sides); the sitemap superset + the favicon-link/icon-src families match their per-side recorded constants (R-24a–e)");
   console.log("[routes] ROUTE-MECHANICS FACE: NO DRIFT — the unknown-route derived-title family and the quoted-path bodies mirror (both apps derive — F-25a); the query passthrough identical (F-25d); the status family, the trailing slash and the guest /dashboard adjudication match their per-side recorded constants (the true-404 + 308 + from_url supersets — F-25b/c); the post-Go-Home title ride IDENTICAL both apps (the F-27d stale-title cure: both reset to the bare brand — the reference's own face)");
   console.log("[reset] PLATFORM-RESET FACE: NO DRIFT — the /reset-password family mirrors on both states after the F-26a/b/c cure (the Title-Case quartet, the BreadcrumbList JSON-LD third carrier, the flat gray-50 page, the white rounded-lg shadow-lg card, the FIXED 48/48/40 inner, the 24px h2 headings, the h-11/6px gray controls with the zinc-500 placeholder, the per-state strip/icon family, the tab order, the announced error box); the input/error oklab-vs-rgba fills match their per-side recorded constants (the s18 serialization class, numerically equal paint)");
+  console.log("[reveal] SCROLL-REVEAL/MOTION FACE: NO DRIFT — the twenty-element family finally censused (F-28a): the at-rest hidden faces (opacity 0 + the live-probed ∓40X/+30Y/scale(0.96)/∓30X offsets) IDENTICAL both viewports, the mid-flight motion present on both apps, the post-reveal end state IDENTICAL (the static face every prior probe landed on); the transition mechanism rides per-side constants (the reference's raf 0s vs OUR CSS 0.8s decode — the services cards' own 0.3s class transition IDENTICAL)");
 } else {
-  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact + authfail + google + viewport + anchors + docs + routes + reset] DRIFT DETECTED — ${out.length} field(s):`);
+  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact + authfail + google + viewport + anchors + docs + routes + reset + reveal] DRIFT DETECTED — ${out.length} field(s):`);
   for (const line of out) console.log(line);
 }
 

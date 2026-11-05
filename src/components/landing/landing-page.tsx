@@ -105,10 +105,134 @@ import {
   filterProjects,
   type WorkFilter,
 } from "@/lib/site-content";
+import {
+  REVEAL_ABOUT,
+  REVEAL_CONTACT,
+  REVEAL_HERO,
+  REVEAL_TESTIMONIALS,
+  portfolioSpecs,
+  revealStyle,
+  servicesSpecs,
+  settleMs,
+} from "@/lib/reveal";
+
+/** The reveal stage machine (module-level constants — the SSR render and
+ *  the first client render agree on the HIDDEN initial, so no hydration
+ *  mismatch and no flash of visible content before the observer flips). */
+const HIDDEN = "hidden";
+const REVEALING = "revealing";
+const SETTLED = "settled";
+type RevealStage = typeof HIDDEN | typeof REVEALING | typeof SETTLED;
+
+/**
+ * Round-28 (F-28a): the reference's twenty-element scroll-reveal family —
+ * one IntersectionObserver per element (the cards enter individually at
+ * phone widths), threshold 0, ONE-SHOT disconnect (the dominant live
+ * behavior; the reference's own re-hide race is recorded in the plan doc,
+ * never mirrored). The hero elements intersect at mount, so the cascade
+ * rides the same observer plus the delay constants. Every element's
+ * inline style CLEARS at settle (settleMs) — the settled DOM equals the
+ * pre-round DOM and the services cards' hover transitions return
+ * unlagged.
+ */
+function useRevealGroup(specs: readonly import("@/lib/reveal").RevealSpec[]) {
+  const els = React.useRef<(HTMLElement | null)[]>([]);
+  const [stages, setStages] = React.useState<RevealStage[]>(() =>
+    Array.from({ length: specs.length }, () => HIDDEN as RevealStage),
+  );
+
+  React.useEffect(() => {
+    if (typeof IntersectionObserver === "undefined") {
+      // no observer (ancient engine): everything visible, no motion — the
+      // setState rides a timer callback, never the effect body (the
+      // set-state-in-effect gate)
+      const fallback = setTimeout(() => setStages(specs.map(() => SETTLED)), 0);
+      return () => clearTimeout(fallback);
+    }
+    const observers: IntersectionObserver[] = [];
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const reveal = (i: number) => {
+      setStages((prev) => {
+        if (prev[i] !== HIDDEN) return prev;
+        const next = [...prev];
+        next[i] = REVEALING;
+        return next;
+      });
+    };
+    const settle = (i: number, s: (typeof specs)[number]) => {
+      // the settle cleanup: strip the inline style AFTER the animation
+      timers.push(
+        setTimeout(() => {
+          setStages((prev) => {
+            if (prev[i] !== REVEALING) return prev;
+            const next = [...prev];
+            next[i] = SETTLED;
+            return next;
+          });
+        }, settleMs(s)),
+      );
+    };
+    specs.forEach((s, i) => {
+      const el = els.current[i];
+      if (!el) return;
+      if (s.atMount) {
+        // the mount-time family (portfolio/testimonials — the reference's
+        // own dominant load behavior): reveal at mount regardless of the
+        // viewport, NO intersection needed
+        timers.push(
+          setTimeout(() => {
+            reveal(i);
+            settle(i, s);
+          }, s.delayMs),
+        );
+        return;
+      }
+      const io = new IntersectionObserver(
+        (entries) => {
+          if (!entries.some((e) => e.isIntersecting)) return;
+          io.disconnect();
+          reveal(i);
+          settle(i, s);
+        },
+        { threshold: 0 },
+      );
+      io.observe(el);
+      observers.push(io);
+    });
+    return () => {
+      observers.forEach((io) => io.disconnect());
+      timers.forEach(clearTimeout);
+    };
+    // specs are module-level constants — the effect runs once
+  }, [specs]);
+
+  const style = (i: number): React.CSSProperties | undefined => {
+    const stage = stages[i];
+    if (stage === undefined) return undefined;
+    // settled: the reference's own post-reveal inline face (opacity: 1 /
+    // transform: none) — the stagger delay CLEARED so the services cards'
+    // hover transitions return unlagged
+    if (stage === SETTLED) return { opacity: "1", transform: "none" };
+    return revealStyle(specs[i], stage === REVEALING);
+  };
+  return {
+    ref: (i: number) => (el: HTMLElement | null) => {
+      els.current[i] = el;
+    },
+    style,
+  };
+}
 
 /** The reference's amber CTA pair (its inline rgb(245,158,11)/rgb(0,0,0)
  *  expressed through the re-pinned palette). */
 const AMBER_CTA_INK = "bg-amber-500 text-black";
+
+/** Round-28: the reveal specs as MODULE CONSTANTS — the spec arrays must
+ *  keep a STABLE identity or the effect re-runs on every render and its
+ *  cleanup cancels the pending settle/mount timers mid-flight (the
+ *  first-run bug, caught by the e2e stagger/cascade legs). */
+const SERVICES_SPECS = servicesSpecs(SERVICES.length);
+const PORTFOLIO_SPECS = portfolioSpecs(PROJECTS.length);
 
 const SERVICE_ICONS = {
   palette: ReferencePalette,
@@ -140,6 +264,16 @@ export function LandingPage() {
   // The persisted-row superset is unchanged — only the success UI
   // mirrors the reference.
   const [submitted, setSubmitted] = React.useState(false);
+  // Round-28 (F-28a): the reference's twenty-element reveal family — the
+  // hero mount cascade (5) + about (2) + services (4) + portfolio (6) +
+  // testimonials (1) + contact (2). The specs are module constants, so
+  // each group's observers mount exactly once.
+  const hero = useRevealGroup(REVEAL_HERO);
+  const about = useRevealGroup(REVEAL_ABOUT);
+  const services = useRevealGroup(SERVICES_SPECS);
+  const portfolio = useRevealGroup(PORTFOLIO_SPECS);
+  const testimonials = useRevealGroup(REVEAL_TESTIMONIALS);
+  const contact = useRevealGroup(REVEAL_CONTACT);
 
   React.useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 0);
@@ -267,8 +401,12 @@ export function LandingPage() {
         </div>
         <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-500" />
         <div className="relative max-w-7xl mx-auto px-6 pt-32 pb-20">
-          <div className="max-w-3xl">
-            <p className="text-sm font-bold tracking-[0.3em] uppercase mb-6 text-amber-500">
+          <div className="max-w-3xl" ref={hero.ref(0)} style={hero.style(0)}>
+            <p
+              className="text-sm font-bold tracking-[0.3em] uppercase mb-6 text-amber-500"
+              ref={hero.ref(1)}
+              style={hero.style(1)}
+            >
               {HERO.eyebrow}
             </p>
             {/* Session-199 (the s11 re-derivation doctrine, the
@@ -283,8 +421,12 @@ export function LandingPage() {
                 0.9 below md, 1 from md up. The five h2s carry the same
                 construction at 0.95. */}
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-white leading-[0.9] md:leading-none tracking-tight mb-8">
-              <span className="block">{HERO.headingLines[0]}</span>
-              <span className="block">{HERO.headingLines[1]}</span>
+              <span className="block" ref={hero.ref(2)} style={hero.style(2)}>
+                {HERO.headingLines[0]}
+              </span>
+              <span className="block" ref={hero.ref(3)} style={hero.style(3)}>
+                {HERO.headingLines[1]}
+              </span>
             </h1>
             {/* Round-16 (the attribute/geometry census — the trap-⑥
                 genus, two new members): the reference's v3-era cascade
@@ -300,7 +442,11 @@ export function LandingPage() {
             <p className="text-white/60 text-lg md:text-xl leading-relaxed md:leading-7 max-w-xl mb-10">
               {HERO.paragraph}
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div
+              className="flex flex-col sm:flex-row gap-4"
+              ref={hero.ref(4)}
+              style={hero.style(4)}
+            >
               <a
                 href="#contact"
                 className={`group inline-flex items-center gap-3 px-8 py-4 text-sm font-bold tracking-widest uppercase transition-all duration-300 hover:gap-5 ${AMBER_CTA_INK}`}
@@ -337,7 +483,7 @@ export function LandingPage() {
       {/* ---- about ------------------------------------------------------------- */}
       <section id="about" className="bg-white py-28 md:py-36 overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-16 items-center">
-          <div className="relative">
+          <div className="relative" ref={about.ref(0)} style={about.style(0)}>
             <img
               src={ABOUT.image}
               alt={ABOUT.imageAlt}
@@ -345,7 +491,7 @@ export function LandingPage() {
             />
             <div className="absolute -bottom-4 -right-4 w-1/2 h-1/2 border-4 border-amber-500 -z-10" />
           </div>
-          <div>
+          <div ref={about.ref(1)} style={about.style(1)}>
             <p className="text-xs font-bold tracking-[0.3em] uppercase mb-5 text-amber-500">
               {ABOUT.eyebrow}
             </p>
@@ -379,11 +525,13 @@ export function LandingPage() {
             </h2>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {SERVICES.map((svc) => {
+            {SERVICES.map((svc, idx) => {
               const Icon = SERVICE_ICONS[svc.icon];
               return (
                 <div
                   key={svc.title}
+                  ref={services.ref(idx)}
+                  style={services.style(idx)}
                   className={
                     svc.featured
                       ? "relative p-8 flex flex-col gap-5 group transition-all duration-300 text-zinc-950 bg-amber-500"
@@ -450,9 +598,11 @@ export function LandingPage() {
             </div>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {visibleProjects.map((project) => (
+            {visibleProjects.map((project, idx) => (
               <div
                 key={project.title}
+                ref={portfolio.ref(idx)}
+                style={portfolio.style(idx)}
                 className="group relative overflow-hidden aspect-square cursor-pointer"
               >
                 <img
@@ -489,7 +639,7 @@ export function LandingPage() {
           </div>
           <div className="grid md:grid-cols-5 gap-12 items-start">
             <div className="md:col-span-3">
-              <div>
+              <div ref={testimonials.ref(0)} style={testimonials.style(0)}>
                 <Quote size={40} className="mb-6 opacity-30 text-amber-500" />
                 {/* Round-16 (the attribute/geometry census — the trap-⑥
                     genus, two new members): the reference's .md\:text-3xl
@@ -565,7 +715,7 @@ export function LandingPage() {
       {/* ---- contact ----------------------------------------------------------------- */}
       <section id="contact" className="bg-white py-28 md:py-36">
         <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-16">
-          <div>
+          <div ref={contact.ref(0)} style={contact.style(0)}>
             <p className="text-xs font-bold tracking-[0.3em] uppercase mb-5 text-amber-500">
               {CONTACT.eyebrow}
             </p>
@@ -606,7 +756,7 @@ export function LandingPage() {
               geometry census passed) but a DOM-mirror divergence, and
               load-bearing: the success panel's h-full rides this
               wrapper. Pinned by interaction-faces ④. */}
-          <div>
+          <div ref={contact.ref(1)} style={contact.style(1)}>
             {submitted ? (
               /* Round-19 (the interaction-behavior census — F-19a): the
                  reference's success face — the persistent in-place

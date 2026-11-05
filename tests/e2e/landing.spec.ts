@@ -234,8 +234,18 @@ test.describe("the EleganceFlow landing (desktop 1280)", () => {
     // probes never measured. Pinned at the source level by
     // tests/geometry-faces.test.ts ①②③; live-diffed by the drift
     // geometry leg.
+    // Round-28: the hero cascade shifts descendant client rects while
+    // it runs (a translated ancestor moves the h1's box) — the geometry
+    // read waits for the cascade to SETTLE (the reveal's post-settle DOM
+    // equals the pre-round DOM, so the pinned values keep).
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto("/");
+    await expect
+      .poll(async () => page.evaluate(() => getComputedStyle(document.querySelector("h1 span")!).transform), { timeout: 4000 })
+      .toBe("none");
+    await expect
+      .poll(async () => page.evaluate(() => getComputedStyle(document.querySelector(".max-w-3xl")!).transform), { timeout: 4000 })
+      .toBe("none");
     const geo = await page.evaluate(() => {
       const rect = (el: Element | null): number[] | null => {
         if (!el) return null;
@@ -254,6 +264,9 @@ test.describe("the EleganceFlow landing (desktop 1280)", () => {
     expect(geo.labelX).toBe(300); // the label span inside the content column
     await page.setViewportSize({ width: 390, height: 844 });
     await page.waitForTimeout(400);
+    await expect
+      .poll(async () => page.evaluate(() => getComputedStyle(document.querySelector(".max-w-3xl")!).transform), { timeout: 4000 })
+      .toBe("none");
     const mob = await page.evaluate(() => {
       const rect = (el: Element | null): number[] | null => {
         if (!el) return null;
@@ -614,5 +627,159 @@ test.describe("the EleganceFlow landing (desktop 1280)", () => {
     await expect(page).toHaveTitle("EleganceFlow");
     await expect(page.getByRole("heading", { name: "Welcome to EleganceFlow" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Continue with Google" })).toBeVisible();
+  });
+
+  test("round-28: the reveal family — at-rest hidden, the ride animates, the end state is the static face, one-shot (F-28a)", async ({ page }) => {
+    // Round-28 (F-28a): the reference's twenty-element scroll-reveal
+    // family, finally ridden. The at-rest face (below fold): opacity 0
+    // + the live-probed offsets. The ride: a REAL wheel scroll → the
+    // about columns animate (mid-flight opacity strictly between 0 and
+    // 1 — the motion EXISTS). The end state: opacity 1 / transform
+    // none — EXACTLY the pre-round static face (the parity contract).
+    // One-shot: scrolling away never re-hides (the dominant live
+    // behavior; the reference's own re-hide race is recorded in the
+    // plan doc, never mirrored).
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+    await page.waitForTimeout(600);
+    // NOTE the selectors: `> div > div` reads the section container's DIRECT
+    // kids only — a bare `.grid > div` also matches the form's inner
+    // name/email grid and the stats cells (unwired, opacity 1 — the
+    // over-match that broke the first run of this leg)
+    const atRest = await page.evaluate(() => {
+      const kids = [...document.querySelectorAll("#about > div > div")];
+      return kids.map((k) => ({ opacity: getComputedStyle(k).opacity, transform: getComputedStyle(k).transform }));
+    });
+    expect(atRest[0]).toEqual({ opacity: "0", transform: "matrix(1, 0, 0, 1, -40, 0)" });
+    expect(atRest[1]).toEqual({ opacity: "0", transform: "matrix(1, 0, 0, 1, 40, 0)" });
+    // the contact family at rest (the ∓30 offsets)
+    const contactRest = await page.evaluate(() =>
+      [...document.querySelectorAll("#contact > div > div")].map((k) => getComputedStyle(k).transform),
+    );
+    expect(contactRest).toEqual(["matrix(1, 0, 0, 1, -30, 0)", "matrix(1, 0, 0, 1, 30, 0)"]);
+    // the ride: wheel down to the about section, sample mid-flight
+    await page.mouse.wheel(0, 900);
+    await page.waitForTimeout(350);
+    const mid = await page.evaluate(() =>
+      [...document.querySelectorAll("#about > div > div")].map((k) => Number(getComputedStyle(k).opacity)),
+    );
+    expect(mid[0]).toBeGreaterThan(0);
+    expect(mid[0]).toBeLessThan(1);
+    expect(mid[1]).toBeGreaterThan(0);
+    expect(mid[1]).toBeLessThan(1);
+    // the end state: opacity 1, transform none (the pre-round static face)
+    await expect
+      .poll(async () => page.evaluate(() => [...document.querySelectorAll("#about > div > div")].map((k) => getComputedStyle(k).opacity).join(",")), { timeout: 3000 })
+      .toBe("1,1");
+    await expect
+      .poll(async () => page.evaluate(() => getComputedStyle(document.querySelector("#about > div > div")!).transform), { timeout: 3000 })
+      .toBe("none");
+    // one-shot: scroll back to the top — the about STAYS revealed
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.waitForTimeout(900);
+    const afterUp = await page.evaluate(() =>
+      [...document.querySelectorAll("#about > div > div")].map((k) => getComputedStyle(k).opacity),
+    );
+    expect(afterUp).toEqual(["1", "1"]);
+  });
+
+  test("round-28: the services stagger — card 0 leads card 3 through the ride (F-28a)", async ({ page }) => {
+    // The reference's live-sampled stagger: the four cards animate
+    // sequentially (0.30/0.56/0.78/0.93 at one sampled moment) — the
+    // 100ms delay steps. OUR decode rides the same ladder: card 0's
+    // opacity strictly exceeds card 3's mid-flight, and the whole
+    // family settles at 1. The ride uses the WHEEL (instant) — the
+    // smooth-scroll glide (our scroll-behavior superset) would leave
+    // the cards below the fold at the sample moment.
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+    await page.waitForTimeout(600);
+    await page.mouse.wheel(0, 2300);
+    await page.waitForTimeout(330);
+    const ops = await page.evaluate(() =>
+      [...document.querySelectorAll("#services .grid > div")].map((k) => Number(getComputedStyle(k).opacity)),
+    );
+    expect(ops[0]).toBeGreaterThan(ops[3]);
+    await expect
+      .poll(async () => page.evaluate(() => [...document.querySelectorAll("#services .grid > div")].every((k) => getComputedStyle(k).opacity === "1")), { timeout: 4000 })
+      .toBe(true);
+    // the settled cards ride their OWN transition with the stagger delay
+    // CLEARED (computed transition-delay back to 0s — the hover family
+    // unlagged; the settled inline face = the reference's own
+    // opacity: 1 / transform: none)
+    const settled = await page.evaluate(() => {
+      const card = document.querySelector("#services .grid > div")!;
+      return { delay: getComputedStyle(card).transitionDelay, op: getComputedStyle(card).opacity, tf: getComputedStyle(card).transform };
+    });
+    expect(settled.delay).toBe("0s");
+    expect(settled.op).toBe("1");
+    expect(settled.tf).toBe("none");
+  });
+
+  test("round-28: the hero cascade — the mount-time motion exists and settles (F-28a)", async ({ page }) => {
+    // The reference's hero cascade (live-sampled: the wrapper leads at
+    // ~0ms, the eyebrow ~100ms, the spans ~200ms, the CTAs ~600ms,
+    // each ~800ms ease-out) fires at EVERY load — in view at mount.
+    // The deterministic pins: the eyebrow is still hidden/animating at
+    // +500ms (opacity < 1 — the cascade's initial is live client-side)
+    // and fully revealed at +3s.
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+    await page.waitForTimeout(500);
+    const early = await page.evaluate(() => {
+      const eye = document.querySelector(".max-w-3xl > p");
+      const span = document.querySelector("h1 span");
+      return {
+        eye: eye ? Number(getComputedStyle(eye).opacity) : -1,
+        span: span ? Number(getComputedStyle(span).opacity) : -1,
+      };
+    });
+    expect(early.eye).toBeLessThan(1);
+    expect(early.span).toBeLessThan(1);
+    await expect
+      .poll(async () => page.evaluate(() => [document.querySelector(".max-w-3xl > p"), document.querySelector("h1 span")].map((el) => getComputedStyle(el!).opacity).join(",")), { timeout: 4000 })
+      .toBe("1,1");
+    // settled: the elements carry the reference's own post-reveal inline
+    // face (opacity: 1 / transform: none — the stagger delay cleared)
+    const settled = await page.evaluate(() =>
+      [document.querySelector(".max-w-3xl"), document.querySelector(".max-w-3xl > p"), document.querySelector("h1 span")].map((el) => ({
+        op: el ? getComputedStyle(el).opacity : "-1",
+        tf: el ? getComputedStyle(el).transform : "-1",
+        style: el?.getAttribute("style") ?? "none",
+      })),
+    );
+    for (const s of settled) {
+      expect(s.op).toBe("1");
+      expect(s.tf).toBe("none");
+      // serialization-tolerant: the settled attr carries the reference's
+      // post-reveal pair and NOTHING else (the transition decode + the
+      // stagger delay cleared)
+      expect(s.style).toMatch(/opacity:\s*1/);
+      expect(s.style).toMatch(/transform:\s*none/);
+      expect(s.style).not.toContain("transition");
+    }
+  });
+
+  test("round-28: the SSR HTML ships the hidden initials — the no-FOUC contract (F-28a)", async ({ page }) => {
+    // The reference's SPA mounts hidden (nothing paints pre-JS); our
+    // SSR renders the SAME hidden initials in the served HTML — no
+    // flash of visible content before hydration, no hydration mismatch
+    // (the first client render agrees on HIDDEN). The raw HTML must
+    // carry the live-probed offsets.
+    const res = await page.request.get("/");
+    expect(res.status()).toBe(200);
+    const html = await res.text();
+    expect(html).toContain("translateX(-40px)"); // about kid 0
+    expect(html).toContain("translateX(40px)"); // about kid 1
+    expect(html).toContain("translateX(-30px)"); // contact kid 0
+    expect(html).toContain("translateX(30px)"); // contact kid 1
+    expect(html).toContain("translateY(30px)"); // the services cards
+    expect(html).toContain("scale(0.96)"); // the portfolio cards
+    expect(html).toContain("translateY(20px)"); // the testimonials quote + the hero CTAs
+    expect(html).toContain("translateY(40px)"); // the hero wrapper
+    expect(html).toContain("translateX(-20px)"); // the hero eyebrow
+    expect(html).toContain("opacity:0");
+    // the whole family is present: 20 wired elements
+    expect((html.match(/opacity:0/g) ?? []).length).toBeGreaterThanOrEqual(20);
   });
 });

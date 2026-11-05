@@ -132,16 +132,38 @@ async function scanTwoGate(page: import("@playwright/test").Page, label: string)
 // name the failing surface directly).
 // ---------------------------------------------------------------------------
 
+/**
+ * Round-28 (F-28a): the landing's below-fold sections rest at opacity 0
+ * (the reveal family — the reference's own motion identity), and axe-core
+ * SKIPS opacity-0 nodes for color-contrast (live-proven on a fixture:
+ * an opacity:0 low-contrast <p> is never flagged). The landing audits
+ * WARM the reveals first — a scroll ride through the page and back — so
+ * the audit coverage keeps every section visible and the sanctioned
+ * citation register stays intact (the a11y bar never regresses; the
+ * reveal is the reference's byte-parity face, not an a11y regression).
+ */
+async function warmReveals(page: import("@playwright/test").Page) {
+  await page.evaluate(() => {
+    // ride the page bottom and back — one-shot reveals stay revealed
+    window.scrollTo(0, document.documentElement.scrollHeight);
+  });
+  await page.waitForTimeout(1200);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(300);
+}
+
 test.describe("the a11y two-gate: the public landing", () => {
   test("desktop / (1280×800) — structural zero + sanctioned citations", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto("/");
+    await warmReveals(page);
     await scanTwoGate(page, "desktop /");
   });
 
   test("phone / (390×844) — structural zero + sanctioned citations", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/");
+    await warmReveals(page);
     await scanTwoGate(page, "phone /");
   });
 });
