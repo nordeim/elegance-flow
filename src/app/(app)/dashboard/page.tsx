@@ -10,7 +10,6 @@ import { InboxPage } from "./inbox-page";
 // page's own design derives from the landing's design language, not
 // from any reference face.
 export const metadata = pageMetadata({
-  page: null,
   route: "/dashboard",
   title: "Dashboard | EleganceFlow",
 });

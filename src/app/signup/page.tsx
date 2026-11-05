@@ -12,7 +12,11 @@ import { breadcrumbJsonLd, pageMetadata } from "@/lib/site";
 // the reference has no signup to mirror, so this is our superset's own
 // self-consistent expression (the factory's unprefixed family + the
 // absolute suffixed title the s13 pin freezes).
-export const metadata = pageMetadata({ page: null, route: "/signup", title: "Sign up | EleganceFlow" });
+// Round-24 (F-24d): the reference's /signup title is "Signup | EleganceFlow"
+// (NO space — live-probed 2026-11-05, title + og:title + twitter:title
+// all following); the de-spelled string + the factory's social titles
+// now mirror it (tests/document-assets.test.ts ④).
+export const metadata = pageMetadata({ route: "/signup", title: "Signup | EleganceFlow" });
 
 export const dynamic = "force-dynamic";
 

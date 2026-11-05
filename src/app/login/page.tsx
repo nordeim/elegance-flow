@@ -10,9 +10,9 @@ import type { Viewport } from "next";
 // DOUBLED "EleganceFlow | EleganceFlow". The unprefixed metadata family
 // on /login carries over (og:title, the plain description, og:url/
 // twitter:url + canonical at origin/login — the pageMetadata() factory,
-// page: null = the unprefixed family; the factory keeps the ABSOLUTE
+// no title = the unprefixed family; the factory keeps the ABSOLUTE
 // title).
-export const metadata = pageMetadata({ page: null, route: "/login" });
+export const metadata = pageMetadata({ route: "/login" });
 
 export const dynamic = "force-dynamic";
 

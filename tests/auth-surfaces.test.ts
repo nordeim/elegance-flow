@@ -45,12 +45,12 @@ describe("session-199: the login card's brand re-point", () => {
 
 describe("session-199: the auth routes' metadata", () => {
   it("/login keeps the unprefixed family (the bare brand title)", () => {
-    expect(loginRoute()).toContain('pageMetadata({ page: null, route: "/login" })');
+    expect(loginRoute()).toContain('pageMetadata({ route: "/login" })');
   });
 
-  it("/signup keeps the absolute suffixed title", () => {
+  it("/signup keeps the absolute suffixed title (round-24: the reference's de-spaced face)", () => {
     expect(signupRoute()).toContain(
-      'pageMetadata({ page: null, route: "/signup", title: "Sign up | EleganceFlow" })',
+      'pageMetadata({ route: "/signup", title: "Signup | EleganceFlow" })',
     );
   });
 });

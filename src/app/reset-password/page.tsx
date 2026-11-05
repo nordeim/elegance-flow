@@ -10,7 +10,13 @@ import { pageMetadata } from "@/lib/site";
 // query param inside the client component (a search-params read —
 // hence the Suspense boundary; the stream renders the fallback until
 // the client mounts, matching the family's route structure).
-export const metadata = pageMetadata({ page: "Reset password", route: "/reset-password" });
+// Round-24 (F-24d): the reference's /reset-password carries the BARE
+// brand family (title + og:title + twitter:title all "EleganceFlow",
+// the plain description — live-probed 2026-11-05); the prior titled
+// + prefixed family ("Reset password" / "Reset password on …") was
+// invented (the reference prefixes nowhere) — the bare call now
+// mirrors (tests/document-assets.test.ts ④).
+export const metadata = pageMetadata({ route: "/reset-password" });
 
 export const dynamic = "force-dynamic";
 

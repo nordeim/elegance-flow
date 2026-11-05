@@ -10,9 +10,19 @@
 //
 // Session-199 (the rebrand): the reference app is EleganceFlow
 // (colossal-elevate-service-flow.base44.app) — its <title> is the
-// absolute "EleganceFlow" on / and /login and the "%s | EleganceFlow"
-// template on named routes (live-verified). It ships NO meta description;
-// ours does (the documented SEO superset the smoke ladder checks).
+// absolute "EleganceFlow" on / and /login and /reset-password and the
+// "%s | EleganceFlow" template on its named routes (/signup "Signup | …",
+// /dashboard "Dashboard | …" — live-verified; round-24 corrected the
+// reset-password shape and the signup spacing).
+//
+// Round-24 (the record correction): the reference's RENDERED head
+// ships the FULL meta family on every public route — meta description
+// + og:* + twitter:* + the PWA metas (the raw SPA shell carries none;
+// the runtime injects them — the prior "ships no meta description"
+// record read the shell). Its description is the TEMPLATE's marketing
+// copy; SITE_DESCRIPTION mirrors it byte-for-byte (the "YOUR STUDIO"
+// placeholder doctrine), and the og-image + the install icons carry
+// the reference's own logo bytes (see tests/document-assets.test.ts).
 //
 // NEXT_PUBLIC_* values are INLINED AT BUILD TIME by Next — set the variable
 // before `bun run build` in production (docs/DEPLOYMENT.md).
@@ -23,10 +33,13 @@ import { SITE_NAME } from "@/lib/site-content";
 
 export const DEFAULT_SITE_URL = "http://localhost:3000";
 
-/** The site's meta description (the reference ships none — our SEO
- *  superset; keep it honest and specific). */
+/** The site's meta description — the reference's own (the TEMPLATE's
+ *  marketing copy, live-probed 2026-11-05, byte-identical in its meta
+ *  description, og:description, twitter:description, and manifest;
+ *  round-24 replaced the prior curated text, which had been written
+ *  under the false "the reference ships none" premise). */
 export const SITE_DESCRIPTION =
-  "EleganceFlow is a premium creative studio delivering creative direction, design & web, photography, and brand strategy for clients who value quality. Tell us about your project — we'd love to work together.";
+  "A premium, modular website template for service-based businesses, designed for high-conversion portfolios, seamless service showcasing, and sophisticated client inquiries.";
 
 /**
  * Canonical public origin: NEXT_PUBLIC_SITE_URL when set (trailing slashes
@@ -39,14 +52,6 @@ export function siteUrl(
   const raw = (env ?? "").trim();
   if (!raw) return DEFAULT_SITE_URL;
   return raw.replace(/\/+$/, "");
-}
-
-/**
- * The per-route OG description prefix — inner pages carry
- * `"<Page> on EleganceFlow. " + <the root paragraph>`.
- */
-export function pageOgDescription(page: string): string {
-  return `${page} on ${SITE_NAME}. ${SITE_DESCRIPTION}`;
 }
 
 /**
@@ -68,31 +73,30 @@ export const PWA_META: Record<string, string> = {
  * metadata over the layout's, so every page re-declares the FULL
  * openGraph/twitter/other sets.
  *
- * - `page: null` → the unprefixed root family ("EleganceFlow" + the
- *   plain paragraph). Login keeps its ABSOLUTE title (the s13
- *   anti-doubling pin); pass `title` for other absolute spellings
- *   (signup: "Sign up | EleganceFlow").
+ * - The BARE family (`no title`): the reference's /, /login, and
+ *   /reset-password all carry the bare brand in the title AND the
+ *   social titles AND the plain description (round-24 censused the
+ *   reset route — the prior titled+prefixed family was invented).
+ * - `title` for the reference's suffixed spellings (signup:
+ *   "Signup | EleganceFlow" — no space; dashboard: "Dashboard |
+ *   EleganceFlow") — the social titles follow it (the F-24d cure:
+ *   they used to stay at the bare brand).
+ * - The description is the plain SITE_DESCRIPTION on every route (the
+ *   reference never prefixes — the prior pageOgDescription prefix
+ *   family is retired).
  * - The landing inherits the root layout's metadata wholesale.
  */
 export function pageMetadata(opts: {
-  page: string | null;
   route: string;
   title?: string;
 }): Metadata {
-  const page = opts.page;
-  const fullTitle = page !== null ? `${page} | ${SITE_NAME}` : SITE_NAME;
-  const description = page !== null ? pageOgDescription(page) : SITE_DESCRIPTION;
+  const fullTitle = opts.title ?? SITE_NAME;
   return {
-    title:
-      opts.title !== undefined
-        ? { absolute: opts.title }
-        : page !== null
-          ? page
-          : { absolute: SITE_NAME },
+    title: opts.title !== undefined ? { absolute: opts.title } : { absolute: SITE_NAME },
     alternates: { canonical: opts.route },
     openGraph: {
       title: fullTitle,
-      description,
+      description: SITE_DESCRIPTION,
       url: opts.route,
       type: "website",
       siteName: SITE_NAME,
@@ -101,7 +105,7 @@ export function pageMetadata(opts: {
     twitter: {
       card: "summary_large_image",
       title: fullTitle,
-      description,
+      description: SITE_DESCRIPTION,
       images: ["/og-image.png"],
     },
     other: {

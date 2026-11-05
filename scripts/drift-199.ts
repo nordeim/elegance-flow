@@ -15,6 +15,7 @@
 // Diffs the live reference against OUR dev build (:3000).
 //
 // Run: bun scripts/drift-199.ts   (expects our dev server on :3000)
+import { createHash } from "node:crypto";
 import { chromium } from "@playwright/test";
 
 const OURS = "http://localhost:3000";
@@ -896,6 +897,197 @@ function expectConst(label: string, side: string, recorded: unknown, live: unkno
   }
 }
 
+// The round-24 [docs] leg — the DOCUMENT-ASSET/META census: the ROOT
+// rendered head family no probe ever read (the round-18 head census read
+// /login+/signup JSON-LD/viewport/theme-color/canonical only; the raw
+// SPA shell carries none of the meta family — the runtime injects it,
+// which is how the stale "the reference ships no SEO family" record
+// survived), the manifest CONTENTS, the robots/sitemap bytes, the
+// fetched icon + og-image BYTES, the login tab order, and the
+// font-loading family. The reference's own defects (the favicon
+// type-lie, the /login-only og:image dimension trio, the platform's
+// boilerplate alt) ride per-side RECORDED constants; the mirrored
+// families diff REF vs OURS directly.
+type DocsFace = {
+  title: string;
+  signupTitle: string;
+  resetTitle: string;
+  description: string;
+  ogTitle: string;
+  ogDescription: string;
+  ogUrl: string;
+  ogType: string;
+  ogSiteName: string;
+  ogImageMeta: { width: string | null; height: string | null; alt: string | null };
+  twitterCard: string;
+  twitterTitle: string;
+  twitterDescription: string;
+  twitterUrl: string;
+  iconLinks: { rel: string; type: string | null; sizes: string | null }[];
+  iconSha1: string;
+  ogImageSha1: string;
+  manifest: {
+    name: string;
+    short_name: string;
+    description: string;
+    iconSizes: string[];
+    iconSrcs: string[];
+    display: string;
+    theme_color: string;
+    background_color: string;
+    start_url: string;
+    scope: string;
+  };
+  robots: string;
+  sitemapUrls: string[];
+  loginTabStops: string[];
+  fonts: {
+    bodyFont: string;
+    nonNextjsFaces: number;
+    preloadFonts: number;
+    googleFonts: number;
+  };
+};
+
+async function docsFace(url: string): Promise<DocsFace> {
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const page = await context.newPage();
+  const origin = new URL(url).origin;
+  const stripOrigin = (s: string) => s.split(origin).join("");
+
+  await page.goto(url + "/", { waitUntil: "networkidle" });
+  await page.waitForTimeout(1200);
+
+  const rootHead = await page.evaluate(() => {
+    const meta = (sel: string) => document.querySelector(sel)?.getAttribute("content") ?? null;
+    return {
+      title: document.title,
+      description: meta("meta[name='description']"),
+      ogTitle: meta("meta[property='og:title']"),
+      ogDescription: meta("meta[property='og:description']"),
+      ogUrl: meta("meta[property='og:url']"),
+      ogType: meta("meta[property='og:type']"),
+      ogSiteName: meta("meta[property='og:site_name']"),
+      ogImageWidth: meta("meta[property='og:image:width']"),
+      ogImageHeight: meta("meta[property='og:image:height']"),
+      ogImageAlt: meta("meta[property='og:image:alt']"),
+      twitterCard: meta("meta[name='twitter:card']"),
+      twitterTitle: meta("meta[name='twitter:title']"),
+      twitterDescription: meta("meta[name='twitter:description']"),
+      twitterUrl: meta("meta[name='twitter:url']"),
+      ogImageUrl: meta("meta[property='og:image']"),
+      iconLinks: Array.from(document.querySelectorAll("link[rel*='icon']")).map((l) => ({
+        rel: l.getAttribute("rel") ?? "",
+        type: l.getAttribute("type"),
+        sizes: l.getAttribute("sizes"),
+      })),
+      fonts: {
+        // the __nextjs-* families are the dev-overlay artifact on OUR
+        // dev server (the CRM session-22 lesson) — excluded on BOTH
+        // sides so the census reads the CONTENT fonts only
+        nonNextjsFaces: Array.from(document.fonts).filter((f) => !f.family.startsWith("__nextjs")).length,
+        preloadFonts: document.querySelectorAll("link[rel='preload'][as='font']").length,
+        googleFonts: document.querySelectorAll("link[href*='fonts.googleapis'], link[href*='fonts.gstatic']").length,
+        bodyFont: getComputedStyle(document.body).fontFamily,
+      },
+    };
+  });
+
+  // the tab order on /login — the round-21 keyboard census rode the
+  // LANDING only; this is the auth card's own ride
+  await page.goto(url + "/login", { waitUntil: "networkidle" });
+  await page.waitForTimeout(800);
+  const loginTabStops: string[] = [];
+  for (let i = 0; i < 10; i++) {
+    await page.keyboard.press("Tab");
+    const stop = await page.evaluate(() => {
+      const el = document.activeElement;
+      if (!el || el === document.body) return "(body)";
+      return `${el.tagName.toLowerCase()}#${el.id || ""}`;
+    });
+    if (stop === "(body)") break;
+    loginTabStops.push(stop);
+  }
+
+  // the titles of the two named auth routes (the reference's SPA sets
+  // document.title at runtime — the same settle the census probed)
+  await page.goto(url + "/signup", { waitUntil: "networkidle" });
+  await page.waitForTimeout(1500);
+  const signupTitle = await page.evaluate(() => document.title);
+  await page.goto(url + "/reset-password", { waitUntil: "domcontentloaded" });
+  await page.waitForTimeout(1800);
+  const resetTitle = await page.evaluate(() => document.title);
+
+  // the document-family routes' CONTENT (round-20 read their response
+  // headers; the contents were never censused) + the fetched asset bytes
+  const manifestRes = await context.request.get(url + "/manifest.json");
+  const manifest = (await manifestRes.json()) as Record<string, unknown>;
+  const robots = await (await context.request.get(url + "/robots.txt")).text();
+  const sitemap = await (await context.request.get(url + "/sitemap.xml")).text();
+  const sitemapUrls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) =>
+    stripOrigin(m[1]!),
+  );
+  const iconHref = await page.evaluate(() => document.querySelector("link[rel='icon']")?.getAttribute("href") ?? "");
+  const iconAbs = iconHref.startsWith("http") ? iconHref : url + iconHref;
+  const iconBuf = await (await context.request.get(iconAbs)).body();
+  const ogMetaUrl = rootHead.ogImageUrl ?? "";
+  const ogAbs = ogMetaUrl.startsWith("http") ? ogMetaUrl : url + ogMetaUrl;
+  const ogBuf = await (await context.request.get(ogAbs)).body();
+
+  await context.close();
+
+  const icons = (manifest["icons"] ?? []) as { src: string; sizes: string }[];
+  return {
+    title: rootHead.title,
+    signupTitle,
+    resetTitle,
+    description: rootHead.description ?? "",
+    ogTitle: rootHead.ogTitle ?? "",
+    ogDescription: rootHead.ogDescription ?? "",
+    ogUrl: stripOrigin(rootHead.ogUrl ?? ""),
+    ogType: rootHead.ogType ?? "",
+    ogSiteName: rootHead.ogSiteName ?? "",
+    ogImageMeta: {
+      width: rootHead.ogImageWidth,
+      height: rootHead.ogImageHeight,
+      alt: rootHead.ogImageAlt,
+    },
+    twitterCard: rootHead.twitterCard ?? "",
+    twitterTitle: rootHead.twitterTitle ?? "",
+    twitterDescription: rootHead.twitterDescription ?? "",
+    twitterUrl: stripOrigin(rootHead.twitterUrl ?? ""),
+    iconLinks: rootHead.iconLinks,
+    iconSha1: sha1Hex(Buffer.from(iconBuf)),
+    ogImageSha1: sha1Hex(Buffer.from(ogBuf)),
+    manifest: {
+      name: String(manifest["name"] ?? ""),
+      short_name: String(manifest["short_name"] ?? ""),
+      description: String(manifest["description"] ?? ""),
+      iconSizes: icons.map((i) => i.sizes),
+      iconSrcs: icons.map((i) => stripOrigin(i.src)),
+      display: String(manifest["display"] ?? ""),
+      theme_color: String(manifest["theme_color"] ?? ""),
+      background_color: String(manifest["background_color"] ?? ""),
+      start_url: stripOrigin(String(manifest["start_url"] ?? "")),
+      scope: stripOrigin(String(manifest["scope"] ?? "")),
+    },
+    robots: stripOrigin(robots),
+    sitemapUrls,
+    loginTabStops,
+    fonts: {
+      bodyFont: rootHead.fonts.bodyFont,
+      nonNextjsFaces: rootHead.fonts.nonNextjsFaces,
+      preloadFonts: rootHead.fonts.preloadFonts,
+      googleFonts: rootHead.fonts.googleFonts,
+    },
+  };
+}
+
+/** sha1 hex of a Buffer (the drift script's node-side helper). */
+function sha1Hex(buf: Buffer): string {
+  return createHash("sha1").update(buf).digest("hex");
+}
+
 // The round-19 interact leg — sequential on ONE context per app (the
 // rides auto-scroll; the header-top read must precede them).
 {
@@ -1106,6 +1298,92 @@ async function deepLinkFace(url: string) {
   diff("[viewport]", refPanel.wrapClass, oursPanel.wrapClass, "@640 panelWrapClass (the byte-mirrored wrap)", out);
 }
 
+// The round-24 [docs] leg — the DOCUMENT-ASSET/META census. The mirrored
+// families diff REF vs OURS directly; the reference's own defects and
+// our recorded supersets ride per-side RECORDED constants (the
+// google-leg pattern).
+{
+  const refDocs = await docsFace(REF);
+  const oursDocs = await docsFace(OURS);
+  // the ROOT rendered head family (origin-normalized)
+  diff("[docs]", refDocs.title, oursDocs.title, "rootTitle (the bare brand)", out);
+  diff("[docs]", refDocs.signupTitle, oursDocs.signupTitle, "signupTitle (the de-spaced face — F-24d)", out);
+  diff("[docs]", refDocs.resetTitle, oursDocs.resetTitle, "resetTitle (the bare brand — F-24d)", out);
+  diff("[docs]", refDocs.description, oursDocs.description, "metaDescription (the reference's TEMPLATE copy — F-24c, the record correction)", out);
+  diff("[docs]", refDocs.ogTitle, oursDocs.ogTitle, "ogTitle", out);
+  diff("[docs]", refDocs.ogDescription, oursDocs.ogDescription, "ogDescription", out);
+  diff("[docs]", refDocs.ogUrl, oursDocs.ogUrl, "ogUrl (origin-normalized)", out);
+  diff("[docs]", refDocs.ogType, oursDocs.ogType, "ogType", out);
+  diff("[docs]", refDocs.ogSiteName, oursDocs.ogSiteName, "ogSiteName", out);
+  diff("[docs]", refDocs.twitterCard, oursDocs.twitterCard, "twitterCard", out);
+  diff("[docs]", refDocs.twitterTitle, oursDocs.twitterTitle, "twitterTitle", out);
+  diff("[docs]", refDocs.twitterDescription, oursDocs.twitterDescription, "twitterDescription", out);
+  diff("[docs]", refDocs.twitterUrl, oursDocs.twitterUrl, "twitterUrl (origin-normalized)", out);
+  // the og-image BYTES — the byte-mirror makes both sides the SAME
+  // image (the strongest parity proof of the round-24 cure)
+  diff("[docs]", refDocs.ogImageSha1, oursDocs.ogImageSha1, "ogImageSha1 (the reference's fill/w_1200,h_630 card, byte-mirrored — F-24b)", out);
+  // the manifest contents (origin-normalized)
+  diff("[docs]", refDocs.manifest.name, oursDocs.manifest.name, "manifestName", out);
+  diff("[docs]", refDocs.manifest.short_name, oursDocs.manifest.short_name, "manifestShortName", out);
+  diff("[docs]", refDocs.manifest.description, oursDocs.manifest.description, "manifestDescription (F-24c)", out);
+  diff("[docs]", refDocs.manifest.iconSizes, oursDocs.manifest.iconSizes, "manifestIconSizes (192x192 + 512x512)", out);
+  diff("[docs]", refDocs.manifest.display, oursDocs.manifest.display, "manifestDisplay", out);
+  diff("[docs]", refDocs.manifest.theme_color, oursDocs.manifest.theme_color, "manifestThemeColor", out);
+  diff("[docs]", refDocs.manifest.background_color, oursDocs.manifest.background_color, "manifestBackgroundColor", out);
+  diff("[docs]", refDocs.manifest.start_url, oursDocs.manifest.start_url, "manifestStartUrl (origin-normalized)", out);
+  diff("[docs]", refDocs.manifest.scope, oursDocs.manifest.scope, "manifestScope (origin-normalized)", out);
+  // robots + the login tab order + the fonts family
+  diff("[docs]", refDocs.robots, oursDocs.robots, "robotsTxt (origin-normalized bytes)", out);
+  diff("[docs]", refDocs.loginTabStops, oursDocs.loginTabStops, "loginTabStops (the six-stop ride — R-24c)", out);
+  diff("[docs]", refDocs.fonts.bodyFont, oursDocs.fonts.bodyFont, "bodyFontFamily (the stock sans stack — R-24b)", out);
+  diff("[docs]", refDocs.fonts.nonNextjsFaces, oursDocs.fonts.nonNextjsFaces, "nonNextjsFontFaces (zero webfonts both)", out);
+  diff("[docs]", refDocs.fonts.preloadFonts, oursDocs.fonts.preloadFonts, "preloadFonts (none both)", out);
+  diff("[docs]", refDocs.fonts.googleFonts, oursDocs.fonts.googleFonts, "googleFontsLinks (none both)", out);
+  // the sitemap — the documented superset (the reference ships ONE
+  // url; ours the deep-linkable public family), pinned per side
+  expectConst("[docs]", "REF", ["/"], refDocs.sitemapUrls, out);
+  expectConst("[docs]", "OURS", ["/", "/login", "/signup", "/reset-password"], oursDocs.sitemapUrls, out);
+  // the favicon-link family + the fetched icon bytes + the manifest
+  // icon srcs — the reference's own defects (the svg+xml type-lie, no
+  // sizes, no apple icon, the CDN srcs) vs OUR honest-type superset,
+  // pinned per side
+  expectConst(
+    "[docs]",
+    "REF",
+    [{ rel: "icon", type: "image/svg+xml", sizes: null }],
+    refDocs.iconLinks,
+    out,
+  );
+  expectConst(
+    "[docs]",
+    "OURS",
+    [
+      { rel: "icon", type: "image/png", sizes: "512x512" },
+      { rel: "apple-touch-icon", type: "image/png", sizes: "180x180" },
+    ],
+    oursDocs.iconLinks,
+    out,
+  );
+  expectConst("[docs]", "REF", "484f2cf504efd30bb0827e42b4ebb89f206d48b7", refDocs.iconSha1, out);
+  expectConst("[docs]", "OURS", "bd6f57945c42055a8f3cbfc702d7e34803854968", oursDocs.iconSha1, out);
+  expectConst(
+    "[docs]",
+    "REF",
+    [
+      "https://media.base44.com/images/public/69ca8f9d112e0923462fae91/283cae1f1_logo.png/v1/fit/w_192,h_192/283cae1f1_logo.png",
+      "https://media.base44.com/images/public/69ca8f9d112e0923462fae91/283cae1f1_logo.png/v1/fit/w_512,h_512/283cae1f1_logo.png",
+    ],
+    refDocs.manifest.iconSrcs,
+    out,
+  );
+  expectConst("[docs]", "OURS", ["/icon.png", "/icon.png"], oursDocs.manifest.iconSrcs, out);
+  // the og:image dimension/alt trio — the reference's /login-ONLY
+  // platform variance ("Base44 link preview"), ours the every-page
+  // width/height superset matching its declared 1200x630, no alt
+  expectConst("[docs]", "REF", { width: null, height: null, alt: null }, refDocs.ogImageMeta, out);
+  expectConst("[docs]", "OURS", { width: "1200", height: "630", alt: null }, oursDocs.ogImageMeta, out);
+}
+
 if (out.length === 0) {
   console.log("[390] CONTENT + MOBILE-MENU FACE: NO DRIFT — the reference matches our byte-mirror");
   console.log("[login] AUTH-CARD FACE: NO DRIFT — the reference matches our login mirror");
@@ -1119,8 +1397,9 @@ if (out.length === 0) {
   console.log("[google] GOOGLE-BUTTON FACE: NO DRIFT — both faces match their recorded constants (the reference's OAuth redirect + our honest toast, R-21a)");
   console.log("[viewport] INTERMEDIATE-VIEWPORT FACE: NO DRIFT — the sm/md boundaries compute identical on both apps (R-22a: the positive census; the mobile menu's retirement boundary clean)");
   console.log("[anchors] ANCHOR-NAVIGATION/DEEP-LINK FACE: NO DRIFT — the desktop nav rides + the logo ride identical on both apps; the deep-link boot matches each side's recorded constant (R-23a + the R-23b superset record)");
+  console.log("[docs] DOCUMENT-ASSET/META FACE: NO DRIFT — the root rendered head family, the manifest contents, the robots bytes, the login tab order and the fonts family all mirror (the og-image BYTES identical both sides); the sitemap superset + the favicon-link/icon-src families match their per-side recorded constants (R-24a–e)");
 } else {
-  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact + authfail + google + viewport + anchors] DRIFT DETECTED — ${out.length} field(s):`);
+  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact + authfail + google + viewport + anchors + docs] DRIFT DETECTED — ${out.length} field(s):`);
   for (const line of out) console.log(line);
 }
 

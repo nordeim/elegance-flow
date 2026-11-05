@@ -46,8 +46,8 @@ re-pinned to the reference's v3 palette).
    seams in `src/lib/` rather than inlining logic. Keep lint green as
    you go.
 5. **VERIFY** — Run the full gate: `bun run lint` → `bun run typecheck`
-   → `bun run test` (508) → `bun run build` → `./scripts/smoke-test.sh`
-   (14) → `CI=1 bun run test:e2e` (92). The `gate` script chains them.
+   → `bun run test` (513) → `bun run build` → `./scripts/smoke-test.sh`
+   (14) → `CI=1 bun run test:e2e` (97). The `gate` script chains them.
 6. **DOCUMENT** — Update the touched docs (`README.md`, this file, the
    PAD, `worklog.md`) in the same change; the counts in the docs must
    match the suites (the lockstep doctrine — doc claims about the tree
@@ -69,8 +69,14 @@ outright and cite no sanctioned matchers.
 Deviations must be functional supersets, documented: persisted
 inquiries (vs. the reference's POST-less panel swap), the authenticated inbox, the designed 404
 with a true 404 status (vs. the reference's blank SPA shells), the
-SEO metadata family (the reference ships none), deep-linkable
-`/signup` + `/reset-password`.
+SEO metadata family (round-24 record correction: the reference's
+RENDERED head ships the full meta family — runtime-injected, which the
+prior "ships none" record missed by reading the raw SPA shell — ours
+now mirrors its description/og/twitter/manifest family and the
+og-image/icon BYTES; the remaining supersets are the sitemap's
+deep-linkable public URLs, the every-page theme-color, the honest icon
+types vs its svg+xml type-lie, and the apple-touch-icon),
+deep-linkable `/signup` + `/reset-password`.
 
 ## Development Workflow
 
@@ -78,8 +84,8 @@ SEO metadata family (the reference ships none), deep-linkable
 
 ```bash
 bun run dev        # :3000
-bun run test       # vitest (508 checks / 43 files)
-bun run test:e2e   # playwright (92 checks / 8 specs) — build first
+bun run test       # vitest (513 checks / 44 files)
+bun run test:e2e   # playwright (97 checks / 8 specs) — build first
 bun run gate       # the full chain, in order
 bun run db:census  # MUST print "pristine: MATCH" before you trust any db read
 ```
@@ -115,7 +121,7 @@ in production — the boot gate refuses to serve without it),
 
 ## Testing Strategy
 
-- **Unit (Vitest, 43 files / 508 checks)** — the seam batteries (auth,
+- **Unit (Vitest, 44 files / 513 checks)** — the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (`site-content`,
@@ -127,7 +133,7 @@ in production — the boot gate refuses to serve without it),
   `landing-images`, `focus-outline`, `preflight-faces`,
   `motion-glyph`, `geometry-faces`, `auth-validation`, `head-faces`,
   `interaction-faces`, `auth-failure-faces`, `google-fallback`,
-  `viewport-faces`, `anchor-faces`) — comment-stripped source reads; a literal pinned
+  `viewport-faces`, `anchor-faces`, `document-assets`) — comment-stripped source reads; a literal pinned
   by a comment alone is vacuous.
 - **E2E (Playwright, `tests/e2e/*.spec.ts`)** — the standalone
   artifact on :3100 with `db/e2e.db`; ONE shared login

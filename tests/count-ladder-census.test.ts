@@ -173,6 +173,7 @@ const SOURCE_CONTRACTS = [
   "google-fallback",
   "viewport-faces",
   "anchor-faces",
+  "document-assets",
 ];
 
 const fileOf = (family: string) => `${family}.test.ts`;

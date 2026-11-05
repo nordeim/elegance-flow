@@ -10,7 +10,7 @@ description: >
   doctrine, the Tailwind v4 re-pin traps, the mobile inline menu, the auth
   seams, the testing pyramid and the debugging playbook. Use it to extend,
   debug, onboard, or replicate this architecture.
-version: 1.211.0
+version: 1.212.0
 last_updated: 2026-11-05
 ---
 
@@ -191,7 +191,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 508 checks / 43 files**: the seam batteries (auth,
+- **Unit — Vitest, 513 checks / 44 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
@@ -381,10 +381,22 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   soft-404 precedent; F-23a: the coverage catch — the battery pins the
   five section-id targets, the hero-CTA/logo href wiring, the
   scroll-margin/scroll-padding PURITY, and the no-dynamic-import
-  SSR-boot keep) —
+  SSR-boot keep) — and
+  document-assets — the round-24 battery that pins the DOCUMENT-ASSET/
+  META family (the domain transformation's blind spot: the favicon/
+  install icons had shipped the PRIOR-DOMAIN NEO-CRM BrandMark and the
+  og-image the NEO-CRM dashboard screenshot, both carried verbatim and
+  never censused; the record correction: the reference's RENDERED head
+  ships the full meta family on every public route (runtime-injected —
+  the raw SPA shell carries none, which is how the stale "ships no SEO
+  family" record survived), its description the TEMPLATE's marketing
+  copy; the battery pins the byte-mirrored logo/og-image sha1s + IHDR
+  dims, the SITE_DESCRIPTION mirror, the de-spaced signup title + the
+  bare reset title + the factory's social titles following the
+  absolute title, and the no-icons-field favicon-link keep) —
   comment-stripped source reads; a
   literal pinned by a comment alone is vacuous.
-- **E2E — Playwright, 92 checks / 8 specs**: the standalone artifact on
+- **E2E — Playwright, 97 checks / 8 specs**: the standalone artifact on
   :3100 with `db/e2e.db`; ONE shared login (`auth.setup.ts` →
   storageState — the auth endpoints are rate-limited 10/IP/15-min); one
   worker; alphabetical file order → every spec SELF-SUFFICIENT (its own

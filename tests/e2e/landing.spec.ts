@@ -338,6 +338,96 @@ test.describe("the EleganceFlow landing (desktop 1280)", () => {
     }
   });
 
+  test("round-24: the manifest contents mirror the reference's install family (F-24c)", async ({ request }) => {
+    // The reference's own manifest, live-probed 2026-11-05: the name/
+    // short_name pair, the TEMPLATE's marketing-copy description (the
+    // record correction — the reference's RENDERED head ships the full
+    // meta family; the prior "ships none" record read its raw SPA
+    // shell), the two icon entries (192x192 + 512x512 — our same-src
+    // self-hosted quirk vs its two CDN srcs, the never-point-at-their-CDN
+    // doctrine), and the standalone display + theme/background pair.
+    const res = await request.get("/manifest.json");
+    expect(res.status()).toBe(200);
+    const manifest = (await res.json()) as {
+      name: string; short_name: string; description: string;
+      icons: { src: string; sizes: string; type: string }[];
+      display: string; theme_color: string; background_color: string;
+    };
+    expect(manifest.name).toBe("EleganceFlow");
+    expect(manifest.short_name).toBe("EleganceFlow");
+    expect(manifest.description).toBe(
+      "A premium, modular website template for service-based businesses, designed for high-conversion portfolios, seamless service showcasing, and sophisticated client inquiries.",
+    );
+    expect(manifest.icons).toEqual([
+      { src: expect.stringMatching(/\/icon\.png/), sizes: "192x192", type: "image/png" },
+      { src: expect.stringMatching(/\/icon\.png/), sizes: "512x512", type: "image/png" },
+    ]);
+    expect(manifest.display).toBe("standalone");
+    expect(manifest.theme_color).toBe("#000000");
+    expect(manifest.background_color).toBe("#ffffff");
+  });
+
+  test("round-24: the install assets serve the reference's own bytes (the F-24a/F-24b byte-mirror)", async ({ request }) => {
+    // The prior-domain leftovers cured: the icons had been the
+    // NEO-CRM BrandMark and the og-image the NEO-CRM dashboard
+    // screenshot — both carried verbatim at the session-199 domain
+    // transformation and never censused. The byte-mirror serves the
+    // reference's logo: /icon.png (the w_512 CDN variant),
+    // /apple-icon.png (the w_180 favicon href's variant), and
+    // /og-image.png (the fill/w_1200,h_630 card). The sha1s are the
+    // recorded live-probe constants.
+    const { createHash } = await import("node:crypto");
+    const sha1 = (buf: Buffer) => createHash("sha1").update(buf).digest("hex");
+    const pngDims = (buf: Buffer) => ({ w: buf.readUInt32BE(16), h: buf.readUInt32BE(20) });
+    for (const [route, sha, w, h] of [
+      ["/icon.png", "bd6f57945c42055a8f3cbfc702d7e34803854968", 512, 512],
+      ["/apple-icon.png", "484f2cf504efd30bb0827e42b4ebb89f206d48b7", 180, 180],
+      ["/og-image.png", "4daab032e0b9a98636280fbe3b3c8d5db8d868c5", 1200, 630],
+    ] as const) {
+      const res = await request.get(route);
+      expect(res.status(), route).toBe(200);
+      expect(res.headers()["content-type"], route).toContain("image/png");
+      const body = Buffer.from(await res.body());
+      expect(pngDims(body), route).toEqual({ w, h });
+      expect(sha1(body), route).toBe(sha);
+    }
+  });
+
+  test("round-24: the root description family mirrors the reference's template copy (F-24c)", async ({ page }) => {
+    // The reference's RENDERED head (runtime-injected — the raw shell
+    // carries none) ships meta description + og:description +
+    // twitter:description, all the TEMPLATE's marketing copy. Ours
+    // mirrors through the SITE_DESCRIPTION seam.
+    const REF_DESCRIPTION =
+      "A premium, modular website template for service-based businesses, designed for high-conversion portfolios, seamless service showcasing, and sophisticated client inquiries.";
+    await page.goto("/");
+    await expect(page.locator("meta[name='description']")).toHaveAttribute("content", REF_DESCRIPTION);
+    await expect(page.locator("meta[property='og:description']")).toHaveAttribute("content", REF_DESCRIPTION);
+    await expect(page.locator("meta[name='twitter:description']")).toHaveAttribute("content", REF_DESCRIPTION);
+  });
+
+  test("round-24: the signup title family — the de-spaced face with the social titles following (F-24d)", async ({ page }) => {
+    // The reference's /signup title is "Signup | EleganceFlow" (no
+    // space) and its og:title + twitter:title follow it; ours used to
+    // ship "Sign up | EleganceFlow" with the social titles stuck at
+    // the bare brand.
+    await page.goto("/signup");
+    await expect(page).toHaveTitle("Signup | EleganceFlow");
+    await expect(page.locator("meta[property='og:title']")).toHaveAttribute("content", "Signup | EleganceFlow");
+    await expect(page.locator("meta[name='twitter:title']")).toHaveAttribute("content", "Signup | EleganceFlow");
+  });
+
+  test("round-24: the reset-password route carries the reference's BARE brand family (F-24d)", async ({ page }) => {
+    // The reference's /reset-password (live-probed 2026-11-05) carries
+    // the bare "EleganceFlow" title + og:title — the prior titled +
+    // og-prefixed family ("Reset password | …" + the "Reset password
+    // on …" description prefix) was invented: the reference prefixes
+    // NOWHERE.
+    await page.goto("/reset-password");
+    await expect(page).toHaveTitle("EleganceFlow");
+    await expect(page.locator("meta[property='og:title']")).toHaveAttribute("content", "EleganceFlow");
+  });
+
   test("an unknown route renders the designed 404 (with the true 404 status)", async ({ page }) => {
     const res = await page.goto("/this-page-does-not-exist");
     expect(res?.status()).toBe(404);

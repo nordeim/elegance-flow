@@ -18,14 +18,19 @@ export const metadata: Metadata = {
   // EleganceFlow — its <title> is the bare "EleganceFlow" on / and
   // /login (live-verified) with the "%s | EleganceFlow" template on
   // named routes. The OG/Twitter card family + PWA metas carry over
-  // from the session-18/19 contracts (the platform family, rebranded);
-  // the description is OUR documented SEO superset (the reference ships
-  // none).
+  // from the session-18/19 contracts (the platform family, rebranded).
+  // Round-24 (the record correction): the reference's RENDERED head
+  // ships the FULL meta family — its description is the TEMPLATE's
+  // marketing copy, which SITE_DESCRIPTION now mirrors byte-for-byte
+  // (the prior curated superset text is retired; the raw SPA shell
+  // carries none of the family, which is how the stale "ships none"
+  // record survived — the runtime injects them).
   metadataBase: new URL(siteUrl()),
   manifest: `${siteUrl()}/manifest.json`,
   title: {
     default: "EleganceFlow",
-    // The reference's separator is a pipe ("Sign up | EleganceFlow").
+    // The reference's separator is a pipe ("Signup | EleganceFlow",
+    // "Dashboard | EleganceFlow" — round-24 de-spaced the signup face).
     template: "%s | EleganceFlow",
   },
   description: SITE_DESCRIPTION,
