@@ -2,10 +2,14 @@ import { LoginCard } from "@/components/layout/login-card";
 import { LOGIN_LAYOUT } from "@/lib/page-layout";
 import { breadcrumbJsonLd, pageMetadata } from "@/lib/site";
 
-// Session-10: the reference has no real /signup (the live platform now
-// serves the URL as a 200-status soft-404 — the base44 DeadEndPage with
-// the breadcrumb JSON-LD riding it; kept as our working superset). Its
-// title follows the same scheme.
+// Session-10: the reference has no real /signup. Round-26 (F-26d, the
+// record correction): the CURRENT bundle serves its DESIGNED 404 there
+// (the quoted-path body 'The page "signup" could not be found', the
+// round-25 family — live-probed settled 2026-11-05), with the DERIVED
+// title "Signup | EleganceFlow" and the BreadcrumbList JSON-LD riding
+// the platform injection. The prior session-10 record ("the base44
+// DeadEndPage" soft-404) was the old bundle's face; kept as our working
+// superset — a REAL signup flow the reference lacks.
 // Session-13 (S13-P1): ABSOLUTE — the string already contains the
 // suffix, so the root template doubled it ("Sign up | EleganceFlow | EleganceFlow").
 // Session-19 (S19-P4/P5): the per-route canonical/OG/Twitter family —
@@ -14,8 +18,9 @@ import { breadcrumbJsonLd, pageMetadata } from "@/lib/site";
 // absolute suffixed title the s13 pin freezes).
 // Round-24 (F-24d): the reference's /signup title is "Signup | EleganceFlow"
 // (NO space — live-probed 2026-11-05, title + og:title + twitter:title
-// all following); the de-spelled string + the factory's social titles
-// now mirror it (tests/document-assets.test.ts ④).
+// all following; per round-25 this is the 404-DERIVED title, the
+// derivation rule's own product at /signup); the de-spelled string +
+// the factory's social titles now mirror it (tests/document-assets.test.ts ④).
 export const metadata = pageMetadata({ route: "/signup", title: "Signup | EleganceFlow" });
 
 export const dynamic = "force-dynamic";

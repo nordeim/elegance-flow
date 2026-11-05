@@ -1508,6 +1508,239 @@ async function deepLinkFace(url: string) {
   }, oursRoutes.dash, out);
 }
 
+// The round-26 [reset] leg — the PLATFORM RESET FAMILY census: the
+// /reset-password route's own faces (the auth-surface-expansion family
+// no probe ever rode — round-24 read the route's TITLES alone). The
+// reference renders the base44 PLATFORM's own reset family there — a
+// different design system from its own login card (its login input
+// computes 48px/12px/slate at 1280; its reset input 44px/6px/gray) —
+// and OURS now mirrors it after the F-26a/b/c cure: the Title-Case
+// text quartet, the BreadcrumbList JSON-LD (the third carrier), the
+// flat gray-50 page, the white rounded-lg(8px) shadow-lg card, the
+// FIXED 48/48/40 inner, the 24px h2 gray-900 headings, the h-11/6px
+// gray controls with the zinc-500 placeholder ink, the 2px gray-900
+// strip on the token form alone, the red-100 80×40 icon on the
+// invalid-link card, the zinc-950-on-red-50/50 error box. Diffed REF
+// vs OURS (BOTH apps ship the platform family — the round's parity
+// proof); the TWO oklab-vs-rgba fills (the input + the error box)
+// pinned per-side against their RECORDED constants (the s18
+// serialization class, numerically equal paint — the google-leg
+// expectConst pattern), the v3/v4 shadow-shim prefixes stripped so
+// the PAYLOAD diffs (the same paint, 2 vs 4 zero-shims).
+async function resetFace(url: string) {
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const page = await context.newPage();
+  // the invalid-link state (no token)
+  await page.goto(url + "/reset-password", { waitUntil: "domcontentloaded" });
+  await page.waitForTimeout(1800);
+  const invalid = await page.evaluate(() => {
+    const card = (() => {
+      let el: HTMLElement | null = (document.querySelector("button") as HTMLElement | null);
+      for (let i = 0; i < 8 && el?.parentElement; i++) {
+        el = el.parentElement;
+        const s = getComputedStyle(el);
+        if (s.boxShadow !== "none" || (s.backgroundColor !== "rgba(0, 0, 0, 0)" && s.backgroundColor !== "transparent")) return el;
+      }
+      return null;
+    })();
+    const h2 = document.querySelector("h1, h2") as HTMLElement | null;
+    const btn = document.querySelector("button") as HTMLElement | null;
+    const iconWrap = (document.querySelector("svg") as SVGSVGElement | null)?.parentElement ?? null;
+    const icon = document.querySelector("svg");
+    if (!card || !h2 || !btn || !iconWrap || !icon) return null;
+    const gs = (el: Element) => getComputedStyle(el);
+    const shadowPayload = gs(card).boxShadow
+      // strip the v3/v4 zero-shims (rgba(0,0,0,0) 0px 0px 0px 0px, ) —
+      // a split(", ") would shatter the rgba() itself (its inner
+      // commas); the global replace is the shatter-proof form
+      .replace(/rgba\(0, 0, 0, 0\) 0px 0px 0px 0px, /g, "");
+    return {
+      headingTag: h2.tagName.toLowerCase(),
+      headingText: h2.textContent?.trim() ?? "",
+      headingFont: gs(h2).fontSize,
+      headingWeight: gs(h2).fontWeight,
+      headingColor: gs(h2).color,
+      headingTracking: gs(h2).letterSpacing,
+      bodyText: (document.querySelector("p")?.textContent ?? "").trim(),
+      btnText: btn.textContent?.trim() ?? "",
+      btnH: Math.round(btn.getBoundingClientRect().height),
+      btnRadius: gs(btn).borderRadius,
+      btnBg: gs(btn).backgroundColor,
+      iconW: Math.round(iconWrap.getBoundingClientRect().width),
+      iconBg: gs(iconWrap).backgroundColor,
+      iconColor: gs(icon).color,
+      iconSize: Math.round(icon.getBoundingClientRect().width),
+      cardBg: gs(card).backgroundColor,
+      cardRadius: gs(card).borderRadius,
+      cardShadowPayload: shadowPayload,
+      hasStrip: !!card.querySelector(".absolute.top-0, .absolute.inset-x-0"),
+      jsonLdName: /"name": "([^"]+)"/.exec(
+        document.querySelector('script[type="application/ld+json"]')?.textContent ?? "")?.[1] ?? "",
+    };
+  });
+  // the token state + the bogus-token submit's error face
+  await page.goto(url + "/reset-password?token=drift-r26-bogus", { waitUntil: "domcontentloaded" });
+  await page.waitForTimeout(1800);
+  const token = await page.evaluate(() => {
+    // app-agnostic card walk — the reference's SPA carries no <main>
+    const card = (() => {
+      let el: HTMLElement | null = (document.querySelector("form") as HTMLElement | null);
+      for (let i = 0; i < 8 && el?.parentElement; i++) {
+        el = el.parentElement;
+        const s = getComputedStyle(el);
+        if (s.boxShadow !== "none" || (s.backgroundColor !== "rgba(0, 0, 0, 0)" && s.backgroundColor !== "transparent")) return el;
+      }
+      return null;
+    })();
+    const form = document.querySelector("form");
+    const input = form?.querySelector("input") as HTMLInputElement | null;
+    const btn = form?.querySelector('button[type="submit"]') as HTMLElement | null;
+    const h2 = document.querySelector("h1, h2") as HTMLElement | null;
+    const labels = [...document.querySelectorAll("label")].map((l) => l.textContent?.trim() ?? "");
+    const strip = card?.querySelector(".absolute.top-0, .absolute.inset-x-0") as HTMLElement | null;
+    const hint = [...document.querySelectorAll("p")].find((p) => p.textContent?.includes("at least 8 characters")) as HTMLElement | null;
+    const sub = [...document.querySelectorAll("p")].find((p) => p.textContent?.includes("Enter your new password")) as HTMLElement | null;
+    const back = [...document.querySelectorAll("button")].pop() as HTMLElement | null;
+    const icon = form?.querySelector("svg");
+    if (!card || !input || !btn || !h2 || !back) return null;
+    const gs = (el: Element) => getComputedStyle(el);
+    return {
+      headingText: h2.textContent?.trim() ?? "",
+      headingFont: gs(h2).fontSize,
+      headingColor: gs(h2).color,
+      subText: sub?.textContent?.trim() ?? "",
+      subColor: sub ? gs(sub).color : "",
+      labels,
+      labelColor: document.querySelector("label") ? gs(document.querySelector("label") as Element).color : "",
+      hintFont: hint ? gs(hint).fontSize : "",
+      hintColor: hint ? gs(hint).color : "",
+      inputH: Math.round(input.getBoundingClientRect().height),
+      inputRadius: gs(input).borderRadius,
+      inputBorder: gs(input).borderColor,
+      ph: getComputedStyle(input, "::placeholder").color,
+      inputText: gs(input).color,
+      iconSize: icon ? Math.round(icon.getBoundingClientRect().width) : 0,
+      stripH: strip ? Math.round(strip.getBoundingClientRect().height) : null,
+      stripBg: strip ? gs(strip).backgroundColor : "",
+      btnText: btn.textContent?.trim() ?? "",
+      btnH: Math.round(btn.getBoundingClientRect().height),
+      btnRadius: gs(btn).borderRadius,
+      btnBg: gs(btn).backgroundColor,
+      backText: back.textContent?.trim() ?? "",
+      backColor: gs(back).color,
+      jsonLdName: /"name": "([^"]+)"/.exec(
+        document.querySelector('script[type="application/ld+json"]')?.textContent ?? "")?.[1] ?? "",
+    };
+  });
+  const tabStops: string[] = [];
+  for (let i = 0; i < 6; i++) {
+    await page.keyboard.press("Tab");
+    const stop = await page.evaluate(() => {
+      const el = document.activeElement;
+      if (!el || el === document.body) return "(body)";
+      return `${el.tagName.toLowerCase()}#${el.id || ""}`;
+    });
+    if (stop === "(body)") break;
+    tabStops.push(stop);
+  }
+  await page.locator("form input").nth(0).fill("ValidPass123!");
+  await page.locator("form input").nth(1).fill("ValidPass123!");
+  await page.locator('form button[type="submit"]').click();
+  await page.waitForTimeout(2400);
+  const error = await page.evaluate(() => {
+    const el = [...document.querySelectorAll("div, p")].find((e) => e.textContent?.trim() === "Invalid or expired reset token") as HTMLElement | null;
+    const input = document.querySelector("form input") as HTMLInputElement | null;
+    if (!el || !input) return null;
+    const s = getComputedStyle(el);
+    return {
+      errorText: el.textContent?.trim() ?? "",
+      errorColor: s.color,
+      errorBg: s.backgroundColor,
+      errorFont: s.fontSize,
+      errorRadius: s.borderRadius,
+      errorPad: s.padding,
+      errorRole: el.getAttribute("role") ?? "",
+      inputBg: getComputedStyle(input).backgroundColor,
+    };
+  });
+  await context.close();
+  return { invalid, token, error, tabStops };
+}
+
+{
+  const refReset = await resetFace(REF);
+  const oursReset = await resetFace(OURS);
+  if (!refReset.invalid || !oursReset.invalid || !refReset.token || !oursReset.token || !refReset.error || !oursReset.error) {
+    out.push("[reset] FACE READ FAILURE — a null face (the leg never completed)");
+  } else {
+    // the invalid-link state — the family diffed (F-26a/c)
+    diff("[reset]", refReset.invalid.headingTag, oursReset.invalid.headingTag, "invalid headingTag (h2)", out);
+    diff("[reset]", refReset.invalid.headingText, oursReset.invalid.headingText, "invalid headingText (F-26a: Invalid Reset Link)", out);
+    diff("[reset]", refReset.invalid.headingFont, oursReset.invalid.headingFont, "invalid headingFont (24px)", out);
+    diff("[reset]", refReset.invalid.headingWeight, oursReset.invalid.headingWeight, "invalid headingWeight (700)", out);
+    diff("[reset]", refReset.invalid.headingColor, oursReset.invalid.headingColor, "invalid headingColor (gray-900)", out);
+    diff("[reset]", refReset.invalid.headingTracking, oursReset.invalid.headingTracking, "invalid headingTracking (normal)", out);
+    diff("[reset]", refReset.invalid.bodyText, oursReset.invalid.bodyText, "invalid bodyText", out);
+    diff("[reset]", refReset.invalid.btnText, oursReset.invalid.btnText, "invalid btnText (F-26a: Back to Login)", out);
+    diff("[reset]", refReset.invalid.btnH, oursReset.invalid.btnH, "invalid btnH (44)", out);
+    diff("[reset]", refReset.invalid.btnRadius, oursReset.invalid.btnRadius, "invalid btnRadius (6px)", out);
+    diff("[reset]", refReset.invalid.btnBg, oursReset.invalid.btnBg, "invalid btnBg (gray-900)", out);
+    diff("[reset]", refReset.invalid.iconW, oursReset.invalid.iconW, "invalid iconW (80)", out);
+    diff("[reset]", refReset.invalid.iconBg, oursReset.invalid.iconBg, "invalid iconBg (red-100)", out);
+    diff("[reset]", refReset.invalid.iconColor, oursReset.invalid.iconColor, "invalid iconColor (red-600)", out);
+    diff("[reset]", refReset.invalid.iconSize, oursReset.invalid.iconSize, "invalid iconSize (40)", out);
+    diff("[reset]", refReset.invalid.cardBg, oursReset.invalid.cardBg, "invalid cardBg (white)", out);
+    diff("[reset]", refReset.invalid.cardRadius, oursReset.invalid.cardRadius, "invalid cardRadius (8px)", out);
+    diff("[reset]", refReset.invalid.cardShadowPayload, oursReset.invalid.cardShadowPayload, "invalid cardShadowPayload (shadow-lg, the shims stripped — the s18 class)", out);
+    diff("[reset]", refReset.invalid.hasStrip, oursReset.invalid.hasStrip, "invalid hasStrip (NO strip on this state — F-26c)", out);
+    diff("[reset]", refReset.invalid.jsonLdName, oursReset.invalid.jsonLdName, "invalid jsonLdName (reset password — F-26b)", out);
+    // the token-form state — the family diffed
+    diff("[reset]", refReset.token.headingText, oursReset.token.headingText, "token headingText (Set new password)", out);
+    diff("[reset]", refReset.token.headingFont, oursReset.token.headingFont, "token headingFont (24px)", out);
+    diff("[reset]", refReset.token.headingColor, oursReset.token.headingColor, "token headingColor (gray-900)", out);
+    diff("[reset]", refReset.token.subText, oursReset.token.subText, "token subText", out);
+    diff("[reset]", refReset.token.subColor, oursReset.token.subColor, "token subColor (gray-600)", out);
+    diff("[reset]", refReset.token.labels, oursReset.token.labels, "token labels (F-26a: New Password / Confirm New Password)", out);
+    diff("[reset]", refReset.token.labelColor, oursReset.token.labelColor, "token labelColor (gray-700)", out);
+    diff("[reset]", refReset.token.hintFont, oursReset.token.hintFont, "token hintFont (12px)", out);
+    diff("[reset]", refReset.token.hintColor, oursReset.token.hintColor, "token hintColor (gray-500)", out);
+    diff("[reset]", refReset.token.inputH, oursReset.token.inputH, "token inputH (44 — h-11 FIXED, the login ladder retired)", out);
+    diff("[reset]", refReset.token.inputRadius, oursReset.token.inputRadius, "token inputRadius (6px)", out);
+    diff("[reset]", refReset.token.inputBorder, oursReset.token.inputBorder, "token inputBorder (gray-200)", out);
+    diff("[reset]", refReset.token.ph, oursReset.token.ph, "token placeholderInk (zinc-500, the v3 literal)", out);
+    diff("[reset]", refReset.token.inputText, oursReset.token.inputText, "token inputText (zinc-950)", out);
+    diff("[reset]", refReset.token.iconSize, oursReset.token.iconSize, "token iconSize (16)", out);
+    diff("[reset]", refReset.token.stripH, oursReset.token.stripH, "token stripH (2px — F-26c)", out);
+    diff("[reset]", refReset.token.stripBg, oursReset.token.stripBg, "token stripBg (gray-900)", out);
+    diff("[reset]", refReset.token.btnText, oursReset.token.btnText, "token btnText (Reset password)", out);
+    diff("[reset]", refReset.token.btnH, oursReset.token.btnH, "token btnH (44)", out);
+    diff("[reset]", refReset.token.btnRadius, oursReset.token.btnRadius, "token btnRadius (6px)", out);
+    diff("[reset]", refReset.token.btnBg, oursReset.token.btnBg, "token btnBg (gray-900)", out);
+    diff("[reset]", refReset.token.backText, oursReset.token.backText, "token backText (Back to login — the sentence-case keep)", out);
+    diff("[reset]", refReset.token.backColor, oursReset.token.backColor, "token backColor (gray-600)", out);
+    diff("[reset]", refReset.token.jsonLdName, oursReset.token.jsonLdName, "token jsonLdName (reset password — F-26b)", out);
+    diff("[reset]", refReset.tabStops, oursReset.tabStops, "token tabStops (password → confirm → submit → back)", out);
+    // the error face — the text/chrome family diffed
+    diff("[reset]", refReset.error.errorText, oursReset.error.errorText, "errorText (Invalid or expired reset token)", out);
+    diff("[reset]", refReset.error.errorColor, oursReset.error.errorColor, "errorColor (zinc-950)", out);
+    diff("[reset]", refReset.error.errorFont, oursReset.error.errorFont, "errorFont (16px)", out);
+    diff("[reset]", refReset.error.errorRadius, oursReset.error.errorRadius, "errorRadius (8px)", out);
+    diff("[reset]", refReset.error.errorPad, oursReset.error.errorPad, "errorPad (16px)", out);
+    diff("[reset]", refReset.error.errorRole, oursReset.error.errorRole, "errorRole (alert — the platform's own announcement)", out);
+    // the TWO oklab-vs-rgba fills — per-side RECORDED constants (the s18
+    // serialization class: numerically equal paint, different
+    // serialization — REF rgba vs OURS oklab)
+    expectConst("[reset]", "REF", {
+      errorBg: "rgba(254, 242, 242, 0.5)",
+      inputBg: "rgba(249, 250, 251, 0.5)",
+    }, { errorBg: refReset.error.errorBg, inputBg: refReset.error.inputBg }, out);
+    expectConst("[reset]", "OURS", {
+      errorBg: "oklab(0.970522 0.0123999 0.00388682 / 0.5)",
+      inputBg: "oklab(0.984619 -0.000598699 -0.00156033 / 0.5)",
+    }, { errorBg: oursReset.error.errorBg, inputBg: oursReset.error.inputBg }, out);
+  }
+}
+
 if (out.length === 0) {
   console.log("[390] CONTENT + MOBILE-MENU FACE: NO DRIFT — the reference matches our byte-mirror");
   console.log("[login] AUTH-CARD FACE: NO DRIFT — the reference matches our login mirror");
@@ -1523,8 +1756,9 @@ if (out.length === 0) {
   console.log("[anchors] ANCHOR-NAVIGATION/DEEP-LINK FACE: NO DRIFT — the desktop nav rides + the logo ride identical on both apps; the deep-link boot matches each side's recorded constant (R-23a + the R-23b superset record)");
   console.log("[docs] DOCUMENT-ASSET/META FACE: NO DRIFT — the root rendered head family, the manifest contents, the robots bytes, the login tab order and the fonts family all mirror (the og-image BYTES identical both sides); the sitemap superset + the favicon-link/icon-src families match their per-side recorded constants (R-24a–e)");
   console.log("[routes] ROUTE-MECHANICS FACE: NO DRIFT — the unknown-route derived-title family and the quoted-path bodies mirror (both apps derive — F-25a); the query passthrough identical (F-25d); the status family, the trailing slash and the guest /dashboard adjudication match their per-side recorded constants (the true-404 + 308 + from_url supersets — F-25b/c)");
+  console.log("[reset] PLATFORM-RESET FACE: NO DRIFT — the /reset-password family mirrors on both states after the F-26a/b/c cure (the Title-Case quartet, the BreadcrumbList JSON-LD third carrier, the flat gray-50 page, the white rounded-lg shadow-lg card, the FIXED 48/48/40 inner, the 24px h2 headings, the h-11/6px gray controls with the zinc-500 placeholder, the per-state strip/icon family, the tab order, the announced error box); the input/error oklab-vs-rgba fills match their per-side recorded constants (the s18 serialization class, numerically equal paint)");
 } else {
-  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact + authfail + google + viewport + anchors + docs + routes] DRIFT DETECTED — ${out.length} field(s):`);
+  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact + authfail + google + viewport + anchors + docs + routes + reset] DRIFT DETECTED — ${out.length} field(s):`);
   for (const line of out) console.log(line);
 }
 

@@ -96,6 +96,28 @@ async function main() {
   await sentPage.screenshot({ path: `${OUT}/ours-reset-sent-1280.png` });
   await sentCtx.close();
 
+  // ---- THE ROUND-26 RESET-ROUTE faces (the platform family cure) -----
+  // The /reset-password route's two guest states after the F-26a/b/c
+  // cure: the invalid-link card (the Title-Case heading + the 80x40
+  // red-100 CircleAlert + the BreadcrumbList JSON-LD riding) and the
+  // token form (the 2px gray-900 strip + the Title-Case labels + the
+  // h-11/6px gray control family + the zinc-500 placeholder). The pins
+  // ride tests/reset-faces.test.ts + the e2e FACE battery + the drift
+  // [reset] leg.
+  const r26aCtx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const r26aPage = await r26aCtx.newPage();
+  await r26aPage.goto(`${OURS}/reset-password`, { waitUntil: "networkidle" });
+  await r26aPage.waitForTimeout(900);
+  await r26aPage.screenshot({ path: `${OUT}/ours-reset-invalid-1280.png` });
+  await r26aCtx.close();
+
+  const r26bCtx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const r26bPage = await r26bCtx.newPage();
+  await r26bPage.goto(`${OURS}/reset-password?token=capture-r26`, { waitUntil: "networkidle" });
+  await r26bPage.waitForTimeout(900);
+  await r26bPage.screenshot({ path: `${OUT}/ours-reset-form-1280.png` });
+  await r26bCtx.close();
+
   // ---- the GOOGLE-BUTTON TOAST (round-21 — the honest fallback face) ------
   // The click ride on OUR card: the reference navigates to a REAL Google
   // OAuth redirect (unimplementable here — the redirect_uri is base44's);

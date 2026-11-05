@@ -113,7 +113,7 @@ describe("round-18 ② the signup page renders the same family (the superset mem
   });
 });
 
-describe("round-18 ③ the landing purity — application/ld+json lives on /login + /signup ONLY", () => {
+describe("round-18 ③ the landing purity — application/ld+json lives on the auth pages ONLY (round-26: login + signup + reset-password)", () => {
   it("the landing route and the landing component carry no JSON-LD", async () => {
     const landing = readFileSync(path.join(here, "../src/app/page.tsx"), "utf8");
     expect(landing).not.toMatch(/application\/ld\+json/);
@@ -124,7 +124,11 @@ describe("round-18 ③ the landing purity — application/ld+json lives on /logi
     expect(landingComponent).not.toMatch(/application\/ld\+json/);
   });
 
-  it("the whole src tree renders application/ld+json on exactly the two pages", async () => {
+  it("the whole src tree renders application/ld+json on exactly the three auth pages", async () => {
+    // Round-26 (F-26b): the reference rides the BreadcrumbList JSON-LD
+    // on /reset-password too (BOTH card states — live-probed settled
+    // 2026-11-05); the platform injection's surface census moves from
+    // the two pages to the three, deliberately re-pinned here.
     const { execFileSync } = await import("node:child_process");
     const hits = execFileSync(
       "rg",
@@ -137,6 +141,7 @@ describe("round-18 ③ the landing purity — application/ld+json lives on /logi
       .sort();
     expect(hits).toEqual([
       "src/app/login/page.tsx",
+      "src/app/reset-password/page.tsx",
       "src/app/signup/page.tsx",
     ]);
   });
@@ -168,9 +173,12 @@ describe("round-18 ⑤⑥ the keeps — signup's plain viewport + the layout's t
 });
 
 describe("round-18 ⑦ the helper's source contract", () => {
-  it("site.ts exports breadcrumbJsonLd with the route union \"/login\" | \"/signup\"", () => {
+  it("site.ts exports breadcrumbJsonLd with the route union \"/login\" | \"/signup\" | \"/reset-password\" (round-26: the third carrier)", () => {
     expect(siteLib).toMatch(
-      /export function breadcrumbJsonLd\(\s*route:\s*"\/login"\s*\|\s*"\/signup",?\s*\)/,
+      /export function breadcrumbJsonLd\(\s*route:\s*"\/login"\s*\|\s*"\/signup"\s*\|\s*"\/reset-password",?\s*\)/,
     );
+    // the reset crumb name mirrors the platform's hyphen-to-space face
+    // (live-probed: "reset password"; /login and /signup verbatim)
+    expect(siteLib).toMatch(/"\/reset-password"\s*\?\s*"reset password"/);
   });
 });

@@ -125,11 +125,18 @@ export function pageMetadata(opts: {
  * route — in the platform's exact spaced serialization (byte-mirrored:
  * the `, ` after every colon and between the elements; the drift [head]
  * leg diffs it live, origin-normalized). Rendered via
- * dangerouslySetInnerHTML on /login and /signup (tests/head-faces.test.ts
- * ①②⑦ pin the serialization, the parsed object, and this route union).
+ * dangerouslySetInnerHTML on /login, /signup and /reset-password
+ * (tests/head-faces.test.ts ①②⑦ pin the serialization, the parsed
+ * object, and this route union).
+ * Round-26 (F-26b): the third carrier — /reset-password (the reference
+ * rides the injection on BOTH card states; ours rode the two pages
+ * alone). Its crumb name mirrors the platform's OWN face — the
+ * hyphen-to-space "reset password" (live-probed settled 2026-11-05;
+ * /login and /signup keep their single-segment names verbatim).
  */
-export function breadcrumbJsonLd(route: "/login" | "/signup"): string {
+export function breadcrumbJsonLd(route: "/login" | "/signup" | "/reset-password"): string {
   const origin = siteUrl();
-  const name = route === "/login" ? "login" : "signup";
+  const name =
+    route === "/login" ? "login" : route === "/reset-password" ? "reset password" : "signup";
   return `{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "${origin}/"}, {"@type": "ListItem", "position": 2, "name": "${name}", "item": "${origin}${route}"}]}`;
 }

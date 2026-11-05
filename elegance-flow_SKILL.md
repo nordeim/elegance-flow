@@ -191,7 +191,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 518 checks / 45 files**: the seam batteries (auth,
+- **Unit — Vitest, 523 checks / 46 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
@@ -407,10 +407,22 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   foreign prepend, the zero-tick timer — the late asynchronous title
   write beats them all; the MutationObserver re-wins from any
   mechanism at any latency), and the not-found no-metadata +
-  layout-default keeps) —
+  layout-default keeps) — and
+  reset-faces — the round-26 battery that pins the /reset-password FACE
+  family no probe ever rode (the platform-auth census: the reference's
+  reset route renders the base44 PLATFORM's own family — 44px/6px/gray
+  controls on a flat gray-50 page in a white rounded-lg shadow-lg card,
+  the FIXED 48/48/40 inner, the 24px h2 gray-900 headings, the
+  zinc-500 placeholder, the Title-Case text quartet, the 2px gray-900
+  strip on the token form alone, the red-100 80×40 icon on the
+  invalid-link card — a DIFFERENT design system from its own login
+  card; the session-163 login-family expression retired; the battery
+  pins the RESET_LAYOUT seam literals + the DOM-case text family + the
+  BreadcrumbList third carrier + the a11y superset keeps + the
+  retired-form regression) —
   comment-stripped source reads; a
   literal pinned by a comment alone is vacuous.
-- **E2E — Playwright, 101 checks / 8 specs**: the standalone artifact on
+- **E2E — Playwright, 105 checks / 8 specs**: the standalone artifact on
   :3100 with `db/e2e.db`; ONE shared login (`auth.setup.ts` →
   storageState — the auth endpoints are rate-limited 10/IP/15-min); one
   worker; alphabetical file order → every spec SELF-SUFFICIENT (its own

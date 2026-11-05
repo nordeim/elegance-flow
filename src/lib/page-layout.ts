@@ -78,6 +78,45 @@ export const LOGIN_LAYOUT = {
   footerLinkStrong: "font-medium text-slate-700",
 } as const;
 
+/** Reset screen — round-26 (the platform-auth census): the reference's
+ *  /reset-password renders the base44 PLATFORM's own reset family — a
+ *  DIFFERENT design system from its own login card (live-probed settled
+ *  2026-11-05 at 1280 AND 390: its login input computes 48px/12px
+ *  radius/slate at 1280; its reset input computes 44px/6px/gray — the
+ *  platform template's flat gray-50 page, its white rounded-lg(8px)
+ *  shadow-lg card, its FIXED 48/48/40 inner pad, its 24px h2 gray-900
+ *  headings with tracking NORMAL, its zinc-500 placeholder ink, its
+ *  gray-400 focus family, its 2px gray-900 top strip on the token form
+ *  alone, its red-100 80×40 icon on the invalid-link card, its
+ *  zinc-950-on-red-50/50 error box). The family is STATIC at every
+ *  viewport — the ONE responsive arm is the input's own font ladder
+ *  (text-base md:text-sm: 16px at 390 → 14px at 1280, probed). The
+ *  session-163 login-family expression (LOGIN_LAYOUT on the reset
+ *  screen) is retired — the premise that the reset route shares the
+ *  login card's design system never held; pinned by
+ *  tests/reset-faces.test.ts. */
+export const RESET_LAYOUT = {
+  page: "min-h-screen flex items-center justify-center bg-gray-50 p-4",
+  card: "relative overflow-hidden rounded-lg bg-white shadow-lg",
+  strip: "absolute inset-x-0 top-0 h-0.5 bg-gray-900",
+  inner: "px-12 pb-10 pt-12",
+  heading: "text-2xl font-bold text-gray-900",
+  subtitle: "text-base text-gray-600",
+  iconWrap: "flex h-20 w-20 items-center justify-center rounded-full bg-red-100",
+  icon: "h-10 w-10 text-red-600",
+  label: "text-sm font-medium text-gray-700",
+  inputWrap: "relative",
+  inputIcon: "absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500",
+  input:
+    "h-11 w-full rounded-md border border-gray-200 bg-gray-50/50 py-2 pl-10 pr-3 placeholder:text-zinc-500 focus:border-gray-400 focus:outline-2 focus:outline-transparent focus:outline-offset-2 focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 text-base md:text-sm",
+  hint: "text-xs text-gray-500",
+  primary:
+    "h-11 w-full rounded-md bg-gray-900 text-sm font-medium text-white transition-colors hover:bg-gray-800 flex items-center justify-center px-3 py-2 disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-transparent focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2",
+  back: "w-full text-sm text-gray-600 hover:text-gray-900",
+  error:
+    "rounded-lg border border-red-200 bg-red-50/50 p-4 text-base text-zinc-950",
+} as const;
+
 /** The designed 404 — OUR superset surface (the reference's SPA renders
  *  empty shells for unknown routes, never a designed 404; the s12
  *  doctrine: ours adjudicates routability and serves a designed face

@@ -175,6 +175,7 @@ const SOURCE_CONTRACTS = [
   "anchor-faces",
   "document-assets",
   "route-mechanics",
+  "reset-faces",
 ];
 
 const fileOf = (family: string) => `${family}.test.ts`;

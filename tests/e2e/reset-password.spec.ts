@@ -19,23 +19,25 @@ test.use({ storageState: { cookies: [], origins: [] } });
 test.use({ extraHTTPHeaders: { "X-Forwarded-For": "198.51.100.46" } });
 
 test.describe("reset-password landing (no token → the invalid-link card)", () => {
-  test("renders the invalid-link card and Back to login navigates to /login", async ({ page }) => {
+  test("renders the invalid-link card and Back to Login navigates to /login", async ({ page }) => {
     await page.goto("/reset-password");
-    await expect(page.getByRole("heading", { name: "Invalid reset link" })).toBeVisible();
+    // Round-26 (F-26a): the exact Title-Case face — the reference's own
+    // DOM-case (live-probed settled 2026-11-05), pinned exactly.
+    await expect(page.getByRole("heading", { name: "Invalid Reset Link", exact: true })).toBeVisible();
     await expect(
       page.getByText("This password reset link is invalid or has expired."),
     ).toBeVisible();
 
-    await page.getByRole("button", { name: "Back to login" }).click();
+    await page.getByRole("button", { name: "Back to Login", exact: true }).click();
     await expect(page).toHaveURL(/\/login$/);
     await expect(page.getByRole("heading", { name: "Welcome to EleganceFlow" })).toBeVisible();
   });
 
   test("an empty token and a differently-named param both render the invalid card", async ({ page }) => {
     await page.goto("/reset-password?token=");
-    await expect(page.getByRole("heading", { name: "Invalid reset link" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Invalid Reset Link", exact: true })).toBeVisible();
     await page.goto("/reset-password?code=abc123");
-    await expect(page.getByRole("heading", { name: "Invalid reset link" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Invalid Reset Link", exact: true })).toBeVisible();
   });
 });
 
@@ -74,9 +76,201 @@ test.describe("reset-password form (a non-empty token)", () => {
 
   test("the bare Back to login link returns to the sign-in card", async ({ page }) => {
     await page.goto("/reset-password?token=e2e-shape-probe");
-    await page.getByRole("button", { name: "Back to login" }).first().click();
+    // Round-26: the token state's back button stays SENTENCE case (the
+    // reference's own in-card inconsistency — probed: the invalid card
+    // ships "Back to Login", the token form "Back to login").
+    await page.getByRole("button", { name: "Back to login", exact: true }).first().click();
     await expect(page).toHaveURL(/\/login$/);
     await expect(page.getByRole("heading", { name: "Welcome to EleganceFlow" })).toBeVisible();
+  });
+});
+
+test.describe("round-26: the platform reset FACE census (F-26a/b/c on the standalone artifact)", () => {
+  // The reference's /reset-password renders the base44 PLATFORM's own
+  // reset family — a different design system from its own login card
+  // (live-probed settled 2026-11-05 at 1280 AND 390: the flat gray-50
+  // page, the white rounded-lg(8px) shadow-lg card, the FIXED 48/48/40
+  // inner, the 24px h2 gray-900 headings, the 44px/6px gray controls,
+  // the zinc-500 placeholder, the 80×40 red-100 icon on the invalid
+  // card, the 2px gray-900 strip on the token form). These legs pin the
+  // family's computed faces so a reversion to the login family (the
+  // session-163 expression) can never ship silently.
+
+  test("the invalid-link card renders the platform chrome + icon + the BreadcrumbList JSON-LD", async ({ page }) => {
+    await page.goto("/reset-password");
+    await expect(page.getByRole("heading", { name: "Invalid Reset Link", exact: true })).toBeVisible();
+
+    const face = await page.evaluate(() => {
+      const main = document.querySelector("main");
+      const card = main?.querySelector("div.relative") as HTMLElement | null;
+      const inner = card?.querySelector("div.px-12") as HTMLElement | null;
+      const iconWrap = document.querySelector(".rounded-full.bg-red-100") as HTMLElement | null;
+      const icon = iconWrap?.querySelector("svg");
+      const btn = document.querySelector("button") as HTMLElement | null;
+      const h2 = document.querySelector("h2") as HTMLElement | null;
+      if (!main || !card || !iconWrap || !btn || !h2) return null;
+      const gs = (el: Element) => getComputedStyle(el);
+      return {
+        pageBg: gs(main).backgroundColor,
+        cardBg: gs(card).backgroundColor,
+        cardRadius: gs(card).borderRadius,
+        cardShadow: gs(card).boxShadow !== "none",
+        innerPad: inner ? gs(inner).padding : "",
+        iconW: Math.round(iconWrap.getBoundingClientRect().width),
+        iconWrapBg: gs(iconWrap).backgroundColor,
+        iconWrapRadius: gs(iconWrap).borderRadius,
+        iconSize: icon ? Math.round(icon.getBoundingClientRect().width) : 0,
+        iconColor: icon ? gs(icon).color : "",
+        h2Font: gs(h2).fontSize,
+        h2Weight: gs(h2).fontWeight,
+        h2Color: gs(h2).color,
+        h2Tracking: gs(h2).letterSpacing,
+        btnH: Math.round(btn.getBoundingClientRect().height),
+        btnRadius: gs(btn).borderRadius,
+        btnBg: gs(btn).backgroundColor,
+      };
+    });
+    expect(face).not.toBeNull();
+    expect(face!.pageBg).toBe("rgb(249, 250, 251)"); // the FLAT gray-50 page
+    expect(face!.cardBg).toBe("rgb(255, 255, 255)");
+    expect(face!.cardRadius).toBe("8px");
+    expect(face!.cardShadow).toBe(true);
+    expect(face!.innerPad).toBe("48px 48px 40px");
+    expect(face!.iconW).toBe(80);
+    expect(face!.iconWrapBg).toBe("rgb(254, 226, 226)"); // red-100
+    // the full-round radius: v3 computes 9999px, v4 computes
+    // 33554400px (2^25) — both fully round an 80px box; the numeric
+    // read is the serialization-agnostic assertion
+    expect(Number.parseFloat(face!.iconWrapRadius)).toBeGreaterThanOrEqual(80);
+    expect(face!.iconSize).toBe(40);
+    expect(face!.iconColor).toBe("rgb(220, 38, 38)"); // red-600
+    expect(face!.h2Font).toBe("24px");
+    expect(face!.h2Weight).toBe("700");
+    expect(face!.h2Color).toBe("rgb(17, 24, 39)"); // gray-900
+    expect(face!.h2Tracking).toBe("normal");
+    expect(face!.btnH).toBe(44);
+    expect(face!.btnRadius).toBe("6px");
+    expect(face!.btnBg).toBe("rgb(17, 24, 39)");
+
+    // F-26b: the BreadcrumbList JSON-LD rides the route (the platform's
+    // own injection — /login and the /signup superset carry the same);
+    // the reset crumb name mirrors the platform's hyphen-to-space face
+    const ld = await page.evaluate(
+      () => document.querySelector('script[type="application/ld+json"]')?.textContent ?? "",
+    );
+    expect(ld).toContain('"@type": "BreadcrumbList"');
+    expect(ld).toContain('"name": "reset password"');
+    expect(ld).toMatch(/"item": "[^"]*\/reset-password"/);
+  });
+
+  test("the token form renders the platform control family + the strip + the labels", async ({ page }) => {
+    await page.goto("/reset-password?token=e2e-shape-probe");
+    await expect(page.getByRole("heading", { name: "Set new password" })).toBeVisible();
+    // the Title-Case labels (F-26a) — exact: "New Password" is a
+    // substring of "Confirm New Password"
+    await expect(page.getByLabel("New Password", { exact: true })).toBeVisible();
+    await expect(page.getByLabel("Confirm New Password", { exact: true })).toBeVisible();
+
+    const face = await page.evaluate(() => {
+      const card = document.querySelector("main div.relative") as HTMLElement | null;
+      const strip = card?.querySelector(".absolute.inset-x-0") as HTMLElement | null;
+      const input = document.querySelector("form input") as HTMLInputElement | null;
+      const btn = document.querySelector('form button[type="submit"]') as HTMLElement | null;
+      const label = document.querySelector("label") as HTMLElement | null;
+      const hint = [...document.querySelectorAll("p")].find((p) =>
+        p.textContent?.includes("at least 8 characters")) as HTMLElement | null;
+      const sub = [...document.querySelectorAll("p")].find((p) =>
+        p.textContent?.includes("Enter your new password")) as HTMLElement | null;
+      if (!card || !input || !btn) return null;
+      const gs = (el: Element) => getComputedStyle(el);
+      return {
+        stripH: strip ? Math.round(strip.getBoundingClientRect().height) : null,
+        stripBg: strip ? gs(strip).backgroundColor : "",
+        inputH: Math.round(input.getBoundingClientRect().height),
+        inputRadius: gs(input).borderRadius,
+        inputBorder: gs(input).borderColor,
+        inputBg: gs(input).backgroundColor,
+        ph: getComputedStyle(input, "::placeholder").color,
+        inputText: gs(input).color,
+        btnH: Math.round(btn.getBoundingClientRect().height),
+        btnRadius: gs(btn).borderRadius,
+        btnBg: gs(btn).backgroundColor,
+        labelFont: label ? gs(label).fontSize : "",
+        labelColor: label ? gs(label).color : "",
+        hintFont: hint ? gs(hint).fontSize : "",
+        hintColor: hint ? gs(hint).color : "",
+        subColor: sub ? gs(sub).color : "",
+      };
+    });
+    expect(face).not.toBeNull();
+    expect(face!.stripH).toBe(2);
+    expect(face!.stripBg).toBe("rgb(17, 24, 39)");
+    expect(face!.inputH).toBe(44); // h-11 FIXED (the login ladder retired)
+    expect(face!.inputRadius).toBe("6px");
+    expect(face!.inputBorder).toBe("rgb(229, 231, 235)"); // gray-200
+    expect(face!.inputBg).toContain("0.5"); // gray-50/50 (the oklab class)
+    expect(face!.ph).toBe("rgb(113, 113, 122)"); // zinc-500, the v3 literal
+    expect(face!.inputText).toBe("rgb(9, 9, 11)"); // zinc-950
+    expect(face!.btnH).toBe(44);
+    expect(face!.btnRadius).toBe("6px");
+    expect(face!.btnBg).toBe("rgb(17, 24, 39)"); // gray-900
+    expect(face!.labelFont).toBe("14px");
+    expect(face!.labelColor).toBe("rgb(55, 65, 81)"); // gray-700
+    expect(face!.hintFont).toBe("12px");
+    expect(face!.hintColor).toBe("rgb(107, 114, 128)"); // gray-500
+    expect(face!.subColor).toBe("rgb(75, 85, 99)"); // gray-600
+
+    // F-26b: the JSON-LD rides this state too
+    const ld2 = await page.evaluate(
+      () => document.querySelector('script[type="application/ld+json"]')?.textContent ?? "",
+    );
+    expect(ld2).toContain('"@type": "BreadcrumbList"');
+    expect(ld2).toContain('"name": "reset password"');
+  });
+
+  test("the retired login-family chrome never returns (the negatives)", async ({ page }) => {
+    await page.goto("/reset-password?token=e2e-shape-probe");
+    const classes = await page.evaluate(() => {
+      const all = [...document.querySelectorAll("main *")].flatMap((el) =>
+        (el as HTMLElement).className?.split?.(/\s+/) ?? []);
+      return [...new Set(all)];
+    });
+    // the login-family carriers (the session-163 expression) are retired
+    expect(classes).not.toContain("rounded-xl");
+    expect(classes).not.toContain("rounded-2xl");
+    expect(classes).not.toContain("shadow-2xl");
+    expect(classes).not.toContain("bg-gradient-to-br");
+    expect(classes).not.toContain("text-3xl");
+    expect(classes).not.toContain("tracking-tight");
+    expect(classes).not.toContain("sm:h-12");
+    expect(classes).not.toContain("sm:p-10");
+    // the headings are h2 (the reference's own tag), never h1
+    const h1s = await page.locator("h1").count();
+    expect(h1s).toBe(0);
+  });
+
+  test("the a11y superset keeps: autocomplete on both inputs, the announced error box", async ({ page }) => {
+    await page.goto("/reset-password?token=e2e-shape-probe");
+    // the WCAG 1.3.5 identify-input-purpose superset (the reference
+    // ships none — probed: ac="" on both its inputs)
+    await expect(page.locator("input#password")).toHaveAttribute("autocomplete", "new-password");
+    await expect(page.locator("input#confirmPassword")).toHaveAttribute("autocomplete", "new-password");
+    // the error box announces with the reference's own ink family
+    // (zinc-950 on red-50/50 — F-26c) after the bogus-token submit
+    await page.locator("input#password").fill("NewPass1234!");
+    await page.locator("input#confirmPassword").fill("NewPass1234!");
+    await page.getByRole("button", { name: "Reset password", exact: true }).click();
+    const alert = page.getByRole("alert").filter({ hasText: "Invalid or expired reset token" });
+    await expect(alert).toBeVisible({ timeout: 15_000 });
+    const errorFace = await alert.evaluate((el) => {
+      const s = getComputedStyle(el);
+      return { color: s.color, bg: s.backgroundColor, font: s.fontSize, radius: s.borderRadius, pad: s.padding };
+    });
+    expect(errorFace.color).toBe("rgb(9, 9, 11)"); // zinc-950
+    expect(errorFace.bg).toContain("0.5"); // red-50/50
+    expect(errorFace.font).toBe("16px");
+    expect(errorFace.radius).toBe("8px");
+    expect(errorFace.pad).toBe("16px");
   });
 });
 
