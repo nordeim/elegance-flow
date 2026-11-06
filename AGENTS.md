@@ -26,8 +26,8 @@ bun run start                    # the standalone server (production)
 
 bun run lint                     # eslint --max-warnings 0 (the 0/0 standard)
 bun run typecheck                # tsc --noEmit
-bun run test                     # vitest run  (603 checks / 53 files)
-bun run test:e2e                 # playwright (121 checks / 8 specs; needs build)
+bun run test                     # vitest run  (609 checks / 54 files)
+bun run test:e2e                 # playwright (123 checks / 8 specs; needs build)
 CI=1 bun run test:e2e            # force a fresh server (never reuse stale)
 
 bun run db:push                  # prisma db push (SQLite at repo/db/custom.db)
@@ -131,6 +131,20 @@ the probe silently (the round-33 F-33a live diagnosis). The reference
 and the standalone artifact keep their fast networkidle path; only the
 dev server rides the bounded fallback. Pinned by
 `tests/probe-load-contract.test.ts`.
+
+**The route-transition scroll superset (round-34):** `<html>` carries
+`data-scroll-behavior="smooth"` (layout.tsx) — the Next.js 16 contract
+that lets the App Router wrap its route-transition scrolls in
+`scroll-behavior: auto` (the installed router's
+`disableSmoothScrollDuringRouteTransition` reads
+`dataset.scrollBehavior === 'smooth'`; without the attribute the
+router's scroll-to-top rides the CSS smooth rule — live-proven: the
+post-login transition animated 300→115 across ~500ms instead of the
+instant reset). The CSS face itself stays `smooth` (the reference's own
+rule, the drift [reveal] census face — hash-only anchor rides keep the
+smooth path); the attribute is invisible to every computed-face probe.
+Pinned by `tests/scroll-behavior-attr.test.ts` + the instant-scroll
+e2e leg (the logout ride's zero-intermediate contract).
 
 **The one recorded dead-face divergence (round-30):** the BODY
 element's own `color` — the reference's landing bundle computes

@@ -152,3 +152,54 @@ test.describe("the sessioned API wall probe (the e2e-port consumer)", () => {
     await bare.dispose();
   });
 });
+
+test.describe("round-34: the route-transition scroll contract (F-34a — the instant reset)", () => {
+  test("the logout ride resets the scroll INSTANTLY — zero intermediate values across the transition (the data-scroll-behavior cure)", async ({ page }) => {
+    // F-34a (live-verified 2026-11-07 against bun run dev): without the
+    // data-scroll-behavior="smooth" attribute on <html> the App
+    // Router's transition scroll rides the CSS smooth rule (the
+    // installed router's disableSmoothScrollDuringRouteTransition runs
+    // the scroll naked when dataset.scrollBehavior !== 'smooth') — the
+    // live symptom probe: /login scrolled to 300px →
+    // router.push('/dashboard') animated 300→188→163→121→115 across
+    // ~500ms (47 intermediate samples at 40ms cadence). With the
+    // attribute the router wraps its scroll in scroll-behavior: auto —
+    // every sample is the pre-transition offset or the settled top.
+    // The logout ride is the same transition class (the shell's
+    // router.push('/login') after the POST) with zero rate-limit
+    // pressure (the route clears the cookie only — the shared
+    // storageState file is untouched).
+    await page.setViewportSize({ width: 1280, height: 400 });
+    await page.goto("/dashboard");
+    // the scrolled source state (the CSS smooth applies to the setup
+    // scroll itself — wait out the ride; 150 rides safely under the
+    // dashboard's max scroll at this height, ~188px)
+    await page.evaluate(() => window.scrollTo(0, 150));
+    await page.waitForTimeout(900);
+    expect(await page.evaluate(() => window.scrollY)).toBe(150);
+    // the ride: sign out → POST /api/auth/logout → router.push("/login")
+    await page.getByTestId("sign-out").click();
+    const seen: number[] = [];
+    const t0 = Date.now();
+    while (Date.now() - t0 < 2_000) {
+      seen.push(await page.evaluate(() => window.scrollY));
+      await page.waitForTimeout(40);
+    }
+    await page.waitForURL(/\/login$/);
+    // the instant-reset contract: NO animation window — every sample is
+    // the pre-transition offset (150) or the settled top (0); the
+    // pre-cure tree exhibits the animated descent and REDS here
+    const intermediates = seen.filter((y) => y > 0 && y < 150);
+    expect(
+      intermediates,
+      `the transition animated: ${intermediates.join(", ")} (the pre-cure face — the router's scroll must not ride the CSS smooth)`,
+    ).toEqual([]);
+    expect(seen.at(-1)).toBe(0);
+    // the parity face the cure must never change: the CSS itself stays
+    // smooth (the drift [reveal] leg censuses it IDENTICAL both apps —
+    // the attribute is invisible to every computed-face probe)
+    expect(
+      await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior),
+    ).toBe("smooth");
+  });
+});

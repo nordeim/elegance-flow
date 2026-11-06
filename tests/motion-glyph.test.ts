@@ -70,8 +70,14 @@ describe("round-15 ①: the anchor-ride motion face (the reference's raw smooth-
 });
 
 describe("round-15 ②: the html-element purity (the rule, never the class)", () => {
-  it("the layout's html element stays bare (the reference's html carries no class attribute)", () => {
-    expect(layout).toMatch(/<html lang="en">/);
+  // Round-34 (F-34a) evolution: the element now also carries the
+  // data-scroll-behavior="smooth" attribute (the Next.js 16
+  // route-transition contract — pinned by tests/scroll-behavior-attr
+  // .test.ts). The CLASS-purity invariant below is unchanged: the
+  // reference's html carries no class attribute, and the smooth-scroll
+  // cure remains the CSS rule, never a Tailwind utility.
+  it("the layout's html element carries lang + the round-34 data attribute, and never a class (the reference's html carries no class attribute)", () => {
+    expect(layout).toMatch(/<html lang="en" data-scroll-behavior="smooth">/);
   });
 
   it("the html element never gains a scroll-smooth/scroll-auto utility (the cure is the CSS rule)", () => {

@@ -82,7 +82,22 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" data-scroll-behavior="smooth">
+      {/* Round-34 (F-34a — the route-transition scroll cure): the html
+          element carries the reference's CSS `scroll-behavior: smooth`
+          face (globals.css — the drift [reveal] leg censuses it
+          IDENTICAL both apps), and Next.js 16's App Router needs THIS
+          attribute to disable that smoothness around its own
+          route-transition scrolls (the installed router's
+          disableSmoothScrollDuringRouteTransition reads
+          dataset.scrollBehavior === 'smooth'; without the attribute the
+          router's scroll-to-top rides the CSS animation — live-proven:
+          the post-login transition animated 300→115 across ~500ms
+          instead of the instant reset). Hash-only changes keep the
+          smooth ride — the landing's anchor navigation (the parity
+          face) is untouched. The attribute is INVISIBLE to every
+          computed-face probe: the a11y-superset doctrine's next member
+          (the aria-expanded pattern). */}
       {/* Session-22 (S22-P2): the antialiased utility is RETIRED — the
           reference ships no font-smoothing (computed auto) and no
           text-rendering override; the scaffold-era shadcn double-smoothing

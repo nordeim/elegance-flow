@@ -1213,3 +1213,77 @@ test.describe("round-32: the landing under color-scheme emulation (the color-sch
     expect(faces.htmlColorScheme).toBe("normal");
   });
 });
+
+test.describe("round-34: the stacked-emulation census (reducedMotion AND forcedColors together — the session-60 candidate 1)", () => {
+  // F-34b (the positive census, live-probed 2026-11-07 both apps): no
+  // leg ever STACKED two emulateMedia axes. Under reducedMotion "reduce"
+  // AND forcedColors "active" together both apps compute IDENTICAL faces
+  // — the collapsed family (html/body/hero h1/header/footer all
+  // CanvasText rgb(0,0,0) ink, Canvas surfaces) and the reveal family
+  // settles to the post-reveal end state with the per-side reduce
+  // constant unchanged (OURS transition-duration 1e-05s — the round-29
+  // collapse superset — vs REF 0s, its zero-handling face; the
+  // divergence rides the recorded drift otion-prefs] constants). The
+  // two axes are orthogonal: the forced-colors collapse paints, the
+  // reduce collapse animates, neither perturbs the other's face. This
+  // leg pins OUR side on the standalone artifact — including the html
+  // scroll-behavior: smooth face (the F-34a cure's own invisibility
+  // pinned at the face level: the data attribute changes no CSS).
+  test("the stacked reduce+forcedColors census — the collapsed faces, the reveal snap-settle, and the html smooth face unchanged", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.emulateMedia({ reducedMotion: "reduce", forcedColors: "active" });
+    await page.goto("/");
+    await page.waitForSelector("h1");
+    await page.waitForTimeout(1200);
+    // the collapsed family: CanvasText ink on every probed element
+    // (identical to the single-axis forced-colors face — the stack
+    // changes nothing the forced-colors collapse had already painted)
+    const faces = await page.evaluate(() => {
+      const read = (el: Element | null) => (el ? getComputedStyle(el).color : "(missing)");
+      return {
+        html: read(document.documentElement),
+        body: read(document.body),
+        heroH1: read(document.querySelector("h1")),
+        header: read(document.querySelector("header")),
+        footer: read(document.querySelector("footer")),
+        htmlScrollBehavior: getComputedStyle(document.documentElement).scrollBehavior,
+      };
+    });
+    expect(faces.html).toBe("rgb(0, 0, 0)");
+    expect(faces.body).toBe("rgb(0, 0, 0)");
+    expect(faces.heroH1).toBe("rgb(0, 0, 0)");
+    expect(faces.header).toBe("rgb(0, 0, 0)");
+    expect(faces.footer).toBe("rgb(0, 0, 0)");
+    // the F-34a cure's invisibility at the face level: the CSS face
+    // stays smooth under the stack (the attribute changes no CSS)
+    expect(faces.htmlScrollBehavior).toBe("smooth");
+    // the reveal family under the stack: the reduce collapse holds —
+    // the at-rest hidden face, the 1e-05s duration, never stuck hidden
+    await page.waitForSelector("#about > div > div");
+    const dur = await page.evaluate(
+      () => getComputedStyle(document.querySelector("#about > div > div")!).transitionDuration,
+    );
+    expect(dur).toBe("1e-05s");
+    await page.mouse.wheel(0, 900);
+    await expect
+      .poll(
+        async () =>
+          page.evaluate(() =>
+            [...document.querySelectorAll("#about > div > div")]
+              .map((k) => `${getComputedStyle(k).opacity}|${getComputedStyle(k).transform}`)
+              .join(","),
+          ),
+        { timeout: 4000 },
+      )
+      .toBe("1|none,1|none");
+    // the restore contract: back to no-emulation the authored faces return
+    await page.emulateMedia({ reducedMotion: "no-preference", forcedColors: "none" });
+    await page.waitForTimeout(300);
+    const restored = await page.evaluate(() => ({
+      heroH1: getComputedStyle(document.querySelector("h1")!).color,
+      featured: getComputedStyle(document.querySelector("#services .bg-amber-500")!).backgroundColor,
+    }));
+    expect(restored.heroH1).toBe("rgb(255, 255, 255)");
+    expect(restored.featured).toBe("rgb(245, 158, 11)");
+  });
+});

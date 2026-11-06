@@ -191,7 +191,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 603 checks / 53 files**: the seam batteries (auth,
+- **Unit — Vitest, 609 checks / 54 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
@@ -483,6 +483,17 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   landing-register e2e leg's source contract — under the collapse the
   landing's contrast citations collapse to exactly the three
   amber-500 section eyebrows, the reference's own family) — and
+  scroll-behavior-attr — the round-34 battery that pins the
+  ROUTE-TRANSITION SCROLL cure (the `<html>` element's
+  `data-scroll-behavior="smooth"` attribute — the Next.js 16 contract:
+  the App Router wraps its transition scrolls in scroll-behavior auto
+  only when the attribute is present; without it the router's
+  scroll-to-top rides the CSS smooth rule — live-proven: the
+  post-login transition animated 300→115 across ~500ms instead of the
+  instant reset; the attribute + the globals smooth rule + the two
+  e2e legs' source contracts pinned, plus the stacked-emulation
+  census leg: reducedMotion AND forcedColors together, both apps
+  identical live) — and
   error-faces — the round-27 battery that pins the CRM-BLUE/
   RESILIENCE-BOUNDARY family no probe ever censused (the token-axis
   blind spot of the session-199 domain transformation: the login card's
@@ -498,7 +509,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   boundaries' comments always claimed) —
   comment-stripped source reads; a
   literal pinned by a comment alone is vacuous.
-- **E2E — Playwright, 121 checks / 8 specs**: the standalone artifact on
+- **E2E — Playwright, 123 checks / 8 specs**: the standalone artifact on
   :3100 with `db/e2e.db`; ONE shared login (`auth.setup.ts` →
   storageState — the auth endpoints are rate-limited 10/IP/15-min); one
   worker; alphabetical file order → every spec SELF-SUFFICIENT (its own

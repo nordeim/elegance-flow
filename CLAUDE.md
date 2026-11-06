@@ -46,8 +46,8 @@ re-pinned to the reference's v3 palette).
    seams in `src/lib/` rather than inlining logic. Keep lint green as
    you go.
 5. **VERIFY** — Run the full gate: `bun run lint` → `bun run typecheck`
-   → `bun run test` (603) → `bun run build` → `./scripts/smoke-test.sh`
-   (14) → `CI=1 bun run test:e2e` (121). The `gate` script chains them.
+   → `bun run test` (609) → `bun run build` → `./scripts/smoke-test.sh`
+   (14) → `CI=1 bun run test:e2e` (123). The `gate` script chains them.
 6. **DOCUMENT** — Update the touched docs (`README.md`, this file, the
    PAD, `worklog.md`) in the same change; the counts in the docs must
    match the suites (the lockstep doctrine — doc claims about the tree
@@ -84,8 +84,8 @@ deep-linkable `/signup` + `/reset-password`.
 
 ```bash
 bun run dev        # :3000
-bun run test       # vitest (603 checks / 53 files)
-bun run test:e2e   # playwright (121 checks / 8 specs) — build first
+bun run test       # vitest (609 checks / 54 files)
+bun run test:e2e   # playwright (123 checks / 8 specs) — build first
 bun run gate       # the full chain, in order
 bun run db:census  # MUST print "pristine: MATCH" before you trust any db read
 ```
@@ -121,7 +121,7 @@ in production — the boot gate refuses to serve without it),
 
 ## Testing Strategy
 
-- **Unit (Vitest, 53 files / 603 checks)** — the seam batteries (auth,
+- **Unit (Vitest, 54 files / 609 checks)** — the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (`site-content`,
@@ -161,7 +161,15 @@ in production — the boot gate refuses to serve without it),
   against the dev server's Turbopack HMR websockets and wedges the
   probe; the helper's domcontentloaded-first + bounded-networkidle +
   settle contract pinned, plus the forced-colors landing-register
-  e2e leg's source contract) —
+  e2e leg's source contract),
+  `scroll-behavior-attr` — the round-34 battery: the route-transition
+  scroll cure (the `<html>` element's `data-scroll-behavior="smooth"`
+  attribute — the Next.js 16 contract that lets the App Router wrap
+  its transition scrolls in scroll-behavior: auto; without it the
+  router's scroll-to-top rides the CSS smooth rule — live-proven: the
+  post-login transition animated 300→115 across ~500ms; the attribute
+  + the globals smooth rule + the two e2e legs' source contracts
+  pinned) —
   comment-stripped source reads; a literal pinned
   by a comment alone is vacuous.
 - **E2E (Playwright, `tests/e2e/*.spec.ts`)** — the standalone

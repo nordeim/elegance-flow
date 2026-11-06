@@ -183,6 +183,7 @@ const SOURCE_CONTRACTS = [
   "forced-colors-faces",
   "color-scheme-faces",
   "probe-load-contract",
+  "scroll-behavior-attr",
 ];
 
 const fileOf = (family: string) => `${family}.test.ts`;
