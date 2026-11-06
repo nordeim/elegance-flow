@@ -26,8 +26,8 @@ bun run start                    # the standalone server (production)
 
 bun run lint                     # eslint --max-warnings 0 (the 0/0 standard)
 bun run typecheck                # tsc --noEmit
-bun run test                     # vitest run  (565 checks / 50 files)
-bun run test:e2e                 # playwright (115 checks / 8 specs; needs build)
+bun run test                     # vitest run  (577 checks / 51 files)
+bun run test:e2e                 # playwright (117 checks / 8 specs; needs build)
 CI=1 bun run test:e2e            # force a fresh server (never reuse stale)
 
 bun run db:push                  # prisma db push (SQLite at repo/db/custom.db)
@@ -131,6 +131,21 @@ card) won. Pinned by `tests/body-ink-faces.test.ts`; re-probed live by
 the drift `[body-ink]` leg. The same census recorded the print posture:
 both apps ship ZERO `@media print` rules (the reference's own
 zero-handling face — never mirrored).
+
+**The forced-colors posture (round-31 — the media-axis set completed):**
+under `forcedColors: "active"` both apps collapse identically to the
+system palette (CanvasText ink, Canvas surfaces, the CTA's LinkText
+`rgb(0,0,159)`) — zero `@media (forced-colors)` rules and no
+`forced-color-adjust` override on either side (the reference's own
+zero-handling posture; the browser renders both apps identically
+legible, so no superset ships — the print posture, not the reduce
+one). The featured-card note: the reference's own card div carries no
+`bg-amber-500` class yet computes the amber face — ours spells the
+class; the computed faces identical (the s11 doctrine). Pinned by
+`tests/forced-colors-faces.test.ts`; re-probed live by the drift
+`[forced-colors]` leg (the 19th). With reduce (round-29), print
+(round-30) and forced-colors (round-31), every `emulateMedia` axis is
+censused.
 
 **Case discipline.** The reference's DOM text is title-case ("Start a
 Project", "What We Do"); the ALL-CAPS faces ride the CSS `uppercase`

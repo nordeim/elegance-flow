@@ -191,7 +191,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 565 checks / 50 files**: the seam batteries (auth,
+- **Unit — Vitest, 577 checks / 51 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
@@ -445,6 +445,21 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   zero true riders; the no-rider construction — every visible text
   carries explicit ink; and the print census — both apps ship zero
   @media print rules, the reference's own zero-handling posture) — and
+  forced-colors-faces — the round-31 battery that pins the
+  FORCED-COLORS/THEME-FACE census (the last media axis in Playwright's
+  emulateMedia surface no probe ever emulated: under forcedColors
+  active both apps collapse identically to the system palette —
+  CanvasText ink, Canvas surfaces, the CTA's LinkText rgb(0, 0, 159) —
+  with zero @media (forced-colors) rules and no forced-color-adjust
+  override on either side, the reference's own zero-handling posture;
+  the featured-card class-literal decode — the reference's own card
+  div carries no bg-amber-500 class yet computes the amber face, OURS
+  spells the class, the computed faces identical at screen and under
+  the collapse, the s11 doctrine; the theme faces — accent-color auto
+  + color-scheme normal, neither app declares either; the
+  media-rule census walks CSSMediaRule objects, never substrings —
+  our rendered @layer utilities block contains the STRING
+  forced-colors in Tailwind v4's own utility class definitions) — and
   error-faces — the round-27 battery that pins the CRM-BLUE/
   RESILIENCE-BOUNDARY family no probe ever censused (the token-axis
   blind spot of the session-199 domain transformation: the login card's
@@ -460,7 +475,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   boundaries' comments always claimed) —
   comment-stripped source reads; a
   literal pinned by a comment alone is vacuous.
-- **E2E — Playwright, 115 checks / 8 specs**: the standalone artifact on
+- **E2E — Playwright, 117 checks / 8 specs**: the standalone artifact on
   :3100 with `db/e2e.db`; ONE shared login (`auth.setup.ts` →
   storageState — the auth endpoints are rate-limited 10/IP/15-min); one
   worker; alphabetical file order → every spec SELF-SUFFICIENT (its own

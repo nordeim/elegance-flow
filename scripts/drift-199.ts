@@ -2212,6 +2212,152 @@ async function bodyInkFace(url: string): Promise<BodyInkFace> {
   expectConst(label, "OURS", { printRules: 0 }, { printRules: oursBi.printRules }, out);
 }
 
+
+// The round-31 FORCED-COLORS/THEME-FACE census leg — the LAST media
+// axis in Playwright's emulateMedia surface no probe ever emulated
+// (round-29 reduce · round-30 print · round-31 forced-colors — the set
+// completes), plus the form-control theme faces (accent-color,
+// color-scheme) the session-54 candidate list named as the alternate
+// road. F-31a: under forcedColors: "active" both apps compute
+// IDENTICAL faces on every probed element (the browser's
+// system-palette collapse — CanvasText ink on Canvas surfaces, the
+// CTA's LinkText blue) because neither app opts out (adjust auto,
+// zero @media (forced-colors) rules on both sides — the reference's
+// own zero-handling posture is the byte-mirror default). F-31b: the
+// media-rule census walks CSSMediaRule objects, NEVER substrings —
+// OURS' rendered @layer utilities block contains the STRING
+// "forced-colors" (Tailwind v4's forced-color-adjust-* utility class
+// definitions) which a substring census would miscount (the round-30
+// .test( census-collision genus). F-31c: the featured card is selected
+// by CONTENT (the "Design & Web" title's card ancestor) — the
+// reference's own card div carries no bg-amber-500 class (its bundle
+// inks the card by its own mechanism; OURS spells the class — the
+// computed faces identical, the s11 doctrine). F-31d: the theme faces
+// (accent-color auto, color-scheme normal, the zinc-950 login caret) —
+// neither app declares either property.
+interface ForcedColorsFace {
+  sweep: {
+    htmlColor: string;
+    heroH1Color: string;
+    ctaColor: string;
+    featuredBg: string;
+    featuredInk: string;
+    firstCardBg: string;
+    servicesH2Color: string;
+    inputBg: string;
+    selectBg: string;
+    footerColor: string;
+    adjustH1: string;
+    adjustFeatured: string;
+  };
+  theme: {
+    accentColor: string;
+    colorScheme: string;
+    htmlCaret: string;
+    loginCaret: string;
+  };
+  forcedMediaRules: number;
+}
+async function forcedColorsFace(url: string): Promise<ForcedColorsFace> {
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const page = await context.newPage();
+  try {
+    await page.goto(url, { waitUntil: "commit" });
+    await page.waitForSelector("header", { timeout: 20000 });
+    await page.waitForTimeout(2000);
+    // the theme faces at SCREEN (F-31d — before any emulation)
+    const theme = await page.evaluate(() => ({
+      accentColor: getComputedStyle(document.documentElement).getPropertyValue("accent-color"),
+      colorScheme: getComputedStyle(document.documentElement).getPropertyValue("color-scheme"),
+      htmlCaret: getComputedStyle(document.documentElement).getPropertyValue("caret-color"),
+    }));
+    // the login caret (the platform family's zinc-950 face)
+    await page.goto(url + "/login", { waitUntil: "commit" });
+    await page.waitForSelector("form", { timeout: 20000 });
+    await page.waitForTimeout(1000);
+    const loginCaret = await page.evaluate(() => {
+      const input = document.querySelector('input[type="email"]') as HTMLElement | null;
+      return input ? getComputedStyle(input).getPropertyValue("caret-color") : "MISSING";
+    });
+    // the forced-colors sweep (F-31a): back to the landing, warm the
+    // reveals (the round-28 settle-wait precedent), then emulate
+    await page.goto(url, { waitUntil: "commit" });
+    await page.waitForSelector("header", { timeout: 20000 });
+    await page.waitForTimeout(1500);
+    await page.mouse.wheel(0, 4000);
+    await page.waitForTimeout(1200);
+    await page.emulateMedia({ forcedColors: "active" });
+    await page.waitForTimeout(300);
+    const sweep = await page.evaluate(() => {
+      // the cross-app content selectors: the reference's featured card
+      // carries NO bg-amber-500 class (F-31c) — select by TITLE
+      const cardOf = (title: string): HTMLElement | null => {
+        const h = Array.from(document.querySelectorAll("h3")).find((el) => (el.textContent ?? "").trim() === title);
+        return h ? ((h.closest("div")?.parentElement as HTMLElement) ?? null) : null;
+      };
+      const featured = cardOf("Design & Web");
+      const firstCard = cardOf("Creative Direction");
+      const cta = Array.from(document.querySelectorAll("header a")).find((a) => (a.textContent ?? "").trim() === "Get in Touch") ?? null;
+      const read = (el: Element | null, prop: string): string =>
+        el ? String(getComputedStyle(el)[prop as keyof CSSStyleDeclaration]) : "MISSING";
+      return {
+        htmlColor: getComputedStyle(document.documentElement).color,
+        heroH1Color: read(document.querySelector("h1"), "color"),
+        ctaColor: read(cta, "color"),
+        featuredBg: read(featured, "backgroundColor"),
+        featuredInk: read(featured, "color"),
+        firstCardBg: read(firstCard, "backgroundColor"),
+        servicesH2Color: read(document.querySelector("#services h2"), "color"),
+        inputBg: read(document.querySelector("#contact input"), "backgroundColor"),
+        selectBg: read(document.querySelector("#contact select"), "backgroundColor"),
+        footerColor: read(document.querySelector("footer"), "color"),
+        adjustH1: document.querySelector("h1") ? getComputedStyle(document.querySelector("h1")!).getPropertyValue("forced-color-adjust") : "MISSING",
+        adjustFeatured: featured ? getComputedStyle(featured).getPropertyValue("forced-color-adjust") : "MISSING",
+      };
+    });
+    // the media-rules census (F-31b — the CSSMediaRule walk, NEVER the
+    // substring: the utilities layer's class definitions don't count)
+    const forcedMediaRules = await page.evaluate(() => {
+      let count = 0;
+      const walk = (list: CSSRuleList) => {
+        for (const rule of Array.from(list)) {
+          if (rule instanceof CSSMediaRule && /forced-colors/i.test(rule.conditionText ?? rule.media.mediaText)) count += 1;
+          if (rule instanceof CSSMediaRule || rule instanceof CSSSupportsRule) walk(rule.cssRules);
+        }
+      };
+      for (const sheet of Array.from(document.styleSheets)) {
+        let rules: CSSRuleList;
+        try {
+          rules = sheet.cssRules;
+        } catch {
+          continue; // cross-origin sheet without CORS
+        }
+        walk(rules);
+      }
+      return count;
+    });
+    return { sweep, theme: { ...theme, loginCaret }, forcedMediaRules };
+  } finally {
+    await context.close();
+  }
+}
+
+{
+  const [refFc, oursFc] = await Promise.all([forcedColorsFace(REF), forcedColorsFace(OURS)]);
+  const label = "[forced-colors]";
+  // the IDENTICAL faces — real diffs (the whole forced-colors sweep +
+  // the theme faces must match: the system-palette collapse reaches
+  // everything identically, and neither app declares the theme props)
+  diff(label, refFc.sweep, oursFc.sweep, "the forced-colors face sweep (the system-palette collapse — CanvasText/Canvas/LinkText on every probed element)", out);
+  diff(label, refFc.theme, oursFc.theme, "the form-control theme faces (accent-color auto, color-scheme normal, the html + zinc-950 login carets)", out);
+  // the per-side constants — the media-rule census (F-31b: ZERO rules
+  // both sides, the CSSMediaRule walk; the reference's own zero-handling
+  // posture is the byte-mirror default, pinned by
+  // tests/forced-colors-faces.test.ts)
+  expectConst(label, "REF", { forcedMediaRules: 0 }, { forcedMediaRules: refFc.forcedMediaRules }, out);
+  expectConst(label, "OURS", { forcedMediaRules: 0 }, { forcedMediaRules: oursFc.forcedMediaRules }, out);
+}
+
 if (out.length === 0) {
   console.log("[390] CONTENT + MOBILE-MENU FACE: NO DRIFT — the reference matches our byte-mirror");
   console.log("[login] AUTH-CARD FACE: NO DRIFT — the reference matches our login mirror (round-27: the LOGO family now censused — the reference's real img mirrored: the alt, the object-fit cover, the 96×96 box, the byte-class circle span, the blue-dot regression; the spanRadius/imgSrc ride their per-side constants — F-27a)");
@@ -2231,8 +2377,9 @@ if (out.length === 0) {
   console.log("[reveal] SCROLL-REVEAL/MOTION FACE: NO DRIFT — the twenty-element family finally censused (F-28a): the at-rest hidden faces (opacity 0 + the live-probed ∓40X/+30Y/scale(0.96)/∓30X offsets) IDENTICAL both viewports, the mid-flight motion present on both apps, the post-reveal end state IDENTICAL (the static face every prior probe landed on); the transition mechanism rides per-side constants (the reference's raf 0s vs OUR CSS 0.8s decode — the services cards' own 0.3s class transition IDENTICAL)");
   console.log("[motion-prefs] REDUCED-MOTION FACE: NO DRIFT — the media condition no probe ever emulated finally censused (F-29a): under reduce the at-rest hidden family, the settled hero/mount family, the post-reveal end state and the scroll-behavior IDENTICAL; the divergence rides the recorded per-side constants (the reference ships ZERO reduce handling — its raf reveal still animates, services 0.3s / header 0.5s at full duration — vs OUR 0.01ms collapse (computed 1e-05s), the deliberate a11y superset pinned by tests/reduced-motion-faces.test.ts; OUR reveal snaps with no mid-flight window, never stuck hidden)");
   console.log("[body-ink] BODY-INK/PRINT-MEDIA FACE: NO DRIFT — the element no probe ever read finally censused (F-30a): the html element's UA-default ink, the body bg and the whole print-emulation sweep IDENTICAL both apps; the body element's own color face rides the recorded per-side constants (the single-token compromise's sacrificed side — REF rgb(10, 10, 10), its landing bundle's stock shadcn neutral-950, vs OURS rgb(9, 9, 11), the zinc-950 the reference's platform bundle inks its auth card with — DEAD on both sides, zero true riders, pinned by tests/body-ink-faces.test.ts); the print census (F-30b): both apps ship ZERO @media print rules (the reference's own zero-handling posture — the white-on-white hazard of its dark sections is its own face, never mirrored)");
+  console.log("[forced-colors] FORCED-COLORS/THEME-FACE: NO DRIFT — the last media axis in Playwright's emulateMedia surface finally censused (F-31a): under forcedColors active the whole face sweep computes IDENTICAL both apps (CanvasText ink, Canvas surfaces, the CTA's LinkText rgb(0, 0, 159) — the browser's system-palette collapse reaches everything; the featured card selected by CONTENT — F-31c: the reference's own card div carries no bg-amber-500 class, OURS spells it, the computed faces identical, the s11 doctrine); the media-rule census ZERO both sides (F-31b: the CSSMediaRule walk, never the substring — our rendered @layer utilities block contains the STRING forced-colors in Tailwind v4's own utility class definitions); the theme faces IDENTICAL (F-31d: accent-color auto + color-scheme normal, neither app declares either — the UA defaults ride); the media-axis set completed (round-29 reduce · round-30 print · round-31 forced-colors), pinned by tests/forced-colors-faces.test.ts");
 } else {
-  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact + authfail + google + viewport + anchors + docs + routes + reset + reveal + motion-prefs + body-ink] DRIFT DETECTED — ${out.length} field(s):`);
+  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact + authfail + google + viewport + anchors + docs + routes + reset + reveal + motion-prefs + body-ink + forced-colors] DRIFT DETECTED — ${out.length} field(s):`);
   for (const line of out) console.log(line);
 }
 

@@ -180,6 +180,7 @@ const SOURCE_CONTRACTS = [
   "reveal-faces",
   "reduced-motion-faces",
   "body-ink-faces",
+  "forced-colors-faces",
 ];
 
 const fileOf = (family: string) => `${family}.test.ts`;

@@ -985,3 +985,125 @@ test.describe("round-30: the landing under print emulation (the print-media cens
     expect(census.selectEl).toBe("rgb(9, 9, 11)");
   });
 });
+
+test.describe("round-31: the landing under forced-colors emulation (the forced-colors census contract)", () => {
+  // F-31a/F-31e: the last media axis in Playwright's emulateMedia
+  // surface no probe ever emulated (round-29 reduce · round-30 print ·
+  // round-31 forced-colors — the set completes). The census found both
+  // apps compute IDENTICAL faces under forcedColors: "active" (the
+  // browser's system-palette collapse reaches everything — CanvasText
+  // ink on Canvas surfaces, the CTA's LinkText blue) with zero
+  // @media (forced-colors) rules and no forced-color-adjust override
+  // on either side. This leg pins OUR contract on the artifact.
+  test("the forced-colors faces: the h1 collapses to CanvasText, the featured card to Canvas, the CTA to LinkText — ZERO forced-colors media rules", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+    await page.waitForSelector("h1");
+    // warm the reveals before emulating (the settled faces are the
+    // census targets — the round-28 settle-wait precedent)
+    await page.mouse.wheel(0, 4000);
+    await page.waitForTimeout(1200);
+    await page.emulateMedia({ forcedColors: "active" });
+    await page.waitForTimeout(300);
+    const faces = await page.evaluate(() => {
+      const read = (sel: string, prop: string): string => {
+        const el = document.querySelector(sel);
+        return el ? String(getComputedStyle(el)[prop as keyof CSSStyleDeclaration]) : "ABSENT";
+      };
+      const adjust = (sel: string): string => {
+        const el = document.querySelector(sel);
+        return el ? getComputedStyle(el).getPropertyValue("forced-color-adjust") : "ABSENT";
+      };
+      // the media-rules census: walk CSSMediaRule objects — NEVER a
+      // substring match (our rendered @layer utilities block contains
+      // the STRING "forced-colors" in Tailwind v4's own
+      // forced-color-adjust-* utility class definitions; the counting
+      // rule must match the thing counted — the round-30 .test(
+      // census-collision genus, decoded by the round-31 v2 probe)
+      let forcedMediaRules = 0;
+      for (const sheet of Array.from(document.styleSheets)) {
+        let rules: CSSRuleList;
+        try {
+          rules = sheet.cssRules;
+        } catch {
+          continue;
+        }
+        const walk = (list: CSSRuleList) => {
+          for (const rule of Array.from(list)) {
+            if (rule instanceof CSSMediaRule && (rule.conditionText ?? rule.media.mediaText).match(/forced-colors/i)) forcedMediaRules += 1;
+            if (rule instanceof CSSMediaRule || rule instanceof CSSSupportsRule) walk(rule.cssRules);
+          }
+        };
+        walk(rules);
+      }
+      return {
+        forcedMediaRules,
+        heroH1Color: read("h1", "color"),
+        // the header's amber CTA BUTTON (bg-amber-500 text-black), not
+        // the nav Contact anchor (white/60) — the class-selected link
+        ctaColor: read("header a.bg-amber-500", "color"),
+        featuredBg: read("#services .bg-amber-500", "backgroundColor"),
+        firstCardBg: read("#services .bg-zinc-900", "backgroundColor"),
+        inputBg: read("#contact input", "backgroundColor"),
+        bodyColor: read("body", "color"),
+        adjustH1: adjust("h1"),
+        adjustCard: adjust("#services .bg-amber-500"),
+      };
+    });
+    // the census contract: zero forced-colors media rules (the
+    // reference's own zero-handling posture — the byte-mirror default)
+    expect(faces.forcedMediaRules).toBe(0);
+    // the system-palette collapse: CanvasText black ink
+    expect(faces.heroH1Color).toBe("rgb(0, 0, 0)");
+    expect(faces.bodyColor).toBe("rgb(0, 0, 0)");
+    // the amber CTA collapses to the system LinkText blue
+    expect(faces.ctaColor).toBe("rgb(0, 0, 159)");
+    // the featured card's amber collapses to Canvas white (the
+    // featured-card class-literal note: OURS spells bg-amber-500 the
+    // reference's own DOM does not carry — the computed faces
+    // identical at screen AND under the collapse, the s11 doctrine)
+    expect(faces.featuredBg).toBe("rgb(255, 255, 255)");
+    expect(faces.firstCardBg).toBe("rgb(255, 255, 255)");
+    expect(faces.inputBg).toBe("rgb(255, 255, 255)");
+    // no opt-out anywhere: forced-color-adjust stays auto (the
+    // browser's collapse reaches everything, identically both apps)
+    expect(faces.adjustH1).toBe("auto");
+    expect(faces.adjustCard).toBe("auto");
+  });
+
+  test("the screen-restore contract — after un-emulating, the amber face returns (the collapse never sticks)", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+    await page.waitForSelector("h1");
+    await page.mouse.wheel(0, 4000);
+    await page.waitForTimeout(1200);
+    await page.emulateMedia({ forcedColors: "active" });
+    await page.waitForTimeout(200);
+    const collapsed = await page.evaluate(() =>
+      getComputedStyle(document.querySelector("#services .bg-amber-500")!).backgroundColor,
+    );
+    // the collapse held (the pre-state guard — Canvas white)
+    expect(collapsed).toBe("rgb(255, 255, 255)");
+    // the restore: emulateMedia back to none returns the authored face
+    await page.emulateMedia({ forcedColors: "none" });
+    await page.waitForTimeout(300);
+    const restored = await page.evaluate(() => {
+      // the header's amber CTA is the BUTTON-styled link (bg-amber-500
+      // text-black) — NOT the nav "Contact" anchor (white/60, the first
+      // a[href='#contact'] in document order); select by the class
+      const cta = document.querySelector("header a.bg-amber-500")!;
+      return {
+        featured: getComputedStyle(document.querySelector("#services .bg-amber-500")!).backgroundColor,
+        heroH1: getComputedStyle(document.querySelector("h1")!).color,
+        ctaBg: getComputedStyle(cta).backgroundColor,
+        ctaInk: getComputedStyle(cta).color,
+      };
+    });
+    // the amber face returns (the class construction still inks the
+    // card — the collapse is emulation-scoped, never a DOM mutation)
+    expect(restored.featured).toBe("rgb(245, 158, 11)");
+    expect(restored.heroH1).toBe("rgb(255, 255, 255)");
+    expect(restored.ctaBg).toBe("rgb(245, 158, 11)");
+    expect(restored.ctaInk).toBe("rgb(0, 0, 0)");
+  });
+});

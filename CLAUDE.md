@@ -46,8 +46,8 @@ re-pinned to the reference's v3 palette).
    seams in `src/lib/` rather than inlining logic. Keep lint green as
    you go.
 5. **VERIFY** — Run the full gate: `bun run lint` → `bun run typecheck`
-   → `bun run test` (565) → `bun run build` → `./scripts/smoke-test.sh`
-   (14) → `CI=1 bun run test:e2e` (115). The `gate` script chains them.
+   → `bun run test` (577) → `bun run build` → `./scripts/smoke-test.sh`
+   (14) → `CI=1 bun run test:e2e` (117). The `gate` script chains them.
 6. **DOCUMENT** — Update the touched docs (`README.md`, this file, the
    PAD, `worklog.md`) in the same change; the counts in the docs must
    match the suites (the lockstep doctrine — doc claims about the tree
@@ -84,8 +84,8 @@ deep-linkable `/signup` + `/reset-password`.
 
 ```bash
 bun run dev        # :3000
-bun run test       # vitest (565 checks / 50 files)
-bun run test:e2e   # playwright (115 checks / 8 specs) — build first
+bun run test       # vitest (577 checks / 51 files)
+bun run test:e2e   # playwright (117 checks / 8 specs) — build first
 bun run gate       # the full chain, in order
 bun run db:census  # MUST print "pristine: MATCH" before you trust any db read
 ```
@@ -121,7 +121,7 @@ in production — the boot gate refuses to serve without it),
 
 ## Testing Strategy
 
-- **Unit (Vitest, 50 files / 565 checks)** — the seam batteries (auth,
+- **Unit (Vitest, 51 files / 577 checks)** — the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (`site-content`,
@@ -141,7 +141,7 @@ in production — the boot gate refuses to serve without it),
   its raf reveal still animating under reduce vs OUR 0.01ms collapse),
   the delay-survival contract, the seam purity, and the PAD doc-stratum
   cures: the 18-module Layer-1 list + the reveal-family REPRODUCED
-  record, `body-ink-faces` — the round-30 battery: the body-ink/
+  record, `forced-colors-faces` — the round-31 battery: the forced-colors/theme-face census, pinning the last un-emulated media axis (both apps collapse identically to the system palette — CanvasText/Canvas/LinkText — zero forced-colors rules and no adjust override on either side, the reference's own zero-handling posture; the featured-card class-literal decode — OURS spells bg-amber-500 the reference's own DOM does not carry, the computed faces identical, the s11 doctrine; the theme faces: accent-color auto + color-scheme normal, neither app declares either), `body-ink-faces` — the round-30 battery: the body-ink/
   print-media census, pinning the BODY element's dead-face divergence
   (the round-13 single-token compromise's sacrificed side — REF
   neutral-950 rgb(10,10,10) vs OURS zinc-950 rgb(9,9,11)), the
