@@ -1107,3 +1107,109 @@ test.describe("round-31: the landing under forced-colors emulation (the forced-c
     expect(restored.ctaInk).toBe("rgb(0, 0, 0)");
   });
 });
+
+test.describe("round-32: the landing under color-scheme emulation (the color-scheme census contract)", () => {
+  // F-32a/F-32c: the one emulateMedia axis round-31 excepted ("the
+  // reference ships no dark-mode face to probe" — the session-56
+  // candidate list's first road). The census found BOTH apps compute
+  // identical faces under colorScheme "dark" AND "light" and NOTHING
+  // MOVES — html color-scheme normal (neither app declares it), zero
+  // prefers-color-scheme media rules, the same at-screen constants
+  // under every emulation. This leg pins OUR contract on the artifact.
+  test("the scheme faces: color-scheme normal, ZERO prefers-color-scheme rules, the same faces under dark and light — nothing moves", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+    await page.waitForSelector("h1");
+    await page.mouse.wheel(0, 4000);
+    await page.waitForTimeout(1200);
+    const readFaces = () =>
+      page.evaluate(() => {
+        const read = (sel: string, prop: string): string => {
+          const el = document.querySelector(sel);
+          return el ? String(getComputedStyle(el)[prop as keyof CSSStyleDeclaration]) : "ABSENT";
+        };
+        // the scheme-rules census: walk CSSMediaRule objects — the
+        // counting rule must match the thing counted (the round-31
+        // substring-trap lesson, applied to the scheme axis)
+        let schemeRules = 0;
+        for (const sheet of Array.from(document.styleSheets)) {
+          let rules: CSSRuleList;
+          try {
+            rules = sheet.cssRules;
+          } catch {
+            continue;
+          }
+          const walk = (list: CSSRuleList) => {
+            for (const rule of Array.from(list)) {
+              if (rule instanceof CSSMediaRule && (rule.conditionText ?? rule.media.mediaText).match(/prefers-color-scheme/i)) schemeRules += 1;
+              if (rule instanceof CSSMediaRule || rule instanceof CSSSupportsRule) walk(rule.cssRules);
+            }
+          };
+          walk(rules);
+        }
+        return {
+          schemeRules,
+          htmlColorScheme: getComputedStyle(document.documentElement).getPropertyValue("color-scheme"),
+          bodyBg: read("body", "backgroundColor"),
+          bodyColor: read("body", "color"),
+          heroH1: read("h1", "color"),
+          headerBg: read("header", "backgroundColor"),
+          footerBg: read("footer", "backgroundColor"),
+          featuredBg: read("#services .bg-amber-500", "backgroundColor"),
+        };
+      });
+    // the dark leg
+    await page.emulateMedia({ colorScheme: "dark" });
+    await page.waitForTimeout(300);
+    const dark = await readFaces();
+    // the light leg
+    await page.emulateMedia({ colorScheme: "light" });
+    await page.waitForTimeout(300);
+    const light = await readFaces();
+    // the census contract: zero scheme rules (the reference's own
+    // zero-handling posture — the byte-mirror default), color-scheme
+    // normal (the UA default; nobody declares it)
+    expect(dark.schemeRules).toBe(0);
+    expect(light.schemeRules).toBe(0);
+    expect(dark.htmlColorScheme.trim()).toBe("normal");
+    expect(light.htmlColorScheme.trim()).toBe("normal");
+    // the nothing-moves contract: the SAME faces under dark and light
+    // (our recorded at-screen constants — body zinc-950, the h1 white,
+    // the footer zinc-950, the featured amber)
+    expect(dark).toEqual(light);
+    expect(dark.bodyColor).toBe("rgb(9, 9, 11)");
+    expect(dark.heroH1).toBe("rgb(255, 255, 255)");
+    expect(dark.footerBg).toBe("rgb(9, 9, 11)");
+    expect(dark.featuredBg).toBe("rgb(245, 158, 11)");
+  });
+
+  test("the scheme round-trip contract — dark → light → no-preference never sticks a face (the emulation is scoped)", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+    await page.waitForSelector("h1");
+    await page.mouse.wheel(0, 4000);
+    await page.waitForTimeout(1200);
+    await page.emulateMedia({ colorScheme: "dark" });
+    await page.waitForTimeout(200);
+    await page.emulateMedia({ colorScheme: "light" });
+    await page.waitForTimeout(200);
+    await page.emulateMedia({ colorScheme: "no-preference" });
+    await page.waitForTimeout(300);
+    const faces = await page.evaluate(() => {
+      const cta = document.querySelector("header a.bg-amber-500")!;
+      return {
+        heroH1: getComputedStyle(document.querySelector("h1")!).color,
+        ctaBg: getComputedStyle(cta).backgroundColor,
+        featured: getComputedStyle(document.querySelector("#services .bg-amber-500")!).backgroundColor,
+        htmlColorScheme: getComputedStyle(document.documentElement).getPropertyValue("color-scheme").trim(),
+      };
+    });
+    // the authored faces hold through the round-trip (the scheme
+    // emulation never mutates the DOM or sticks a face — the same
+    // scoping contract as the forced-colors restore leg)
+    expect(faces.heroH1).toBe("rgb(255, 255, 255)");
+    expect(faces.ctaBg).toBe("rgb(245, 158, 11)");
+    expect(faces.featured).toBe("rgb(245, 158, 11)");
+    expect(faces.htmlColorScheme).toBe("normal");
+  });
+});

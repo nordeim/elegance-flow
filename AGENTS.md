@@ -26,8 +26,8 @@ bun run start                    # the standalone server (production)
 
 bun run lint                     # eslint --max-warnings 0 (the 0/0 standard)
 bun run typecheck                # tsc --noEmit
-bun run test                     # vitest run  (577 checks / 51 files)
-bun run test:e2e                 # playwright (117 checks / 8 specs; needs build)
+bun run test                     # vitest run  (591 checks / 52 files)
+bun run test:e2e                 # playwright (120 checks / 8 specs; needs build)
 CI=1 bun run test:e2e            # force a fresh server (never reuse stale)
 
 bun run db:push                  # prisma db push (SQLite at repo/db/custom.db)
@@ -146,6 +146,19 @@ class; the computed faces identical (the s11 doctrine). Pinned by
 `[forced-colors]` leg (the 19th). With reduce (round-29), print
 (round-30) and forced-colors (round-31), every `emulateMedia` axis is
 censused.
+
+**The color-scheme posture (round-32 — the emulateMedia surface
+completed):** under `colorScheme: "dark"` and `"light"` NOTHING MOVES
+on either app — html `color-scheme: normal` (neither app declares
+it), zero `prefers-color-scheme` rules, every face the at-screen
+constant (the reference ships no dark-mode face; ours mirrors the
+zero-handling posture). The recorded per-side constants (the body-ink
+dead face, the login email's s18 serialization pair) are
+scheme-invariant. The same round's superset sweep: axe-core under
+forced-colors on `/dashboard` returns zero violations. Pinned by
+`tests/color-scheme-faces.test.ts`; re-probed live by the drift
+`[color-scheme]` leg (the 20th) — with it, every axis of Playwright's
+`emulateMedia` surface rides a census leg.
 
 **Case discipline.** The reference's DOM text is title-case ("Start a
 Project", "What We Do"); the ALL-CAPS faces ride the CSS `uppercase`

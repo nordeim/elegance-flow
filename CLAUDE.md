@@ -46,8 +46,8 @@ re-pinned to the reference's v3 palette).
    seams in `src/lib/` rather than inlining logic. Keep lint green as
    you go.
 5. **VERIFY** — Run the full gate: `bun run lint` → `bun run typecheck`
-   → `bun run test` (577) → `bun run build` → `./scripts/smoke-test.sh`
-   (14) → `CI=1 bun run test:e2e` (117). The `gate` script chains them.
+   → `bun run test` (591) → `bun run build` → `./scripts/smoke-test.sh`
+   (14) → `CI=1 bun run test:e2e` (120). The `gate` script chains them.
 6. **DOCUMENT** — Update the touched docs (`README.md`, this file, the
    PAD, `worklog.md`) in the same change; the counts in the docs must
    match the suites (the lockstep doctrine — doc claims about the tree
@@ -84,8 +84,8 @@ deep-linkable `/signup` + `/reset-password`.
 
 ```bash
 bun run dev        # :3000
-bun run test       # vitest (577 checks / 51 files)
-bun run test:e2e   # playwright (117 checks / 8 specs) — build first
+bun run test       # vitest (591 checks / 52 files)
+bun run test:e2e   # playwright (120 checks / 8 specs) — build first
 bun run gate       # the full chain, in order
 bun run db:census  # MUST print "pristine: MATCH" before you trust any db read
 ```
@@ -121,7 +121,7 @@ in production — the boot gate refuses to serve without it),
 
 ## Testing Strategy
 
-- **Unit (Vitest, 51 files / 577 checks)** — the seam batteries (auth,
+- **Unit (Vitest, 52 files / 591 checks)** — the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (`site-content`,
@@ -147,7 +147,15 @@ in production — the boot gate refuses to serve without it),
   neutral-950 rgb(10,10,10) vs OURS zinc-950 rgb(9,9,11)), the
   no-rider construction (every visible text carries explicit ink), and
   the zero-print-rules posture (both apps ship none — the reference's
-  own zero-handling face) — comment-stripped source reads; a literal pinned
+  own zero-handling face), `color-scheme-faces` — the round-32
+  battery: the color-scheme/media-surface-completion census, pinning
+  the one emulateMedia axis round-31 excepted (under dark AND light
+  emulation nothing moves on either app — html color-scheme normal,
+  zero prefers-color-scheme rules, the recorded per-side constants
+  scheme-invariant: the body-ink dead face + the login email's s18
+  serialization pair; the superset forced-colors a11y sweep — axe-core
+  under forcedColors on /dashboard returns zero violations) —
+  comment-stripped source reads; a literal pinned
   by a comment alone is vacuous.
 - **E2E (Playwright, `tests/e2e/*.spec.ts`)** — the standalone
   artifact on :3100 with `db/e2e.db`; ONE shared login

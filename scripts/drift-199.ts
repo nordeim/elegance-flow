@@ -2358,6 +2358,149 @@ async function forcedColorsFace(url: string): Promise<ForcedColorsFace> {
   expectConst(label, "OURS", { forcedMediaRules: 0 }, { forcedMediaRules: oursFc.forcedMediaRules }, out);
 }
 
+// Round-32 (F-32a/F-32c): the COLOR-SCHEME census leg (the 20th) — the
+// one emulateMedia axis round-31 excepted ("the reference ships no
+// dark-mode face to probe" — the session-56 candidate list's first
+// road). Both apps censused under colorScheme "dark" AND "light":
+// nothing moves on either side (the faces are the at-screen constants),
+// neither app declares color-scheme (html computes normal), and neither
+// ships a prefers-color-scheme media rule (the CSSMediaRule walk — the
+// counting rule must match the thing counted, the round-31 lesson
+// applied to the scheme axis). The known per-side constants (the
+// body-ink dead face, the login email's s18 serialization pair) are
+// SCHEME-INVARIANT — they ride expectConst per side, never a cross-app
+// diff (the numerically-equal-paint class). Pinned by
+// tests/color-scheme-faces.test.ts.
+interface SchemeSweep {
+  htmlColorScheme: string;
+  bodyBg: string;
+  heroH1: string;
+  footerBg: string;
+}
+interface SchemeFace {
+  dark: SchemeSweep;
+  light: SchemeSweep;
+  // the known per-side constants (never cross-diffed): the body-ink
+  // dead face (round-30) + the scrolled header's s18 serialization
+  bodyColor: string;
+  headerBg: string;
+  loginDark: { emailBg: string };
+  loginLight: { emailBg: string };
+  schemeMediaRules: number;
+}
+async function schemeFace(url: string): Promise<SchemeFace> {
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const page = await context.newPage();
+  const readSweep = () =>
+    page.evaluate(() => {
+      const read = (el: Element | null, prop: string): string =>
+        el ? String(getComputedStyle(el)[prop as keyof CSSStyleDeclaration]) : "MISSING";
+      return {
+        htmlColorScheme: getComputedStyle(document.documentElement).getPropertyValue("color-scheme").trim(),
+        bodyBg: read(document.body, "backgroundColor"),
+        heroH1: read(document.querySelector("h1"), "color"),
+        footerBg: read(document.querySelector("footer"), "backgroundColor"),
+      };
+    });
+  try {
+    await page.goto(url, { waitUntil: "commit" });
+    await page.waitForSelector("header", { timeout: 20000 });
+    await page.waitForTimeout(1500);
+    await page.mouse.wheel(0, 4000);
+    await page.waitForTimeout(1200);
+    // the dark leg
+    await page.emulateMedia({ colorScheme: "dark" });
+    await page.waitForTimeout(300);
+    const dark = await readSweep();
+    // the light leg
+    await page.emulateMedia({ colorScheme: "light" });
+    await page.waitForTimeout(300);
+    const light = await readSweep();
+    // the known per-side constants (read ONCE at dark — the
+    // scheme-invariance legs prove they never move): the body-ink dead
+    // face (round-30's recorded compromise) + the scrolled header's s18
+    // serialization (the wheel left it scrolled; oklab-vs-rgba,
+    // numerically equal paint)
+    const { bodyColor, headerBg } = await page.evaluate(() => ({
+      bodyColor: String(getComputedStyle(document.body).color),
+      headerBg: String(getComputedStyle(document.querySelector("header")!).backgroundColor),
+    }));
+    // the scheme-rules census (F-32a: ZERO prefers-color-scheme rules —
+    // the CSSMediaRule walk, never the substring)
+    const schemeMediaRules = await page.evaluate(() => {
+      let count = 0;
+      const walk = (list: CSSRuleList) => {
+        for (const rule of Array.from(list)) {
+          if (rule instanceof CSSMediaRule && /prefers-color-scheme/i.test(rule.conditionText ?? rule.media.mediaText)) count += 1;
+          if (rule instanceof CSSMediaRule || rule instanceof CSSSupportsRule) walk(rule.cssRules);
+        }
+      };
+      for (const sheet of Array.from(document.styleSheets)) {
+        let rules: CSSRuleList;
+        try {
+          rules = sheet.cssRules;
+        } catch {
+          continue; // cross-origin sheet without CORS
+        }
+        walk(rules);
+      }
+      return count;
+    });
+    // the login email family under both schemes (the s18 serialization
+    // pair rides per-side constants — REF rgba vs OURS oklab, the same
+    // numerically-equal paint; read per side, never cross-diffed)
+    await page.goto(url + "/login", { waitUntil: "commit" });
+    await page.waitForSelector("form", { timeout: 20000 });
+    await page.waitForTimeout(1000);
+    await page.emulateMedia({ colorScheme: "dark" });
+    await page.waitForTimeout(300);
+    const loginDark = await page.evaluate(() => {
+      const input = document.querySelector('input[type="email"]') as HTMLElement | null;
+      return { emailBg: input ? getComputedStyle(input).backgroundColor : "MISSING" };
+    });
+    await page.emulateMedia({ colorScheme: "light" });
+    await page.waitForTimeout(300);
+    const loginLight = await page.evaluate(() => {
+      const input = document.querySelector('input[type="email"]') as HTMLElement | null;
+      return { emailBg: input ? getComputedStyle(input).backgroundColor : "MISSING" };
+    });
+    return { dark, light, bodyColor, headerBg, loginDark, loginLight, schemeMediaRules };
+  } finally {
+    await context.close();
+  }
+}
+
+{
+  const [refS, oursS] = await Promise.all([schemeFace(REF), schemeFace(OURS)]);
+  const label = "[color-scheme]";
+  // the IDENTICAL faces — real diffs (both schemes' sweeps must match
+  // cross-app: nothing moves on either app, so the at-screen parity
+  // constants hold under emulation — the landing's mirrored family;
+  // the known-divergent faces — the body-ink dead face and the scrolled
+  // header's s18 serialization — ride expectConst below, never this diff)
+  diff(label, refS.dark, oursS.dark, "the dark-emulation face sweep (nothing moves — the at-screen constants hold)", out);
+  diff(label, refS.light, oursS.light, "the light-emulation face sweep (nothing moves — the at-screen constants hold)", out);
+  // the nothing-moves contract PER SIDE (each app's dark === light —
+  // the scheme answer would show here first if one ever shipped)
+  diff(label, refS.dark, refS.light, "REF scheme-invariance (dark must equal light — the reference ships no dark face)", out);
+  diff(label, oursS.dark, oursS.light, "OURS scheme-invariance (dark must equal light — no scheme answer ships)", out);
+  diff(label, refS.loginDark, refS.loginLight, "REF login scheme-invariance (the email fill never moves)", out);
+  diff(label, oursS.loginDark, oursS.loginLight, "OURS login scheme-invariance (the email fill never moves)", out);
+  // the per-side constants — the scheme-invariant recorded faces: the
+  // body-ink dead face (round-30) + the scrolled header's s18 pair +
+  // the login email's s18 pair (REF rgba vs OURS oklab, numerically
+  // equal paint; recorded, never cross-diffed)
+  expectConst(label, "REF", "rgb(10, 10, 10)", refS.bodyColor, out);
+  expectConst(label, "OURS", "rgb(9, 9, 11)", oursS.bodyColor, out);
+  expectConst(label, "REF", "rgba(9, 9, 11, 0.95)", refS.headerBg, out);
+  expectConst(label, "OURS", "oklab(0.140764 0.00120224 -0.00421676 / 0.95)", oursS.headerBg, out);
+  expectConst(label, "REF", "rgba(248, 250, 252, 0.5)", refS.loginDark.emailBg, out);
+  expectConst(label, "OURS", "oklab(0.984146 -0.00124145 -0.00314122 / 0.5)", oursS.loginDark.emailBg, out);
+  // the scheme-rules census (F-32a: ZERO rules both sides)
+  expectConst(label, "REF", { schemeMediaRules: 0 }, { schemeMediaRules: refS.schemeMediaRules }, out);
+  expectConst(label, "OURS", { schemeMediaRules: 0 }, { schemeMediaRules: oursS.schemeMediaRules }, out);
+}
+
 if (out.length === 0) {
   console.log("[390] CONTENT + MOBILE-MENU FACE: NO DRIFT — the reference matches our byte-mirror");
   console.log("[login] AUTH-CARD FACE: NO DRIFT — the reference matches our login mirror (round-27: the LOGO family now censused — the reference's real img mirrored: the alt, the object-fit cover, the 96×96 box, the byte-class circle span, the blue-dot regression; the spanRadius/imgSrc ride their per-side constants — F-27a)");
@@ -2378,8 +2521,9 @@ if (out.length === 0) {
   console.log("[motion-prefs] REDUCED-MOTION FACE: NO DRIFT — the media condition no probe ever emulated finally censused (F-29a): under reduce the at-rest hidden family, the settled hero/mount family, the post-reveal end state and the scroll-behavior IDENTICAL; the divergence rides the recorded per-side constants (the reference ships ZERO reduce handling — its raf reveal still animates, services 0.3s / header 0.5s at full duration — vs OUR 0.01ms collapse (computed 1e-05s), the deliberate a11y superset pinned by tests/reduced-motion-faces.test.ts; OUR reveal snaps with no mid-flight window, never stuck hidden)");
   console.log("[body-ink] BODY-INK/PRINT-MEDIA FACE: NO DRIFT — the element no probe ever read finally censused (F-30a): the html element's UA-default ink, the body bg and the whole print-emulation sweep IDENTICAL both apps; the body element's own color face rides the recorded per-side constants (the single-token compromise's sacrificed side — REF rgb(10, 10, 10), its landing bundle's stock shadcn neutral-950, vs OURS rgb(9, 9, 11), the zinc-950 the reference's platform bundle inks its auth card with — DEAD on both sides, zero true riders, pinned by tests/body-ink-faces.test.ts); the print census (F-30b): both apps ship ZERO @media print rules (the reference's own zero-handling posture — the white-on-white hazard of its dark sections is its own face, never mirrored)");
   console.log("[forced-colors] FORCED-COLORS/THEME-FACE: NO DRIFT — the last media axis in Playwright's emulateMedia surface finally censused (F-31a): under forcedColors active the whole face sweep computes IDENTICAL both apps (CanvasText ink, Canvas surfaces, the CTA's LinkText rgb(0, 0, 159) — the browser's system-palette collapse reaches everything; the featured card selected by CONTENT — F-31c: the reference's own card div carries no bg-amber-500 class, OURS spells it, the computed faces identical, the s11 doctrine); the media-rule census ZERO both sides (F-31b: the CSSMediaRule walk, never the substring — our rendered @layer utilities block contains the STRING forced-colors in Tailwind v4's own utility class definitions); the theme faces IDENTICAL (F-31d: accent-color auto + color-scheme normal, neither app declares either — the UA defaults ride); the media-axis set completed (round-29 reduce · round-30 print · round-31 forced-colors), pinned by tests/forced-colors-faces.test.ts");
+  console.log("[color-scheme] COLOR-SCHEME FACE: NO DRIFT — the one emulateMedia axis round-31 excepted finally censused (F-32a): under colorScheme dark AND light the face sweep computes IDENTICAL both apps and NOTHING MOVES on either side (html color-scheme normal — neither app declares it; body bg white, the h1 white ink, the footer zinc-950, the login email's translucent fill — the at-screen constants hold under every emulation); the per-side scheme-invariance holds (each app's dark === light, both landings and both logins); the s18 serialization pair rides the recorded per-side constants (REF rgba(248, 250, 252, 0.5) vs OURS oklab — numerically equal paint); the scheme-rules census ZERO both sides (the CSSMediaRule walk — the reference ships no dark-mode face, OURS mirrors the zero-handling posture); with round-29 reduce · round-30 print · round-31 forced-colors · round-32 colorScheme EVERY emulateMedia axis rides a census leg, pinned by tests/color-scheme-faces.test.ts");
 } else {
-  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact + authfail + google + viewport + anchors + docs + routes + reset + reveal + motion-prefs + body-ink + forced-colors] DRIFT DETECTED — ${out.length} field(s):`);
+  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact + authfail + google + viewport + anchors + docs + routes + reset + reveal + motion-prefs + body-ink + forced-colors + color-scheme] DRIFT DETECTED — ${out.length} field(s):`);
   for (const line of out) console.log(line);
 }
 

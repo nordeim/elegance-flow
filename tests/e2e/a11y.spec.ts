@@ -197,3 +197,38 @@ test.describe("the a11y two-gate: the superset workspace", () => {
     await scanTwoGate(page, "phone /dashboard");
   });
 });
+
+test.describe("round-32: the forced-colors a11y sweep (the superset's last un-scanned condition)", () => {
+  // F-32d (the session-56 candidate 3): the round-31 spot-check read the
+  // /dashboard's faces under forcedColors but never SCANNED it. The
+  // round-32 live sweep (axe-core 4.13 injected under forcedColors
+  // active) found ZERO violations — structural AND contrast clean under
+  // the system-palette collapse. This leg pins that census on the
+  // standalone artifact: the superset's own surface stays fully legible
+  // under the browser's forced-colors mode.
+  test("desktop /dashboard under forcedColors active — structural zero AND contrast zero (the F-32d census)", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.emulateMedia({ forcedColors: "active" });
+    await page.goto("/dashboard");
+    await page.waitForLoadState("networkidle").catch(() => {});
+    await page.waitForTimeout(1200);
+    // the declared devDep engine, same as the two-gate scans (never a CDN)
+    await page.addScriptTag({ path: AXE_PATH });
+    const violations = await page.evaluate(async () => {
+      const axe = (
+        window as unknown as {
+          axe: { run: (o: object) => Promise<{ violations: Array<{ id: string; nodes: unknown[] }> }> };
+        }
+      ).axe;
+      const r = await axe.run({
+        runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"] },
+      });
+      return r.violations.map((v) => ({ id: v.id, count: v.nodes.length }));
+    });
+    // the F-32d census: the violations array is EMPTY under the
+    // system-palette collapse (the amber-700/zinc-600 ink family and
+    // the explicit-surface construction survive Canvas/CanvasText
+    // legibly — no sanctioned register needed, the sweep is outright)
+    expect(violations, "the /dashboard forced-colors a11y sweep must be clean").toEqual([]);
+  });
+});

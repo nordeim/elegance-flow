@@ -191,7 +191,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 577 checks / 51 files**: the seam batteries (auth,
+- **Unit — Vitest, 591 checks / 52 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
@@ -460,6 +460,17 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   media-rule census walks CSSMediaRule objects, never substrings —
   our rendered @layer utilities block contains the STRING
   forced-colors in Tailwind v4's own utility class definitions) — and
+  color-scheme-faces — the round-32 battery that pins the
+  COLOR-SCHEME/MEDIA-SURFACE-COMPLETION census (the one emulateMedia
+  axis round-31 excepted — the reference ships no dark-mode face: under
+  colorScheme dark AND light nothing moves on either app, html
+  color-scheme normal on both (neither declares it), zero
+  prefers-color-scheme rules (the CSSMediaRule walk), the recorded
+  per-side constants scheme-invariant (the body-ink dead face, the
+  login email's s18 rgba-vs-oklab pair); the superset forced-colors
+  a11y sweep folded in — axe-core under forcedColors active on
+  /dashboard returns ZERO violations, structural and contrast clean
+  under the system-palette collapse) — and
   error-faces — the round-27 battery that pins the CRM-BLUE/
   RESILIENCE-BOUNDARY family no probe ever censused (the token-axis
   blind spot of the session-199 domain transformation: the login card's
@@ -475,7 +486,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   boundaries' comments always claimed) —
   comment-stripped source reads; a
   literal pinned by a comment alone is vacuous.
-- **E2E — Playwright, 117 checks / 8 specs**: the standalone artifact on
+- **E2E — Playwright, 120 checks / 8 specs**: the standalone artifact on
   :3100 with `db/e2e.db`; ONE shared login (`auth.setup.ts` →
   storageState — the auth endpoints are rate-limited 10/IP/15-min); one
   worker; alphabetical file order → every spec SELF-SUFFICIENT (its own
