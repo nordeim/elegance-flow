@@ -2112,6 +2112,106 @@ async function motionPrefsFace(url: string): Promise<MotionPrefsFace> {
   expectConst(label, "OURS", { midFlight: "snaps" }, { midFlight: oursSnaps ? "snaps" : "animates" }, out);
 }
 
+// The round-30 BODY-INK/PRINT-MEDIA census leg — the element no probe
+// ever read (the parity pick() list starts at the header; every drift
+// leg reads its own family) under a media condition no probe ever
+// emulated (print). F-30a: the BODY element's own color face diverges
+// (the round-13 single-token re-pin's sacrificed side — REF's landing
+// bundle ships the stock shadcn neutral-950 `hsl(var(--foreground))`
+// while OURS computes zinc-950 via --color-foreground, the value the
+// reference's PLATFORM bundle inks its auth card with). DEAD on both
+// sides (zero true riders — pinned by tests/body-ink-faces.test.ts).
+// F-30b: under print emulation both apps compute identical faces and
+// ship ZERO @media print rules (the reference's own zero-handling
+// posture, recorded per-side, never mirrored).
+interface BodyInkFace {
+  htmlColor: string;
+  bodyColor: string;
+  bodyBg: string;
+  footerColor: string;
+  print: {
+    headerPosition: string;
+    heroH1Color: string;
+    bodyBg: string;
+    printColorAdjust: string;
+    navDisplay: string;
+  };
+  printRules: number;
+}
+async function bodyInkFace(url: string): Promise<BodyInkFace> {
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const page = await context.newPage();
+  try {
+    await page.goto(url, { waitUntil: "commit" });
+    await page.waitForSelector("header", { timeout: 20000 });
+    await page.waitForTimeout(2000);
+    // the at-rest element faces at SCREEN emulation (the F-30a census)
+    const screen = await page.evaluate(() => ({
+      htmlColor: getComputedStyle(document.documentElement).color,
+      bodyColor: getComputedStyle(document.body).color,
+      bodyBg: getComputedStyle(document.body).backgroundColor,
+      footerColor: document.querySelector("footer") ? getComputedStyle(document.querySelector("footer")!).color : "MISSING",
+    }));
+    // the print-emulation sweep (F-30b): warm the reveals first (the
+    // round-28 settle-wait precedent), then emulate and read
+    await page.mouse.wheel(0, 4000);
+    await page.waitForTimeout(1200);
+    await page.emulateMedia({ media: "print" });
+    await page.waitForTimeout(300);
+    const print = await page.evaluate(() => ({
+      headerPosition: document.querySelector("header") ? getComputedStyle(document.querySelector("header")!).position : "MISSING",
+      heroH1Color: document.querySelector("h1") ? getComputedStyle(document.querySelector("h1")!).color : "MISSING",
+      bodyBg: getComputedStyle(document.body).backgroundColor,
+      printColorAdjust: String(getComputedStyle(document.body).printColorAdjust),
+      navDisplay: document.querySelector("header nav, nav") ? getComputedStyle(document.querySelector("header nav, nav")!).display : "MISSING",
+    }));
+    // the sheet print-rules census (stays under print emulation — the
+    // CSSOM is emulation-independent, but read it in the same context)
+    const printRules = await page.evaluate(() => {
+      let count = 0;
+      const walk = (list: CSSRuleList) => {
+        for (const rule of Array.from(list)) {
+          if (rule instanceof CSSMediaRule && /print/i.test(rule.conditionText ?? rule.media.mediaText)) count += 1;
+          if (rule instanceof CSSMediaRule || rule instanceof CSSSupportsRule) walk(rule.cssRules);
+        }
+      };
+      for (const sheet of Array.from(document.styleSheets)) {
+        let rules: CSSRuleList;
+        try {
+          rules = sheet.cssRules;
+        } catch {
+          continue; // cross-origin sheet without CORS
+        }
+        walk(rules);
+      }
+      return count;
+    });
+    return { ...screen, print, printRules };
+  } finally {
+    await context.close();
+  }
+}
+
+{
+  const [refBi, oursBi] = await Promise.all([bodyInkFace(REF), bodyInkFace(OURS)]);
+  const label = "[body-ink]";
+  // the IDENTICAL faces — real diffs (the html element's UA-default ink,
+  // the body bg, and the whole print sweep must match)
+  diff(label, refBi.htmlColor, oursBi.htmlColor, "html.color (the UA default — no rule on either side)", out);
+  diff(label, refBi.bodyBg, oursBi.bodyBg, "body.backgroundColor at screen (white on both)", out);
+  diff(label, refBi.print, oursBi.print, "the print-emulation sweep (header fixed, the h1 white ink, the body bg, the economy adjust, the nav display)", out);
+  // the recorded dead-face divergence — per-side constants (F-30a: the
+  // single-token compromise's sacrificed side; DEAD on both apps — zero
+  // true riders, pinned by tests/body-ink-faces.test.ts ②)
+  expectConst(label, "REF", { body: "rgb(10, 10, 10)", footer: "rgb(10, 10, 10)" }, { body: refBi.bodyColor, footer: refBi.footerColor }, out);
+  expectConst(label, "OURS", { body: "rgb(9, 9, 11)", footer: "rgb(9, 9, 11)" }, { body: oursBi.bodyColor, footer: oursBi.footerColor }, out);
+  // the print-rules census — the reference's own zero-handling posture
+  // (F-30b: both sides ship NONE; the white-on-white hazard of the dark
+  // sections is the reference's own face, never mirrored)
+  expectConst(label, "REF", { printRules: 0 }, { printRules: refBi.printRules }, out);
+  expectConst(label, "OURS", { printRules: 0 }, { printRules: oursBi.printRules }, out);
+}
+
 if (out.length === 0) {
   console.log("[390] CONTENT + MOBILE-MENU FACE: NO DRIFT — the reference matches our byte-mirror");
   console.log("[login] AUTH-CARD FACE: NO DRIFT — the reference matches our login mirror (round-27: the LOGO family now censused — the reference's real img mirrored: the alt, the object-fit cover, the 96×96 box, the byte-class circle span, the blue-dot regression; the spanRadius/imgSrc ride their per-side constants — F-27a)");
@@ -2130,8 +2230,9 @@ if (out.length === 0) {
   console.log("[reset] PLATFORM-RESET FACE: NO DRIFT — the /reset-password family mirrors on both states after the F-26a/b/c cure (the Title-Case quartet, the BreadcrumbList JSON-LD third carrier, the flat gray-50 page, the white rounded-lg shadow-lg card, the FIXED 48/48/40 inner, the 24px h2 headings, the h-11/6px gray controls with the zinc-500 placeholder, the per-state strip/icon family, the tab order, the announced error box); the input/error oklab-vs-rgba fills match their per-side recorded constants (the s18 serialization class, numerically equal paint)");
   console.log("[reveal] SCROLL-REVEAL/MOTION FACE: NO DRIFT — the twenty-element family finally censused (F-28a): the at-rest hidden faces (opacity 0 + the live-probed ∓40X/+30Y/scale(0.96)/∓30X offsets) IDENTICAL both viewports, the mid-flight motion present on both apps, the post-reveal end state IDENTICAL (the static face every prior probe landed on); the transition mechanism rides per-side constants (the reference's raf 0s vs OUR CSS 0.8s decode — the services cards' own 0.3s class transition IDENTICAL)");
   console.log("[motion-prefs] REDUCED-MOTION FACE: NO DRIFT — the media condition no probe ever emulated finally censused (F-29a): under reduce the at-rest hidden family, the settled hero/mount family, the post-reveal end state and the scroll-behavior IDENTICAL; the divergence rides the recorded per-side constants (the reference ships ZERO reduce handling — its raf reveal still animates, services 0.3s / header 0.5s at full duration — vs OUR 0.01ms collapse (computed 1e-05s), the deliberate a11y superset pinned by tests/reduced-motion-faces.test.ts; OUR reveal snaps with no mid-flight window, never stuck hidden)");
+  console.log("[body-ink] BODY-INK/PRINT-MEDIA FACE: NO DRIFT — the element no probe ever read finally censused (F-30a): the html element's UA-default ink, the body bg and the whole print-emulation sweep IDENTICAL both apps; the body element's own color face rides the recorded per-side constants (the single-token compromise's sacrificed side — REF rgb(10, 10, 10), its landing bundle's stock shadcn neutral-950, vs OURS rgb(9, 9, 11), the zinc-950 the reference's platform bundle inks its auth card with — DEAD on both sides, zero true riders, pinned by tests/body-ink-faces.test.ts); the print census (F-30b): both apps ship ZERO @media print rules (the reference's own zero-handling posture — the white-on-white hazard of its dark sections is its own face, never mirrored)");
 } else {
-  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact + authfail + google + viewport + anchors + docs + routes + reset + reveal + motion-prefs] DRIFT DETECTED — ${out.length} field(s):`);
+  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact + authfail + google + viewport + anchors + docs + routes + reset + reveal + motion-prefs + body-ink] DRIFT DETECTED — ${out.length} field(s):`);
   for (const line of out) console.log(line);
 }
 

@@ -850,3 +850,138 @@ test.describe("round-29: the landing under prefers-reduced-motion (the reduce-mo
       .toBe("1,1");
   });
 });
+
+test.describe("round-30: the landing under print emulation (the print-media census contract)", () => {
+  // F-30b: no probe ever emulated print media — the round-29 genus
+  // (conditions nobody emulates). The census found BOTH apps ship zero
+  // @media print rules and compute identical faces under print (the
+  // white-on-white hazard of the dark sections is the reference's own
+  // zero-handling posture — recorded per-side, never mirrored). This
+  // leg pins OUR contract on the standalone artifact.
+  test("the print-mode faces: the fixed header stays fixed, the hero ink stays white, the zinc-950 inks hold, ZERO print rules ship", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+    await page.waitForSelector("h1");
+    // warm the reveals before emulating print (the settled faces are
+    // the census targets — the round-28 settle-wait precedent)
+    await page.mouse.wheel(0, 4000);
+    await page.waitForTimeout(1200);
+    await page.emulateMedia({ media: "print" });
+    await page.waitForTimeout(300);
+    const faces = await page.evaluate(() => {
+      const read = (sel: string, prop: string): string => {
+        const el = document.querySelector(sel);
+        return el ? String(getComputedStyle(el)[prop as keyof CSSStyleDeclaration]) : "ABSENT";
+      };
+      // the sheet print-rules census: zero @media print rules in any
+      // rendered stylesheet (the deliberate byte-mirror posture)
+      let printRules = 0;
+      for (const sheet of Array.from(document.styleSheets)) {
+        let rules: CSSRuleList;
+        try {
+          rules = sheet.cssRules;
+        } catch {
+          continue;
+        }
+        const walk = (list: CSSRuleList) => {
+          for (const rule of Array.from(list)) {
+            // NOTE: .match, never the regex .test method — the count-ladder
+            // census counts `test(` tokens in spec files (the round-11 lesson)
+            if (rule instanceof CSSMediaRule && (rule.conditionText ?? rule.media.mediaText).match(/print/i)) printRules += 1;
+            if (rule instanceof CSSMediaRule || rule instanceof CSSSupportsRule) walk(rule.cssRules);
+          }
+        };
+        walk(rules);
+      }
+      return {
+        printRules,
+        headerPosition: read("header", "position"),
+        heroH1Color: read("h1", "color"),
+        bodyBg: read("body", "backgroundColor"),
+        bodyColor: read("body", "color"),
+        printColorAdjust: String(getComputedStyle(document.body).printColorAdjust),
+      };
+    });
+    // the print census contract: zero print rules, the reference's own
+    // posture (F-30b — both sides censused live, identical)
+    expect(faces.printRules).toBe(0);
+    // the fixed header stays fixed under print (no rule un-fixes it —
+    // the reference's own face; the hazard family recorded per-side)
+    expect(faces.headerPosition).toBe("fixed");
+    // the hero h1 keeps its white ink (the white-on-white hazard is
+    // the reference's own zero-handling face — never "fixed")
+    expect(faces.heroH1Color).toBe("rgb(255, 255, 255)");
+    // the body face: OUR recorded constant (the F-30a dead-face
+    // divergence — REF rgb(10,10,10) vs OURS rgb(9,9,11); dead on
+    // both sides, zero riders)
+    expect(faces.bodyColor).toBe("rgb(9, 9, 11)");
+    expect(faces.bodyBg).toBe("rgb(255, 255, 255)");
+    expect(faces.printColorAdjust).toBe("economy");
+  });
+
+  test("the body-ink no-rider contract at screen — every REF-unclassed surface inks via its explicit ancestor, never the body default", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+    await page.waitForSelector("h1");
+    await page.mouse.wheel(0, 4000);
+    await page.waitForTimeout(1200);
+    const census = await page.evaluate(() => {
+      const bodyColor = getComputedStyle(document.body).color;
+      // the blast-radius rider census: a TRUE rider is a text node
+      // whose computed color equals the body ink AND that carries no
+      // explicit ink anywhere in its lineage (neither its own class
+      // nor any ancestor's up to body — the v3 probe's coincidental
+      // matches decoded by the v5 ancestry probe: a zinc-950-inked
+      // ancestor is not a body rider)
+      const INK_RE = /text-(zinc|neutral|white|black|amber|gray|slate|rose|emerald)-/;
+      // NOTE: .match, never the regex .test method — the count-ladder
+      // census counts `test(` tokens in spec files (the round-11 lesson)
+      const hasInkInLineage = (el: Element): boolean => {
+        if ((el.getAttribute("class") ?? "").match(INK_RE)) return true;
+        let cur = el.parentElement;
+        while (cur && cur !== document.body) {
+          if ((cur.getAttribute("class") ?? "").match(INK_RE)) return true;
+          cur = cur.parentElement;
+        }
+        return false;
+      };
+      let trueRiders = 0;
+      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
+      let node = walker.nextNode() as Element | null;
+      while (node) {
+        if (node.tagName !== "SCRIPT" && node.tagName !== "STYLE" && !node.closest("svg")) {
+          const ownText = Array.from(node.childNodes)
+            .filter((n) => n.nodeType === Node.TEXT_NODE)
+            .map((n) => n.textContent ?? "")
+            .join("")
+            .trim();
+          if (ownText.length > 0 && getComputedStyle(node).color === bodyColor && !hasInkInLineage(node)) {
+            trueRiders += 1;
+          }
+        }
+        node = walker.nextNode() as Element | null;
+      }
+      // the explicit-ink surfaces (the no-rider construction's guards)
+      const byText = (sel: string, re: RegExp): Element | null =>
+        Array.from(document.querySelectorAll(sel)).find((n) => Boolean((n.textContent ?? "").trim().match(re))) ?? null;
+      return {
+        trueRiders,
+        aboutH2: getComputedStyle(document.querySelector("#about h2")!).color,
+        servicesH3: getComputedStyle(byText("h3", /^Design & Web$/)!).color,
+        priceSpan: getComputedStyle(byText("span", /^From \$3,000$/)!).color,
+        selectEl: getComputedStyle(document.querySelector("#contact select")!).color,
+      };
+    });
+    // ZERO true body riders (the F-30a dead-face decode — the face is
+    // dead on our side; a rider appearing here means a surface lost
+    // its explicit ink and silently rides the token default)
+    expect(census.trueRiders).toBe(0);
+    // the explicit inks: every REF-unclassed surface computes the same
+    // zinc-950 the reference sets explicitly (the coincidental-match
+    // family — ancestor-inked, never body-inked)
+    expect(census.aboutH2).toBe("rgb(9, 9, 11)");
+    expect(census.servicesH3).toBe("rgb(9, 9, 11)");
+    expect(census.priceSpan).toBe("rgb(9, 9, 11)");
+    expect(census.selectEl).toBe("rgb(9, 9, 11)");
+  });
+});

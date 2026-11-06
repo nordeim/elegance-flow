@@ -179,6 +179,7 @@ const SOURCE_CONTRACTS = [
   "error-faces",
   "reveal-faces",
   "reduced-motion-faces",
+  "body-ink-faces",
 ];
 
 const fileOf = (family: string) => `${family}.test.ts`;

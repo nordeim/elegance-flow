@@ -26,8 +26,8 @@ bun run start                    # the standalone server (production)
 
 bun run lint                     # eslint --max-warnings 0 (the 0/0 standard)
 bun run typecheck                # tsc --noEmit
-bun run test                     # vitest run  (551 checks / 49 files)
-bun run test:e2e                 # playwright (113 checks / 8 specs; needs build)
+bun run test                     # vitest run  (565 checks / 50 files)
+bun run test:e2e                 # playwright (115 checks / 8 specs; needs build)
 CI=1 bun run test:e2e            # force a fresh server (never reuse stale)
 
 bun run db:push                  # prisma db push (SQLite at repo/db/custom.db)
@@ -118,6 +118,19 @@ reference at 1280 and 390 — every probed face must compute IDENTICAL
 (only the oklab/rgba serialization form of the scrolled header differs
 — same paint, numerically proven). `docs/screenshots/` carries both
 apps' captures.
+
+**The one recorded dead-face divergence (round-30):** the BODY
+element's own `color` — the reference's landing bundle computes
+neutral-950 `rgb(10,10,10)` (stock shadcn `hsl(var(--foreground))`)
+while ours computes zinc-950 `rgb(9,9,11)` (the round-13
+`--color-foreground` re-pin, made on the reference's PLATFORM-bundle
+auth-card evidence). DEAD on both sides — zero text nodes ride the body
+default on either app (every visible text carries explicit ink); the
+single token cannot match both bundles, and the live face (the auth
+card) won. Pinned by `tests/body-ink-faces.test.ts`; re-probed live by
+the drift `[body-ink]` leg. The same census recorded the print posture:
+both apps ship ZERO `@media print` rules (the reference's own
+zero-handling face — never mirrored).
 
 **Case discipline.** The reference's DOM text is title-case ("Start a
 Project", "What We Do"); the ALL-CAPS faces ride the CSS `uppercase`
