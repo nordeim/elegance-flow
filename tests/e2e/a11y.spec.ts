@@ -232,3 +232,71 @@ test.describe("round-32: the forced-colors a11y sweep (the superset's last un-sc
     expect(violations, "the /dashboard forced-colors a11y sweep must be clean").toEqual([]);
   });
 });
+
+test.describe("round-33: the forced-colors landing-register census (the session-58 candidate 1)", () => {
+  // F-33b (the positive census, live-probed 2026-11-06 both apps): under
+  // forcedColors active the landing's axe color-contrast citations
+  // COLLAPSE from the 16 sanctioned screen nodes to exactly 3 — the
+  // amber-500 eyebrow family (the hero, services and testimonials
+  // section headers, the zinc-950-section eyebrows; the below-fold
+  // content is reveal-hidden at rest, so the mount-visible headers are
+  // what the sweep sees). The mechanism: under the collapse every
+  // eyebrow computes CanvasText rgb(0,0,0) ink over Chromium's
+  // forced-colors background serialization, which axe cannot resolve to
+  // a solid backdrop — the flag is the browser-emulation artifact, not
+  // a painted divergence. The REFERENCE's own sweep under the same
+  // condition flags the SAME three elements (the F-31c class-literal
+  // decode: its eyebrows carry no text-amber-500 class) plus its
+  // unassociated select (OURS binds id/htmlFor — the standing
+  // superset). The register's existing amber-eyebrow arm covers the
+  // collapsed face; this leg pins the census SHAPE so the posture can
+  // never silently change.
+  test("desktop / under forcedColors active — structural zero + the contrast census collapses to the amber-eyebrow family", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.emulateMedia({ forcedColors: "active" });
+    await page.goto("/");
+    await page.waitForLoadState("networkidle").catch(() => {});
+    await page.waitForTimeout(1200);
+    // the declared devDep engine, same as the two-gate scans (never a CDN)
+    await page.addScriptTag({ path: AXE_PATH });
+    const violations = await page.evaluate(async () => {
+      const axe = (
+        window as unknown as {
+          axe: {
+            run: (o: object) => Promise<{
+              violations: Array<{ id: string; nodes: Array<{ target: string[] }> }>;
+            }>;
+          };
+        }
+      ).axe;
+      const r = await axe.run({
+        runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"] },
+      });
+      return r.violations.map((v) => ({
+        id: v.id,
+        targets: v.nodes.map((n) => n.target.join(" ")),
+      }));
+    });
+    // GATE 1 — structural: everything outside color-contrast must be
+    // zero (the reference's own sweep carries a select-name violation
+    // here — its unassociated contact select; OURS binds id/htmlFor,
+    // the standing superset, so ours is clean)
+    const structural = violations.filter((v) => v.id !== "color-contrast");
+    expect(
+      structural.map((v) => `${v.id}: ${v.targets.slice(0, 3).join(" || ")}`),
+      "the landing forced-colors census: structural violations must be zero",
+    ).toEqual([]);
+    // GATE 2 — the census SHAPE: exactly the three zinc-950-section
+    // eyebrows, every node citing the register's amber-eyebrow arm
+    // (a NEW unsanctioned family under the collapse REDs here)
+    const contrast = violations.find((v) => v.id === "color-contrast");
+    expect(contrast, "the collapsed census carries the color-contrast rule").toBeDefined();
+    expect(contrast?.targets, "the collapsed census is exactly the three amber eyebrows").toHaveLength(3);
+    for (const target of contrast?.targets ?? []) {
+      expect(
+        target.includes("text-amber-500") || target.includes("0.3em"),
+        `the collapsed node "${target}" cites no sanctioned matcher`,
+      ).toBe(true);
+    }
+  });
+});

@@ -4,9 +4,12 @@
 // ref-landing-mobile-390-fullpage.png, ref-mobile-menu-open-390.png,
 // ref-login-desktop-1280.png).
 //
-// Run: bun scripts/capture-199.ts   (expects the dev server on :3000)
+// Run: bun scripts/capture-199.ts   (expects the dev server on :3000;
+// round-33: the navigation rides the HMR-tolerant probeLoad — the dev
+// server's Turbopack HMR websockets never let networkidle fire)
 import { mkdirSync } from "node:fs";
 import { chromium } from "@playwright/test";
+import { probeLoad } from "./probe-load";
 
 const OURS = "http://localhost:3000";
 const OUT = "docs/screenshots";
@@ -32,18 +35,18 @@ async function main() {
 
   // ---- desktop landing (full page) ---------------------------------------
   const desk = await browser.newPage({ viewport: { width: 1280, height: 800 } });
-  await desk.goto(OURS, { waitUntil: "networkidle" });
+  await probeLoad(desk, OURS);
   await desk.waitForTimeout(1500);
   await warmReveals(desk);
   await desk.screenshot({ path: `${OUT}/ours-landing-desktop-1280-fullpage.png`, fullPage: true });
 
   // ---- desktop login -------------------------------------------------------
-  await desk.goto(`${OURS}/login`, { waitUntil: "networkidle" });
+  await probeLoad(desk, `${OURS}/login`);
   await desk.waitForTimeout(600);
   await desk.screenshot({ path: `${OUT}/ours-login-desktop-1280.png` });
 
   // ---- desktop inbox (the authenticated superset) --------------------------
-  await desk.goto(`${OURS}/login`, { waitUntil: "networkidle" });
+  await probeLoad(desk, `${OURS}/login`);
   await desk.getByLabel("Email").fill("sepnetflix2023@outlook.com");
   await desk.getByLabel("Password").fill("$Abcd1234");
   await desk.getByRole("button", { name: "Sign in" }).click();
@@ -54,7 +57,7 @@ async function main() {
 
   // ---- phone landing (full page) -------------------------------------------
   const mob = await browser.newPage({ viewport: { width: 390, height: 844 } });
-  await mob.goto(OURS, { waitUntil: "networkidle" });
+  await probeLoad(mob, OURS);
   await mob.waitForTimeout(1200);
   await warmReveals(mob);
   await mob.screenshot({ path: `${OUT}/ours-landing-mobile-390-fullpage.png`, fullPage: true });
@@ -82,7 +85,7 @@ async function main() {
     }),
   );
   const panelPage = await panelCtx.newPage();
-  await panelPage.goto(OURS, { waitUntil: "networkidle" });
+  await probeLoad(panelPage, OURS);
   await panelPage.waitForTimeout(1000);
   const csec = panelPage.locator("#contact");
   await csec.scrollIntoViewIfNeeded();
@@ -103,7 +106,7 @@ async function main() {
   // and the null resetUrl degrades to no link.
   const sentCtx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   const sentPage = await sentCtx.newPage();
-  await sentPage.goto(`${OURS}/login`, { waitUntil: "networkidle" });
+  await probeLoad(sentPage, `${OURS}/login`);
   await sentPage.waitForTimeout(600);
   await sentPage.getByRole("button", { name: "Forgot password?" }).click();
   await sentPage.waitForTimeout(900);
@@ -123,14 +126,14 @@ async function main() {
   // [reset] leg.
   const r26aCtx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   const r26aPage = await r26aCtx.newPage();
-  await r26aPage.goto(`${OURS}/reset-password`, { waitUntil: "networkidle" });
+  await probeLoad(r26aPage, `${OURS}/reset-password`);
   await r26aPage.waitForTimeout(900);
   await r26aPage.screenshot({ path: `${OUT}/ours-reset-invalid-1280.png` });
   await r26aCtx.close();
 
   const r26bCtx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   const r26bPage = await r26bCtx.newPage();
-  await r26bPage.goto(`${OURS}/reset-password?token=capture-r26`, { waitUntil: "networkidle" });
+  await probeLoad(r26bPage, `${OURS}/reset-password?token=capture-r26`);
   await r26bPage.waitForTimeout(900);
   await r26bPage.screenshot({ path: `${OUT}/ours-reset-form-1280.png` });
   await r26bCtx.close();
@@ -143,7 +146,7 @@ async function main() {
   // the click — before the 4s timer retires it).
   const toastCtx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   const toastPage = await toastCtx.newPage();
-  await toastPage.goto(`${OURS}/login`, { waitUntil: "networkidle" });
+  await probeLoad(toastPage, `${OURS}/login`);
   await toastPage.waitForTimeout(600);
   await toastPage.getByRole("button", { name: "Continue with Google" }).click();
   await toastPage.waitForTimeout(600);
@@ -158,13 +161,13 @@ async function main() {
   // apps (R-22a, the positive census; the pins ride
   // tests/viewport-faces.test.ts + the drift [viewport] leg).
   const b768 = await browser.newPage({ viewport: { width: 768, height: 900 } });
-  await b768.goto(OURS, { waitUntil: "networkidle" });
+  await probeLoad(b768, OURS);
   await b768.waitForTimeout(1200);
   await warmReveals(b768);
   await b768.screenshot({ path: `${OUT}/ours-landing-768.png`, fullPage: true });
 
   const b640 = await browser.newPage({ viewport: { width: 640, height: 900 } });
-  await b640.goto(`${OURS}/login`, { waitUntil: "networkidle" });
+  await probeLoad(b640, `${OURS}/login`);
   await b640.waitForTimeout(900);
   await b640.screenshot({ path: `${OUT}/ours-login-640.png` });
 
@@ -178,7 +181,7 @@ async function main() {
   // drift [anchors] leg + the e2e deep-link leg.
   const deepCtx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   const deepPage = await deepCtx.newPage();
-  await deepPage.goto(`${OURS}/#portfolio`, { waitUntil: "networkidle" });
+  await probeLoad(deepPage, `${OURS}/#portfolio`);
   await deepPage.waitForTimeout(1600);
   await deepPage.screenshot({ path: `${OUT}/ours-deeplink-portfolio-1280.png` });
   await deepCtx.close();

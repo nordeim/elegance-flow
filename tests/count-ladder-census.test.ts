@@ -182,6 +182,7 @@ const SOURCE_CONTRACTS = [
   "body-ink-faces",
   "forced-colors-faces",
   "color-scheme-faces",
+  "probe-load-contract",
 ];
 
 const fileOf = (family: string) => `${family}.test.ts`;

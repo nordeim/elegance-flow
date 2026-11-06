@@ -26,8 +26,8 @@ bun run start                    # the standalone server (production)
 
 bun run lint                     # eslint --max-warnings 0 (the 0/0 standard)
 bun run typecheck                # tsc --noEmit
-bun run test                     # vitest run  (591 checks / 52 files)
-bun run test:e2e                 # playwright (120 checks / 8 specs; needs build)
+bun run test                     # vitest run  (603 checks / 53 files)
+bun run test:e2e                 # playwright (121 checks / 8 specs; needs build)
 CI=1 bun run test:e2e            # force a fresh server (never reuse stale)
 
 bun run db:push                  # prisma db push (SQLite at repo/db/custom.db)
@@ -118,6 +118,19 @@ reference at 1280 and 390 — every probed face must compute IDENTICAL
 (only the oklab/rgba serialization form of the scrolled header differs
 — same paint, numerically proven). `docs/screenshots/` carries both
 apps' captures.
+
+**The live probes ride the HMR-tolerant load (round-33).** The four
+live scripts (`parity-199.ts`, `drift-199.ts`,
+`mobile-census-199.ts`, `capture-199.ts`) navigate through
+`scripts/probe-load.ts` (`probeLoad`): `domcontentloaded` first, then a
+BOUNDED `networkidle` wait that is never fatal. Reason: a healthy
+Next.js 16 dev server's Turbopack HMR websockets persist for the
+page's lifetime, so a bare `waitUntil: "networkidle"` goto NEVER
+settles against `bun run dev` — it wedges at its 30s timeout and hangs
+the probe silently (the round-33 F-33a live diagnosis). The reference
+and the standalone artifact keep their fast networkidle path; only the
+dev server rides the bounded fallback. Pinned by
+`tests/probe-load-contract.test.ts`.
 
 **The one recorded dead-face divergence (round-30):** the BODY
 element's own `color` — the reference's landing bundle computes

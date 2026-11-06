@@ -14,9 +14,12 @@
 // parity script's computed-style face.
 // Diffs the live reference against OUR dev build (:3000).
 //
-// Run: bun scripts/drift-199.ts   (expects our dev server on :3000)
+// Run: bun scripts/drift-199.ts   (expects our dev server on :3000;
+// round-33: the navigation rides the HMR-tolerant probeLoad — the dev
+// server's Turbopack HMR websockets never let networkidle fire)
 import { createHash } from "node:crypto";
 import { chromium } from "@playwright/test";
+import { probeLoad } from "./probe-load";
 
 const OURS = "http://localhost:3000";
 const REF = "https://colossal-elevate-service-flow.base44.app";
@@ -51,7 +54,7 @@ type Face = {
 async function face(url: string, w: number, h: number): Promise<Face> {
   const context = await browser.newContext({ viewport: { width: w, height: h } });
   const page = await context.newPage();
-  await page.goto(url, { waitUntil: "networkidle" });
+  await probeLoad(page, url);
   await page.waitForTimeout(1000);
 
   const base: Face = await page.evaluate(() => {
@@ -154,7 +157,7 @@ type LoginFace = {
 async function loginFace(url: string): Promise<LoginFace> {
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   const page = await context.newPage();
-  await page.goto(`${url}/login`, { waitUntil: "networkidle" });
+  await probeLoad(page, `${url}/login`);
   await page.waitForTimeout(1200);
   // The permissive annotation widens the evaluate's inferred literal so
   // the dynamic googleHover addition below type-checks (the parity
@@ -232,7 +235,7 @@ type PreflightFace = {
 async function preflightFace(url: string): Promise<PreflightFace> {
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   const page = await context.newPage();
-  await page.goto(url, { waitUntil: "networkidle" });
+  await probeLoad(page, url);
   await page.waitForTimeout(1000);
   const base = await page.evaluate(() => {
     const cs = (el: Element | null | undefined) => (el ? getComputedStyle(el as HTMLElement) : null);
@@ -269,7 +272,7 @@ type MotionGlyphFace = {
 async function motionGlyphFace(url: string): Promise<MotionGlyphFace> {
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   const page = await context.newPage();
-  await page.goto(url, { waitUntil: "networkidle" });
+  await probeLoad(page, url);
   await page.waitForTimeout(1000);
   const base = await page.evaluate(() => {
     // the quote PARAGRAPH itself (the .md:col-span-3 wrapper carries the
@@ -318,7 +321,7 @@ type GeometryFace = {
 async function geometryFace(url: string, w: number, h: number): Promise<GeometryFace> {
   const context = await browser.newContext({ viewport: { width: w, height: h } });
   const page = await context.newPage();
-  await page.goto(url, { waitUntil: "networkidle" });
+  await probeLoad(page, url);
   await page.waitForTimeout(1000);
   // Round-28 (F-28a): the hero cascade shifts descendant client rects
   // while it runs (a translated ancestor moves the h1's box) — settle
@@ -375,7 +378,7 @@ async function geometryFace(url: string, w: number, h: number): Promise<Geometry
 async function googleGlyphFace(url: string): Promise<string> {
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   const page = await context.newPage();
-  await page.goto(url + "/login", { waitUntil: "networkidle" });
+  await probeLoad(page, url + "/login");
   await page.waitForTimeout(800);
   const d = await page.evaluate(() => document.querySelector("svg path")?.getAttribute("d")?.slice(0, 24) ?? "ABSENT");
   await context.close();
@@ -391,7 +394,7 @@ async function googleGlyphFace(url: string): Promise<string> {
 // password's minlength census. Safe: view-swap clicks only, never a
 // submit.
 async function authValidationFace(url: string, page: import("@playwright/test").Page) {
-  await page.goto(url + "/login", { waitUntil: "networkidle" });
+  await probeLoad(page, url + "/login");
   await page.waitForTimeout(1000);
   const sign = await page.evaluate(() => {
     const form = document.querySelector("form") as HTMLFormElement | null;
@@ -564,7 +567,7 @@ async function headFace(url: string, page: import("@playwright/test").Page) {
   const origin = new URL(url).origin;
   const faces: Record<string, { jsonld: string[]; viewport: string | null; themeColor: string | null; canonical: string | null }> = {};
   for (const route of ["login", "signup"] as const) {
-    await page.goto(`${url}/${route}`, { waitUntil: "networkidle" });
+    await probeLoad(page, `${url}/${route}`);
     await page.waitForTimeout(800);
     const raw = await page.evaluate(() => ({
       jsonld: Array.from(document.querySelectorAll("script[type='application/ld+json']")).map((s) => (s.textContent || "").trim()),
@@ -609,7 +612,7 @@ async function interactFace(url: string, ours: boolean) {
       );
     }
     const page = await context.newPage();
-    await page.goto(url + "/", { waitUntil: "networkidle" });
+    await probeLoad(page, url + "/");
     await page.waitForTimeout(1200);
 
     // the header's two scroll states — read TOP first, before any ride
@@ -747,7 +750,7 @@ async function authFailFace(url: string) {
         forgotStatus = r.status();
       }
     });
-    await page.goto(url + "/login", { waitUntil: "networkidle" });
+    await probeLoad(page, url + "/login");
     await page.waitForTimeout(600);
     await page.getByText(/forgot password/i).first().click();
     await page.waitForTimeout(900);
@@ -824,7 +827,7 @@ async function googleFace(url: string, ours: boolean) {
       const u = f.url();
       if (u.startsWith("https://accounts.google.com/")) googleNavs.push(u);
     });
-    await page.goto(url + "/login", { waitUntil: "networkidle" });
+    await probeLoad(page, url + "/login");
     await page.waitForTimeout(600);
     const google = page.getByRole("button", { name: "Continue with Google" });
     const buttonCount = await google.count();
@@ -902,7 +905,7 @@ async function viewportFace(url: string, w: number) {
   const context = await browser.newContext({ viewport: { width: w, height: 900 } });
   const page = await context.newPage();
   try {
-    await page.goto(url, { waitUntil: "networkidle" });
+    await probeLoad(page, url);
     await page.waitForTimeout(1000);
     const landingFace = await page.evaluate(() => {
       const cs = (el: Element | null | undefined) => (el ? getComputedStyle(el as HTMLElement) : null);
@@ -926,7 +929,7 @@ async function viewportFace(url: string, w: number) {
       };
     });
     // the auth card's boundary family (the LOGIN_LAYOUT sm:/md: faces)
-    await page.goto(`${url}/login`, { waitUntil: "networkidle" });
+    await probeLoad(page, `${url}/login`);
     await page.waitForTimeout(1000);
     const cardFace = await page.evaluate(() => {
       const cs = (el: Element | null | undefined) => (el ? getComputedStyle(el as HTMLElement) : null);
@@ -953,7 +956,7 @@ async function viewportPanelFace(url: string) {
   const context = await browser.newContext({ viewport: { width: 640, height: 900 } });
   const page = await context.newPage();
   try {
-    await page.goto(url, { waitUntil: "networkidle" });
+    await probeLoad(page, url);
     await page.waitForTimeout(800);
     const toggle = page.locator("header button").first();
     if (await toggle.count()) {
@@ -1046,7 +1049,7 @@ async function docsFace(url: string): Promise<DocsFace> {
   const origin = new URL(url).origin;
   const stripOrigin = (s: string) => s.split(origin).join("");
 
-  await page.goto(url + "/", { waitUntil: "networkidle" });
+  await probeLoad(page, url + "/");
   await page.waitForTimeout(1200);
 
   const rootHead = await page.evaluate(() => {
@@ -1086,7 +1089,7 @@ async function docsFace(url: string): Promise<DocsFace> {
 
   // the tab order on /login — the round-21 keyboard census rode the
   // LANDING only; this is the auth card's own ride
-  await page.goto(url + "/login", { waitUntil: "networkidle" });
+  await probeLoad(page, url + "/login");
   await page.waitForTimeout(800);
   const loginTabStops: string[] = [];
   for (let i = 0; i < 10; i++) {
@@ -1102,7 +1105,7 @@ async function docsFace(url: string): Promise<DocsFace> {
 
   // the titles of the two named auth routes (the reference's SPA sets
   // document.title at runtime — the same settle the census probed)
-  await page.goto(url + "/signup", { waitUntil: "networkidle" });
+  await probeLoad(page, url + "/signup");
   await page.waitForTimeout(1500);
   const signupTitle = await page.evaluate(() => document.title);
   await page.goto(url + "/reset-password", { waitUntil: "domcontentloaded" });
@@ -1364,7 +1367,7 @@ async function navRideFace(url: string, label: string) {
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   const page = await context.newPage();
   try {
-    await page.goto(url, { waitUntil: "networkidle" });
+    await probeLoad(page, url);
     await page.waitForTimeout(800);
     await page.locator("header nav ul").getByRole("link", { name: label }).click();
     // scroll-behavior: smooth — poll until the scroll settles.
@@ -1395,7 +1398,7 @@ async function logoRideFace(url: string) {
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   const page = await context.newPage();
   try {
-    await page.goto(url, { waitUntil: "networkidle" });
+    await probeLoad(page, url);
     await page.waitForTimeout(600);
     await page.evaluate(() => document.getElementById("services")?.scrollIntoView());
     await page.waitForTimeout(900);
@@ -1414,7 +1417,7 @@ async function deepLinkFace(url: string) {
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   const page = await context.newPage();
   try {
-    await page.goto(`${url}/#portfolio`, { waitUntil: "networkidle" });
+    await probeLoad(page, `${url}/#portfolio`);
     await page.waitForTimeout(1600);
     return await page.evaluate(() => ({
       hashAfter: location.hash,

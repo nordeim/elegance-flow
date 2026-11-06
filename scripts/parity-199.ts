@@ -3,8 +3,11 @@
 // parity bar's evidence pass: the class strings were byte-captured at
 // build time; this probe proves the COMPUTED pixels agree.
 //
-// Run: bun scripts/parity-199.ts   (expects our dev server on :3000)
+// Run: bun scripts/parity-199.ts   (expects our dev server on :3000;
+// round-33: the navigation rides the HMR-tolerant probeLoad — the dev
+// server's Turbopack HMR websockets never let networkidle fire)
 import { chromium } from "@playwright/test";
+import { probeLoad } from "./probe-load";
 
 const OURS = "http://localhost:3000";
 const REF = "https://colossal-elevate-service-flow.base44.app";
@@ -16,7 +19,7 @@ type Face = Record<string, unknown>;
 
 async function probe(browser: import("@playwright/test").Browser, url: string, w: number, h: number): Promise<Face> {
   const page = await browser.newPage({ viewport: { width: w, height: h } });
-  await page.goto(url, { waitUntil: "networkidle" });
+  await probeLoad(page, url);
   await page.waitForTimeout(1200);
   // The permissive Face annotation widens the evaluate's inferred literal
   // so the dynamic additions below type-check.

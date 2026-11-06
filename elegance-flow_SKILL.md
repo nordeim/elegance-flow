@@ -191,7 +191,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 591 checks / 52 files**: the seam batteries (auth,
+- **Unit — Vitest, 603 checks / 53 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
@@ -471,6 +471,18 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   a11y sweep folded in — axe-core under forcedColors active on
   /dashboard returns ZERO violations, structural and contrast clean
   under the system-palette collapse) — and
+  probe-load-contract — the round-33 battery that pins the
+  PROBE-TOOLING HMR-TOLERANCE cure (the four live scripts navigate
+  through `scripts/probe-load.ts` — a bare `waitUntil: "networkidle"`
+  goto NEVER settles against a healthy dev server: Turbopack's HMR
+  websockets persist for the page's lifetime and the goto wedges,
+  hanging the probe silently; the helper's domcontentloaded-first +
+  bounded-never-fatal-networkidle + settle contract pinned
+  comment-stripped, the four scripts' import + zero-bare-networkidle
+  census, the REF-only parity-199b exemption, and the forced-colors
+  landing-register e2e leg's source contract — under the collapse the
+  landing's contrast citations collapse to exactly the three
+  amber-500 section eyebrows, the reference's own family) — and
   error-faces — the round-27 battery that pins the CRM-BLUE/
   RESILIENCE-BOUNDARY family no probe ever censused (the token-axis
   blind spot of the session-199 domain transformation: the login card's
@@ -486,7 +498,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   boundaries' comments always claimed) —
   comment-stripped source reads; a
   literal pinned by a comment alone is vacuous.
-- **E2E — Playwright, 120 checks / 8 specs**: the standalone artifact on
+- **E2E — Playwright, 121 checks / 8 specs**: the standalone artifact on
   :3100 with `db/e2e.db`; ONE shared login (`auth.setup.ts` →
   storageState — the auth endpoints are rate-limited 10/IP/15-min); one
   worker; alphabetical file order → every spec SELF-SUFFICIENT (its own
@@ -523,7 +535,11 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   state-face + client-error battery — the five state faces ridden via
   route interception plus the zero-console/page-error census on the
   clean surfaces, with the designed 404's sanctioned register), a11y
-  two-gate.
+  two-gate (round-33 gains the forced-colors LANDING-REGISTER census
+  leg — under forcedColors active the contrast citations collapse to
+  exactly the three amber-500 section eyebrows, the register's own
+  arm; structural zero — the reference's own sweep flags the same
+  three plus its unassociated select, ours binds id/htmlFor).
 - **Smoke — `scripts/smoke-test.sh`, 14 rungs**: the artifact on :3210 with
   `db/smoke.db` — health, the 401 walls, SSR faces, the login round-trip,
   Zod 400, public inquiry 201, logout, 429, the SEO family, the

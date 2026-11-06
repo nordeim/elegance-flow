@@ -3,7 +3,10 @@
 // (links + CTA, order) → a link click navigates the anchor AND closes the
 // panel → the aria-expanded cycle. Complements drift-199.ts's static DOM
 // face with the behavior face. Run: bun scripts/mobile-census-199.ts
+// (round-33: the navigation rides the HMR-tolerant probeLoad — the dev
+// server's Turbopack HMR websockets never let networkidle fire)
 import { chromium } from "@playwright/test";
+import { probeLoad } from "./probe-load";
 
 const OURS = "http://localhost:3000";
 const REF = "https://colossal-elevate-service-flow.base44.app";
@@ -21,7 +24,7 @@ type Ride = {
 async function ride(url: string): Promise<Ride> {
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
-  await page.goto(url, { waitUntil: "networkidle" });
+  await probeLoad(page, url);
   await page.waitForTimeout(800);
 
   const toggle = page.locator("header button").first();
