@@ -62,6 +62,30 @@ export interface ReloadDeps {
 }
 
 /**
+ * The production storage hand-off (round-37, F-37a — the inert-cooldown
+ * cure): the guarded sessionStorage accessor the boundaries hand the
+ * seam. The shipped wiring called `reloadOnStaleChunk(error)` bare —
+ * storage defaulted to null, the cooldown flag was never written, and
+ * every stale-chunk error reloaded with zero cooldown (the
+ * crash-mid-reload loop guard dead in the real path). The boundaries
+ * now hand `browserSessionStorage()` in — the seam itself stays pure
+ * (its default stays null; it never touches a global it was not
+ * handed). Node/tests (typeof window undefined) and an unavailable
+ * sessionStorage (Safari private mode, disabled storage) both resolve
+ * to null — the cooldown is disabled, never a throw. Pinned by the
+ * round-37 blocks of tests/chunk-recovery.test.ts +
+ * tests/storage-faces.test.ts.
+ */
+export function browserSessionStorage(): ChunkStorage | null {
+  try {
+    if (typeof window === "undefined") return null;
+    return window.sessionStorage;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * The boundary's useEffect body: reload a stale-chunk error once per
  * cooldown window. Returns whether the reload fired (the boundary can
  * log the decision). Never throws — every storage access is guarded.

@@ -30,7 +30,8 @@
  *   icon re-pins to the Feedback family's --color-info), primary-hover,
  *   primary-foreground — SEVEN retired names, NONE of them may return.
  * ④ THE BOUNDARY POSTURE KEEPS: "use client" on both, the
- *   reloadOnStaleChunk(error) wiring with [error] deps, the digest ref,
+ *   reloadOnStaleChunk(error, { storage: browserSessionStorage() }) wiring with
+ *   [error] deps (the round-37 F-37a guarded hand-off), the digest ref,
  *   reset(), ZERO component-tree imports (the resilience posture), and
  *   global-error's own <html lang="en"> + globals.css import.
  * ⑤ THE LOGIN-LOGO CURE (F-27a, HIGH, VISIBLE): the reference's login card
@@ -154,7 +155,7 @@ describe("session-199 round-27: the CRM-blue/resilience-boundary census", () => 
       expect(stripped).not.toMatch(/bg-primary\b/);
       expect(stripped).not.toMatch(/ring-primary\b/);
       // the posture keeps: the recovery seam, the digest, the reset
-      expect(stripped).toContain("reloadOnStaleChunk(error)");
+      expect(stripped).toContain("reloadOnStaleChunk(error, { storage: browserSessionStorage() })");
       expect(stripped).toContain("error.digest");
       expect(stripped).toContain("reset");
       // the resilience posture: no component-tree imports

@@ -238,12 +238,24 @@ describe("round-36: the doc cures (the reload-loop note + the drift runtime budg
   });
 
   it("AGENTS.md + the drift script's header name the drift runtime budget — never a sub-10-minute wrapper (F-36b)", () => {
-    expect(agentsFlat).toContain("6.5 minutes");
+    // round-37 extended the budget note (the 22nd leg, [storage]): the
+    // phrase moved from "6.5 minutes" to "6.5–7 minutes" — both the
+    // round-36 original and the round-37 extension satisfy the pin's
+    // intent (the budget named; never a sub-10-minute wrapper). The
+    // .includes needles — never a bare /re/.test() call — keep the
+    // count-ladder census's it/test-block counting exact.
+    const budgetNamed = (t: string) => {
+      const flat = t.replace(/\s+/g, " ");
+      return flat.includes("6.5 minutes") || flat.includes("6.5–7 minutes");
+    };
+    expect(budgetNamed(agents), "AGENTS.md names the drift runtime budget").toBe(true);
     expect(agentsFlat).toContain("sub-10-minute");
     // the drift header's usage note is documentation (the AGENTS.md
     // class, not a source contract) — read unstripped, like the doc pins
     const driftHeader = read("../scripts/drift-199.ts").replace(/\s+/g, " ");
-    expect(driftHeader).toContain("6.5 minutes");
+    expect(budgetNamed(driftHeader), "the drift header names the runtime budget").toBe(true);
     expect(driftHeader).toContain("sub-10-minute");
+    // the round-37 leg-count update rides the header (21 → 22)
+    expect(driftHeader).toContain("22");
   });
 });

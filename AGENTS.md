@@ -26,8 +26,8 @@ bun run start                    # the standalone server (production)
 
 bun run lint                     # eslint --max-warnings 0 (the 0/0 standard)
 bun run typecheck                # tsc --noEmit
-bun run test                     # vitest run  (623 checks / 55 files)
-bun run test:e2e                 # playwright (126 checks / 8 specs; needs build)
+bun run test                     # vitest run  (633 checks / 56 files)
+bun run test:e2e                 # playwright (128 checks / 8 specs; needs build)
 CI=1 bun run test:e2e            # force a fresh server (never reuse stale)
 
 bun run db:push                  # prisma db push (SQLite at repo/db/custom.db)
@@ -143,7 +143,7 @@ standing emphasis's exact false-negative). `probeLoad` counts
 main-frame navigations across its settle window and throws the
 DIAGNOSED error on a sustained loop; the empirical cure is to RESTART
 the dev server — the second boot reads the warmed `.next/dev` state
-and is stable. Budget the drift probe its full runtime: the 21 legs
+and is stable. Budget the drift probe its full runtime: the 22 legs
 take ~6.5 minutes — never wrap `bun scripts/drift-199.ts` in a
 sub-10-minute timeout (the kill cascade fakes a browser crash at a
 deep leg). Pinned by the round-36 blocks of
@@ -178,6 +178,28 @@ ships an orientation directive (no lock, no landscape meta); the
 toggle button and the panel wrap both carry `md:hidden` (remove either
 and the rotation ride breaks). Pinned by
 `tests/orientation-faces.test.ts`.
+
+**The storage posture (round-37):** the storage axis no probe ever
+read is censused end-to-end. OUR app ships the ZERO-KEY posture —
+zero localStorage AND zero sessionStorage keys on every surface,
+guest and authed (the drift `[storage]` leg + the e2e legs); the
+session rides ONE `httpOnly` cookie (`neo_session` — `document.cookie`
+reads empty), the strictly stronger posture vs the reference's
+client-readable localStorage token (its platform writes per-surface
+key families: the landing's analytics four — the per-session
+lowercase-alnum analytics id (length 20–22 observed), the constant
+app id, the from-url, the functions version — the login's own
+`i18nextLng` — localStorage is per-origin, so a same-context
+login-after-landing carries the union — and the post-login seven).
+The platform families are base44 implementation, never mirrored —
+storage is not a rendered face. The single sanctioned storage seam is
+`src/lib/chunk-recovery.ts` (the error boundary's stale-chunk
+cooldown flag): the boundaries hand the seam the GUARDED storage
+(`reloadOnStaleChunk(error, { storage: browserSessionStorage() })` —
+the round-37 F-37a cure; the bare call shipped an inert cooldown:
+the flag never written, zero-cooldown reloads). Never plant a
+`localStorage`/`sessionStorage` reference anywhere else in `src/` —
+`tests/storage-faces.test.ts` census-pins the posture.
 
 **The one recorded dead-face divergence (round-30):** the BODY
 element's own `color` — the reference's landing bundle computes

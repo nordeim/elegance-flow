@@ -1335,3 +1335,54 @@ test.describe("round-34: the stacked-emulation census (reducedMotion AND forcedC
     expect(restored.featured).toBe("rgb(245, 158, 11)");
   });
 });
+
+test.describe("round-37: the zero-storage posture (the storage-family census contract)", () => {
+  // The axis no probe ever read, finally censused (F-37b): OUR app
+  // writes ZERO storage keys on every surface — the session rides the
+  // httpOnly `neo_session` cookie (document.cookie reads empty). The
+  // reference's platform writes localStorage key families per surface
+  // (the landing's analytics four, the login's i18nextLng, the
+  // post-login seven) — base44 implementation, never mirrored (the
+  // storage face is not a rendered face). The live-tense half of
+  // tests/storage-faces.test.ts's source contracts.
+
+  test.use({ storageState: { cookies: [], origins: [] } });
+
+  test("the guest family — every public surface rides ZERO storage keys and an empty document.cookie", async ({ page }) => {
+    for (const route of ["/", "/login", "/signup", "/reset-password"]) {
+      await page.goto(route);
+      await page.waitForTimeout(800);
+      const st = await page.evaluate(() => ({
+        local: Object.keys(window.localStorage),
+        session: Object.keys(window.sessionStorage),
+        cookie: document.cookie,
+      }));
+      expect(st.local, `${route} localStorage keys`).toEqual([]);
+      expect(st.session, `${route} sessionStorage keys`).toEqual([]);
+      // the guest cookie face: nothing rides document.cookie (the
+      // session cookie only exists authed, and is httpOnly besides)
+      expect(st.cookie, `${route} document.cookie`).toBe("");
+    }
+  });
+});
+
+test.describe("round-37: the authed storage face (the httpOnly session posture)", () => {
+  test("the dashboard rides ZERO storage keys — the session lives in the httpOnly cookie the page cannot read", async ({ page }) => {
+    // rides the shared storageState (the authed chromium project's
+    // default) — the session cookie exists here, and STILL reads empty
+    // through document.cookie: the httpOnly posture is the point
+    await page.goto("/dashboard");
+    await page.waitForTimeout(1200);
+    const st = await page.evaluate(() => ({
+      local: Object.keys(window.localStorage),
+      session: Object.keys(window.sessionStorage),
+      cookie: document.cookie,
+    }));
+    expect(st.local, "the authed dashboard's localStorage keys").toEqual([]);
+    expect(st.session, "the authed dashboard's sessionStorage keys").toEqual([]);
+    // httpOnly: the cookie rides the request, never the page's JS —
+    // the strictly stronger posture vs the reference's client-readable
+    // localStorage token (the round-37 record's own contrast)
+    expect(st.cookie, "document.cookie under an authed session").toBe("");
+  });
+});

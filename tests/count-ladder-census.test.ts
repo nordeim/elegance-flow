@@ -185,6 +185,7 @@ const SOURCE_CONTRACTS = [
   "probe-load-contract",
   "scroll-behavior-attr",
   "orientation-faces",
+  "storage-faces",
 ];
 
 const fileOf = (family: string) => `${family}.test.ts`;

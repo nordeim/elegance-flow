@@ -191,7 +191,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 623 checks / 55 files**: the seam batteries (auth,
+- **Unit — Vitest, 633 checks / 56 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
@@ -516,6 +516,18 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   orientation directive — the landscape face is purely width-driven;
   the md:hidden pair + the three e2e legs' source contracts + the
   AGENTS.md doc pin) — and
+  storage-faces — the round-37 battery that pins the STORAGE-FAMILY
+  census + the inert-cooldown cure (the axis no probe ever read: the
+  reference's platform writes localStorage key families per surface
+  — the landing's analytics four, the login's own i18nextLng, the
+  post-login seven — vs OUR ZERO-KEY posture everywhere; the session
+  rides the httpOnly cookie, document.cookie reads empty; the F-37a
+  catch: both error boundaries called the stale-chunk seam BARE — the
+  cooldown flag never written in production, the crash-mid-reload
+  loop guard inert — cured by the guarded `browserSessionStorage()`
+  hand-off; the app-wide zero-localStorage census + the single
+  sanctioned sessionStorage seam + the drift [storage] leg + the
+  AGENTS.md doc pin) — and
   error-faces — the round-27 battery that pins the CRM-BLUE/
   RESILIENCE-BOUNDARY family no probe ever censused (the token-axis
   blind spot of the session-199 domain transformation: the login card's
@@ -531,7 +543,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   boundaries' comments always claimed) —
   comment-stripped source reads; a
   literal pinned by a comment alone is vacuous.
-- **E2E — Playwright, 126 checks / 8 specs**: the standalone artifact on
+- **E2E — Playwright, 128 checks / 8 specs**: the standalone artifact on
   :3100 with `db/e2e.db`; ONE shared login (`auth.setup.ts` →
   storageState — the auth endpoints are rate-limited 10/IP/15-min); one
   worker; alphabetical file order → every spec SELF-SUFFICIENT (its own

@@ -166,3 +166,52 @@ describe("session-170 (WP-2): the guarded reload (reloadOnStaleChunk)", () => {
     expect(reloads).toBe(1);
   });
 });
+
+// Round-37 (F-37a): the guarded PRODUCTION hand-off — the accessor the
+// boundaries hand the seam (the wiring that shipped the inert cooldown
+// was the bare `reloadOnStaleChunk(error)` call: storage null → the
+// cooldown flag never written → zero-cooldown reloads; the cure hands
+// `browserSessionStorage()` in). Dynamically imported so this file
+// stays loadable pre-cure — the existing checks above rode green
+// through the round's born-RED window.
+describe("round-37 (F-37a): the guarded production hand-off (browserSessionStorage)", () => {
+  it("resolves to null under node (no window) — the cooldown disabled, never a throw", async () => {
+    const mod = (await import("../src/lib/chunk-recovery")) as Record<string, unknown>;
+    const accessor = mod.browserSessionStorage as
+      | (() => { getItem(k: string): string | null; setItem(k: string, v: string): void } | null)
+      | undefined;
+    // the guard: node/tests carry no window — the accessor must return
+    // null (NOT throw, NOT reach for a global)
+    expect(accessor, "the export exists").toBeTypeOf("function");
+    expect(() => accessor!()).not.toThrow();
+    expect(accessor!()).toBeNull();
+  });
+
+  it("composed with the seam: a storage-less environment still fires ONE honest reload, never throws", async () => {
+    const mod = (await import("../src/lib/chunk-recovery")) as {
+      browserSessionStorage: () => unknown;
+      reloadOnStaleChunk: (
+        error: Error,
+        deps?: { storage?: unknown; now?: () => number; reload?: () => void },
+      ) => boolean;
+    };
+    // the boundary's exact composition — in node the accessor resolves
+    // null, so the seam rides its degraded path: no cooldown record,
+    // the first-event reload still fires once (the honest recovery —
+    // better one reload than a stranded user; the cooldown engages
+    // wherever a real storage exists)
+    let reloads = 0;
+    const ok = mod.reloadOnStaleChunk(
+      new Error("ChunkLoadError: Loading chunk 42 failed."),
+      {
+        storage: mod.browserSessionStorage(),
+        now: () => 1_000,
+        reload: () => {
+          reloads += 1;
+        },
+      },
+    );
+    expect(ok).toBe(true);
+    expect(reloads).toBe(1);
+  });
+});

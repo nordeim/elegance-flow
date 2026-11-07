@@ -17,8 +17,9 @@
 // Run: bun scripts/drift-199.ts   (expects our dev server on :3000;
 // round-33: the navigation rides the HMR-tolerant probeLoad — the dev
 // server's Turbopack HMR websockets never let networkidle fire)
-// Round-36 (F-36b): budget the FULL runtime — the 21 legs ride ~40
-// page loads across both apps and take ~6.5 minutes end-to-end (measured
+// Round-36 (F-36b, updated round-37): budget the FULL runtime — the 22
+// legs (round-37 added [storage]) ride ~40
+// page loads across both apps and take ~6.5–7 minutes end-to-end (measured
 // under bun AND node). NEVER wrap this script in a sub-10-minute
 // timeout: the kill cascade fakes a browser crash ("Target page,
 // context or browser has been closed" at whichever deep leg was in
@@ -2598,6 +2599,133 @@ async function orientationFace(url: string) {
   expectConst(label, "OURS", { schemeMediaRules: 0 }, { schemeMediaRules: oursS.schemeMediaRules }, out);
 }
 
+// The round-37 STORAGE-FAMILY census leg — the axis no probe ever read
+// (parity reads computed styles; this battery reads DOM/text/img/faces;
+// no leg ever enumerated localStorage/sessionStorage). F-37b: the
+// reference's platform writes localStorage key families per surface;
+// OUR app writes ZERO keys everywhere (the zero-key posture — the
+// session rides the httpOnly cookie, document.cookie reads empty; the
+// platform families are base44 implementation, never mirrored — the
+// storage face is not a rendered face). The analytics id is pinned by
+// SHAPE, NEVER value — a random per-session id can't be value-pinned;
+// the app_id by its 24-hex shape. The id's own family (six fresh
+// sessions sampled): lowercase-alnum, variable length 20–22 — pinned
+// as the 18–24 window (a format CHANGE — a UUID, a mixed charset, a
+// long token — REDs; the generator's natural length variance
+// absorbs). THE LEG'S OWN LIVE CATCH (born-red on its first run):
+// localStorage is PER-ORIGIN state that accumulates across
+// navigations — the login
+// face AFTER a same-context landing visit carries the analytics four
+// + i18nextLng (the union), while a fresh-context login visit carries
+// i18nextLng alone (the per-page provenance — what the login's own
+// script sets; recorded in AGENTS.md's storage note). The recorded
+// constants below ride the leg's own navigation shape (landing first,
+// then login — the accumulated face). Pinned alongside by
+// tests/storage-faces.test.ts (the source-contract half: the app-wide
+// zero-localStorage census + the single sanctioned sessionStorage
+// seam).
+interface StorageFace {
+  landingLocal: string[];
+  loginLocal: string[];
+  landingSession: string[];
+  loginSession: string[];
+  analyticsIdShape: string;
+  appIdShape: string;
+}
+async function storageFace(url: string): Promise<StorageFace> {
+  // one fresh context per app — the storage surface is per-context
+  // (the analytics id is per-session: a reused context would carry the
+  // prior visit's keys and mask the provenance)
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const page = await context.newPage();
+  try {
+    const keys = () =>
+      page.evaluate(() => ({
+        local: Object.keys(window.localStorage).sort(),
+        session: Object.keys(window.sessionStorage).sort(),
+      }));
+    // the landing (guest): settle, then enumerate + decode the shapes
+    await probeLoad(page, url);
+    await page.waitForTimeout(1500);
+    const landing = await keys();
+    const shapes = await page.evaluate(() => {
+      const id = window.localStorage.getItem("base44_analytics_session_id") ?? "";
+      const app = window.localStorage.getItem("base44_app_id") ?? "";
+      return {
+        analyticsIdShape:
+          id.length === 0
+            ? "absent"
+            : /^[0-9a-z]{18,24}$/.test(id)
+              ? "lower-alnum-18-24"
+              : "other",
+        appIdShape:
+          app.length === 0 ? "absent" : /^[0-9a-f]{24}$/.test(app) ? "len24-hex" : "other",
+      };
+    });
+    // the login (pre-auth): the auth card's own script face
+    await probeLoad(page, `${url}/login`);
+    await page.waitForTimeout(1500);
+    const login = await keys();
+    return {
+      landingLocal: landing.local,
+      loginLocal: login.local,
+      landingSession: landing.session,
+      loginSession: login.session,
+      ...shapes,
+    };
+  } finally {
+    await context.close();
+  }
+}
+
+{
+  const [refSt, oursSt] = await Promise.all([storageFace(REF), storageFace(OURS)]);
+  const label = "[storage]";
+  // the IDENTICAL faces — real diffs (sessionStorage is EMPTY on both
+  // pages both apps — the one truly identical storage face)
+  diff(label, refSt.landingSession, oursSt.landingSession, "the landing's sessionStorage key set (empty both apps)", out);
+  diff(label, refSt.loginSession, oursSt.loginSession, "the login's sessionStorage key set (empty both apps)", out);
+  // the per-side recorded constants — the localStorage families (the
+  // reference's platform implementation face, never mirrored; OURS the
+  // zero-key posture: the session rides the httpOnly cookie)
+  expectConst(
+    label,
+    "REF",
+    {
+      landingLocal: [
+        "base44_analytics_session_id",
+        "base44_app_id",
+        "base44_from_url",
+        "base44_functions_version",
+      ],
+      // the accumulated login face (the leg rides landing → login in
+      // one context; localStorage is per-origin — the analytics four
+      // persist; the login's own script adds i18nextLng)
+      loginLocal: [
+        "base44_analytics_session_id",
+        "base44_app_id",
+        "base44_from_url",
+        "base44_functions_version",
+        "i18nextLng",
+      ],
+    },
+    { landingLocal: refSt.landingLocal, loginLocal: refSt.loginLocal },
+    out,
+  );
+  expectConst(
+    label,
+    "OURS",
+    { landingLocal: [], loginLocal: [] },
+    { landingLocal: oursSt.landingLocal, loginLocal: oursSt.loginLocal },
+    out,
+  );
+  // the analytics-id SHAPE decode (never the value — per-session
+  // random; the shape census: lowercase-alnum, length 20–22 observed,
+  // pinned as the 18–24 window) + the app_id's 24-hex shape
+  expectConst(label, "REF", "lower-alnum-18-24", refSt.analyticsIdShape, out);
+  expectConst(label, "REF", "len24-hex", refSt.appIdShape, out);
+}
+
 if (out.length === 0) {
   console.log("[390] CONTENT + MOBILE-MENU FACE: NO DRIFT — the reference matches our byte-mirror");
   console.log("[login] AUTH-CARD FACE: NO DRIFT — the reference matches our login mirror (round-27: the LOGO family now censused — the reference's real img mirrored: the alt, the object-fit cover, the 96×96 box, the byte-class circle span, the blue-dot regression; the spanRadius/imgSrc ride their per-side constants — F-27a)");
@@ -2620,8 +2748,9 @@ if (out.length === 0) {
   console.log("[forced-colors] FORCED-COLORS/THEME-FACE: NO DRIFT — the last media axis in Playwright's emulateMedia surface finally censused (F-31a): under forcedColors active the whole face sweep computes IDENTICAL both apps (CanvasText ink, Canvas surfaces, the CTA's LinkText rgb(0, 0, 159) — the browser's system-palette collapse reaches everything; the featured card selected by CONTENT — F-31c: the reference's own card div carries no bg-amber-500 class, OURS spells it, the computed faces identical, the s11 doctrine); the media-rule census ZERO both sides (F-31b: the CSSMediaRule walk, never the substring — our rendered @layer utilities block contains the STRING forced-colors in Tailwind v4's own utility class definitions); the theme faces IDENTICAL (F-31d: accent-color auto + color-scheme normal, neither app declares either — the UA defaults ride); the media-axis set completed (round-29 reduce · round-30 print · round-31 forced-colors), pinned by tests/forced-colors-faces.test.ts");
   console.log("[color-scheme] COLOR-SCHEME FACE: NO DRIFT — the one emulateMedia axis round-31 excepted finally censused (F-32a): under colorScheme dark AND light the face sweep computes IDENTICAL both apps and NOTHING MOVES on either side (html color-scheme normal — neither app declares it; body bg white, the h1 white ink, the footer zinc-950, the login email's translucent fill — the at-screen constants hold under every emulation); the per-side scheme-invariance holds (each app's dark === light, both landings and both logins); the s18 serialization pair rides the recorded per-side constants (REF rgba(248, 250, 252, 0.5) vs OURS oklab — numerically equal paint); the scheme-rules census ZERO both sides (the CSSMediaRule walk — the reference ships no dark-mode face, OURS mirrors the zero-handling posture); with round-29 reduce · round-30 print · round-31 forced-colors · round-32 colorScheme EVERY emulateMedia axis rides a census leg, pinned by tests/color-scheme-faces.test.ts");
   console.log("[orientation] ORIENTATION FACE: NO DRIFT — the landscape phone (844×390, the md boundary crossed from below) finally censused (F-35a/b/c, the session-56 candidate 2 closed): the closed-state header flip IDENTICAL both apps (the hamburger retired, the desktop nav + the amber CTA rendered, the h1's md step), the auth card's landscape geometry IDENTICAL (the max-w-md card at x=198 — the exact (844−448)/2 centering — width 448, the short-height scrollability), and the print-landscape faces IDENTICAL (h1 white, body bg white, html ink black, ZERO @media print rules both sides — the round-30 zero-handling posture at the orientation axis); the OPEN-menu rotation ride (the state-coupled leg — the menu survives the crossing hidden and reopens on the way back, the reference's own face) rides the e2e battery in tests/e2e/mobile-navigation.spec.ts, pinned by tests/orientation-faces.test.ts");
+  console.log("[storage] STORAGE-FAMILY FACE: NO DRIFT — the axis no probe ever read finally censused (F-37b): sessionStorage EMPTY on both pages both apps; the localStorage families ride the recorded per-side constants (the reference's platform implementation face, never mirrored — the landing's analytics four + the accumulated login union vs OUR zero-key posture everywhere; OURS the session rides the httpOnly cookie, document.cookie reads empty); the analytics id pinned by SHAPE (lowercase-alnum, length 20–22 observed, the 18–24 window — per-session random, never value-pinned), the app_id by its 24-hex shape; localStorage is per-origin — the login-after-landing face carries the union (the leg's own born-red catch); pinned by tests/storage-faces.test.ts");
 } else {
-  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact + authfail + google + viewport + anchors + docs + routes + reset + reveal + motion-prefs + body-ink + forced-colors + color-scheme + orientation] DRIFT DETECTED — ${out.length} field(s):`);
+  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact + authfail + google + viewport + anchors + docs + routes + reset + reveal + motion-prefs + body-ink + forced-colors + color-scheme + orientation + storage] DRIFT DETECTED — ${out.length} field(s):`);
   for (const line of out) console.log(line);
 }
 

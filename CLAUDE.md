@@ -46,8 +46,8 @@ re-pinned to the reference's v3 palette).
    seams in `src/lib/` rather than inlining logic. Keep lint green as
    you go.
 5. **VERIFY** — Run the full gate: `bun run lint` → `bun run typecheck`
-   → `bun run test` (623) → `bun run build` → `./scripts/smoke-test.sh`
-   (14) → `CI=1 bun run test:e2e` (126). The `gate` script chains them.
+   → `bun run test` (633) → `bun run build` → `./scripts/smoke-test.sh`
+   (14) → `CI=1 bun run test:e2e` (128). The `gate` script chains them.
 6. **DOCUMENT** — Update the touched docs (`README.md`, this file, the
    PAD, `worklog.md`) in the same change; the counts in the docs must
    match the suites (the lockstep doctrine — doc claims about the tree
@@ -84,8 +84,8 @@ deep-linkable `/signup` + `/reset-password`.
 
 ```bash
 bun run dev        # :3000
-bun run test       # vitest (623 checks / 55 files)
-bun run test:e2e   # playwright (126 checks / 8 specs) — build first
+bun run test       # vitest (633 checks / 56 files)
+bun run test:e2e   # playwright (128 checks / 8 specs) — build first
 bun run gate       # the full chain, in order
 bun run db:census  # MUST print "pristine: MATCH" before you trust any db read
 ```
@@ -121,7 +121,7 @@ in production — the boot gate refuses to serve without it),
 
 ## Testing Strategy
 
-- **Unit (Vitest, 55 files / 623 checks)** — the seam batteries (auth,
+- **Unit (Vitest, 56 files / 633 checks)** — the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (`site-content`,
@@ -185,7 +185,19 @@ in production — the boot gate refuses to serve without it),
   reference's own face; the landscape print/login/axe faces all
   IDENTICAL both apps; neither app ships an orientation directive —
   the landscape face is purely width-driven; the md:hidden pair +
-  the three e2e legs' source contracts + the AGENTS.md doc pin) —
+  the three e2e legs' source contracts + the AGENTS.md doc pin),
+  `storage-faces` — the round-37 battery: the storage-family census +
+  the inert-cooldown cure (the axis no probe ever read: the reference's
+  platform writes localStorage key families per surface — the landing's
+  analytics four, the login's own i18nextLng, the post-login seven —
+  vs OUR ZERO-KEY posture everywhere; the session rides the httpOnly
+  cookie, document.cookie reads empty; the F-37a catch: both error
+  boundaries called the stale-chunk seam BARE — the cooldown flag
+  never written in production, the crash-mid-reload loop guard inert —
+  cured by the guarded `browserSessionStorage()` hand-off; the app-wide
+  zero-localStorage census + the single sanctioned sessionStorage seam +
+  the seam's storage purity + the drift [storage] leg + the AGENTS.md
+  doc pin) —
   comment-stripped source reads; a literal pinned
   by a comment alone is vacuous.
 - **E2E (Playwright, `tests/e2e/*.spec.ts`)** — the standalone

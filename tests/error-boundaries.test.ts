@@ -40,9 +40,9 @@ describe("session-170 (WP-4): the route-segment boundary (src/app/error.tsx)", (
     expect(src).toContain('"use client"');
   });
 
-  it("wires the stale-chunk self-heal in useEffect with the [error] deps", () => {
-    expect(src).toContain("reloadOnStaleChunk(error)");
-    expect(src).toMatch(/useEffect\(\(\) => \{[\s\S]*?reloadOnStaleChunk\(error\)[\s\S]*?\}, \[error\]\)/);
+  it("wires the stale-chunk self-heal in useEffect with the [error] deps + the guarded storage hand-off (round-37 F-37a)", () => {
+    expect(src).toContain("reloadOnStaleChunk(error, { storage: browserSessionStorage() })");
+    expect(src).toMatch(/useEffect\(\(\) => \{[\s\S]*?reloadOnStaleChunk\(error, \{ storage: browserSessionStorage\(\) \}\)[\s\S]*?\}, \[error\]\)/);
   });
 
   it("carries the reset() Try-again affordance + the digest ref", () => {
@@ -87,8 +87,8 @@ describe("session-170 (WP-4): the root boundary (src/app/global-error.tsx)", () 
     expect(src).toContain('import "./globals.css"');
   });
 
-  it("wires the same recovery + copy + reset contract as the segment boundary", () => {
-    expect(src).toContain("reloadOnStaleChunk(error)");
+  it("wires the same recovery + copy + reset contract as the segment boundary (the guarded storage hand-off included)", () => {
+    expect(src).toContain("reloadOnStaleChunk(error, { storage: browserSessionStorage() })");
     expect(src).toContain("reset");
     expect(src).toContain("Try again");
     expect(src).toContain("error.digest");

@@ -27,7 +27,7 @@
 
 import { useEffect } from "react";
 import { RotateCcw } from "lucide-react";
-import { reloadOnStaleChunk } from "@/lib/chunk-recovery";
+import { browserSessionStorage, reloadOnStaleChunk } from "@/lib/chunk-recovery";
 import { ERROR_LAYOUT } from "@/lib/page-layout";
 
 export default function ErrorPage({
@@ -38,7 +38,10 @@ export default function ErrorPage({
   reset: () => void;
 }) {
   useEffect(() => {
-    reloadOnStaleChunk(error);
+    // round-37 (F-37a): the guarded storage hand-off — the bare call
+    // shipped the inert cooldown (the flag never written, zero-
+    // cooldown reloads); the wired call engages the 10s window
+    reloadOnStaleChunk(error, { storage: browserSessionStorage() });
   }, [error]);
 
   return (
