@@ -1286,4 +1286,52 @@ test.describe("round-34: the stacked-emulation census (reducedMotion AND forcedC
     expect(restored.heroH1).toBe("rgb(255, 255, 255)");
     expect(restored.featured).toBe("rgb(245, 158, 11)");
   });
+
+  test("round-35: the landscape print face — print emulation at 844×390 computes the zero-handling posture, ZERO print rules", async ({ page }) => {
+    // The session-56 candidate 2 closed as a POSITIVE census
+    // (live-proven identical on both apps): under print emulation at
+    // the landscape phone the faces hold and neither app ships a
+    // single @media print rule (the round-30 posture at the
+    // orientation axis). Pinned by tests/orientation-faces.test.ts.
+    await page.setViewportSize({ width: 844, height: 390 });
+    await page.emulateMedia({ media: "print" });
+    await page.goto("/");
+    await page.waitForSelector("h1");
+    await page.waitForTimeout(1200);
+    const faces = await page.evaluate(() => {
+      // the media-rule census walks CSSMediaRule objects (the
+      // round-30 lesson — the counting rule must match the thing
+      // counted, never the substring)
+      let printRules = 0;
+      for (const sheet of document.styleSheets) {
+        try {
+          for (const rule of sheet.cssRules) {
+            if (rule instanceof CSSMediaRule && rule.conditionText.includes("print")) printRules++;
+          }
+        } catch {
+          /* cross-origin sheet */
+        }
+      }
+      return {
+        heroH1: getComputedStyle(document.querySelector("h1")!).color,
+        bodyBg: getComputedStyle(document.body).backgroundColor,
+        htmlInk: getComputedStyle(document.documentElement).color,
+        printRules,
+      };
+    });
+    expect(faces.heroH1).toBe("rgb(255, 255, 255)");
+    expect(faces.bodyBg).toBe("rgb(255, 255, 255)");
+    expect(faces.htmlInk).toBe("rgb(0, 0, 0)");
+    expect(faces.printRules).toBe(0);
+    // the restore contract: back to screen the authored faces return
+    // (the emulation is scoped — the collapse never sticks)
+    await page.emulateMedia({ media: "screen" });
+    await page.waitForTimeout(300);
+    const restored = await page.evaluate(() => ({
+      heroH1: getComputedStyle(document.querySelector("h1")!).color,
+      featured: getComputedStyle(document.querySelector("#services .bg-amber-500")!).backgroundColor,
+    }));
+    expect(restored.heroH1).toBe("rgb(255, 255, 255)");
+    expect(restored.featured).toBe("rgb(245, 158, 11)");
+  });
 });

@@ -418,4 +418,28 @@ test.describe("the EleganceFlow login card (logged-out)", () => {
     await expect(toast).toHaveCount(0, { timeout: 6000 });
     expect(errors, "the ride must fire zero page errors").toEqual([]);
   });
+
+  test("round-35: the landscape login — the card at 844×390 centers exactly and the page scrolls (the short-height leg)", async ({ page }) => {
+    // The orientation axis of the auth-card family (live-proven
+    // identical on the reference — the max-w-md card at [198,16,448,
+    // 746], x=198 the exact (844−448)/2 centering): the drift [login]
+    // leg rides 1280 and 390 portrait; this leg pins the landscape
+    // short-height face. Pinned by tests/orientation-faces.test.ts.
+    await page.setViewportSize({ width: 844, height: 390 });
+    await page.goto("/login");
+    const card = page.locator("div.max-w-md").first();
+    await expect(card).toBeVisible();
+    await expect(page.getByLabel("Email")).toBeVisible();
+    const rect = await card.boundingBox();
+    expect(rect, "the card's bounding box").toBeTruthy();
+    // the exact centering: (844 − 448) / 2 = 198 — the max-w-md decode
+    expect(Math.round(rect!.x)).toBe(198);
+    expect(Math.round(rect!.width)).toBe(448);
+    // the 746px card cannot fit the 390px viewport — the page must
+    // scroll (never crop, never clip the form)
+    const scrollable = await page.evaluate(
+      () => document.documentElement.scrollHeight > window.innerHeight,
+    );
+    expect(scrollable).toBe(true);
+  });
 });

@@ -26,8 +26,8 @@ bun run start                    # the standalone server (production)
 
 bun run lint                     # eslint --max-warnings 0 (the 0/0 standard)
 bun run typecheck                # tsc --noEmit
-bun run test                     # vitest run  (609 checks / 54 files)
-bun run test:e2e                 # playwright (123 checks / 8 specs; needs build)
+bun run test                     # vitest run  (616 checks / 55 files)
+bun run test:e2e                 # playwright (126 checks / 8 specs; needs build)
 CI=1 bun run test:e2e            # force a fresh server (never reuse stale)
 
 bun run db:push                  # prisma db push (SQLite at repo/db/custom.db)
@@ -145,6 +145,22 @@ rule, the drift [reveal] census face — hash-only anchor rides keep the
 smooth path); the attribute is invisible to every computed-face probe.
 Pinned by `tests/scroll-behavior-attr.test.ts` + the instant-scroll
 e2e leg (the logout ride's zero-intermediate contract).
+
+**The orientation posture (round-35):** the landscape phone (844×390,
+the md boundary crossed from below) is censused end-to-end — the
+rotation ride (an OPEN mobile menu crossing to landscape hides both
+`md:hidden` faces while the state survives, and the panel reopens on
+the way back — the reference's own face, live-proven; the rotation leg
+in `mobile-navigation.spec.ts`), the closed-state landscape family (the
+drift `[orientation]` leg: the header flip, the auth card's max-w-md
+centering at x=198, the print-landscape zero-handling faces), the
+landing's axe register at landscape (the same 16 sanctioned nodes both
+apps), and the superset's `/dashboard` at landscape (zero axe
+violations). The landscape face is purely WIDTH-DRIVEN — neither app
+ships an orientation directive (no lock, no landscape meta); the
+toggle button and the panel wrap both carry `md:hidden` (remove either
+and the rotation ride breaks). Pinned by
+`tests/orientation-faces.test.ts`.
 
 **The one recorded dead-face divergence (round-30):** the BODY
 element's own `color` — the reference's landing bundle computes

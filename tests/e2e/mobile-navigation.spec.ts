@@ -97,4 +97,31 @@ test.describe("the mobile navigation (390×844)", () => {
     await expect(page.locator("header nav ul")).toBeVisible();
     await expect(page.locator("header nav").getByRole("link", { name: "Get in Touch" })).toBeVisible();
   });
+
+  test("round-35: the rotation ride — an OPEN menu crossing to landscape hides both faces, and the state survives the round-trip", async ({ page }) => {
+    // The orientation crossing (844×390 — the md boundary crossed from
+    // below WITH THE MENU OPEN, the one leg of the standing emphasis
+    // never ridden): live-proven identical on the reference (its panel
+    // also reopens, its label also stays "Close menu"); the sole delta
+    // OUR aria-expanded (the documented superset). Pinned by
+    // tests/orientation-faces.test.ts.
+    const panel = page.locator("header > div.md\\:hidden");
+    await page.getByRole("button", { name: "Open menu" }).click();
+    await expect(panel).toBeVisible();
+
+    // Rotate to landscape: the toggle + the panel ride md:hidden, the
+    // desktop nav family renders — the open state survives HIDDEN.
+    await page.setViewportSize({ width: 844, height: 390 });
+    await expect(page.getByRole("button", { name: "Close menu" })).toBeHidden();
+    await expect(panel).toBeHidden();
+    await expect(page.locator("header nav ul")).toBeVisible();
+    await expect(page.locator("header nav").getByRole("link", { name: "Get in Touch" })).toBeVisible();
+
+    // Rotate back: the panel REOPENS automatically — the reference's
+    // own face (the state was never reset by the crossing).
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(panel).toBeVisible();
+    await expect(page.getByRole("button", { name: "Close menu" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Close menu" })).toHaveAttribute("aria-expanded", "true");
+  });
 });

@@ -191,7 +191,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 609 checks / 54 files**: the seam batteries (auth,
+- **Unit — Vitest, 616 checks / 55 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
@@ -494,6 +494,15 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   e2e legs' source contracts pinned, plus the stacked-emulation
   census leg: reducedMotion AND forcedColors together, both apps
   identical live) — and
+  orientation-faces — the round-35 battery that pins the
+  ORIENTATION-FAMILY census (the landscape phone 844×390 + the
+  ROTATION ride — an open mobile menu crossing the md boundary hides
+  both `md:hidden` faces while the state survives, the panel
+  reopening on the way back, the reference's own face; the landscape
+  print/login/axe faces all IDENTICAL both apps; neither app ships an
+  orientation directive — the landscape face is purely width-driven;
+  the md:hidden pair + the three e2e legs' source contracts + the
+  AGENTS.md doc pin) — and
   error-faces — the round-27 battery that pins the CRM-BLUE/
   RESILIENCE-BOUNDARY family no probe ever censused (the token-axis
   blind spot of the session-199 domain transformation: the login card's
@@ -509,7 +518,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   boundaries' comments always claimed) —
   comment-stripped source reads; a
   literal pinned by a comment alone is vacuous.
-- **E2E — Playwright, 123 checks / 8 specs**: the standalone artifact on
+- **E2E — Playwright, 126 checks / 8 specs**: the standalone artifact on
   :3100 with `db/e2e.db`; ONE shared login (`auth.setup.ts` →
   storageState — the auth endpoints are rate-limited 10/IP/15-min); one
   worker; alphabetical file order → every spec SELF-SUFFICIENT (its own

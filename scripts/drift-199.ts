@@ -2473,6 +2473,93 @@ async function schemeFace(url: string): Promise<SchemeFace> {
   }
 }
 
+// The round-35 [orientation] leg — the LANDSCAPE phone (844×390, the md
+// boundary crossed from below): the closed-state header flip + the auth
+// card's centering geometry + the print-landscape faces. The OPEN-menu
+// rotation ride lives in the e2e battery (mobile-navigation.spec.ts —
+// the state-coupled ride); this leg keeps the state-free faces.
+async function orientationFace(url: string) {
+  const context = await browser.newContext({ viewport: { width: 844, height: 390 } });
+  const page = await context.newPage();
+  try {
+    await probeLoad(page, url);
+    await page.waitForTimeout(1000);
+    // the closed-state landscape landing: the hamburger retires, the
+    // desktop nav + the amber CTA render, the h1 rides its md step
+    const landing = await page.evaluate(() => {
+      const cs = (el: Element | null | undefined) => (el ? getComputedStyle(el as HTMLElement) : null);
+      const header = document.querySelector("header");
+      const nav = header?.querySelector("nav");
+      const desktopUl = nav?.querySelector("ul");
+      const hamburger = [...(nav?.querySelectorAll("button") ?? [])].find((b) =>
+        /menu/i.test(b.getAttribute("aria-label") ?? "") || b.querySelector("svg") !== null,
+      );
+      const cta = [...(nav?.querySelectorAll("a") ?? [])].find(
+        (a) => !a.closest("ul") && (a.getAttribute("href") ?? "") !== "#",
+      );
+      const h1 = document.querySelector("h1");
+      return {
+        hamburgerDisplay: cs(hamburger)?.display ?? "",
+        desktopNavDisplay: cs(desktopUl)?.display ?? "",
+        headerCtaDisplay: cs(cta)?.display ?? "",
+        h1Font: cs(h1)?.fontSize ?? "",
+      };
+    });
+    // the auth card's landscape geometry: the max-w-md centering (x=198
+    // — the exact (844−448)/2 decode) + the short-height scrollability
+    await probeLoad(page, `${url}/login`);
+    await page.waitForTimeout(1000);
+    const login = await page.evaluate(() => {
+      const card = document.querySelector("div.max-w-md") as HTMLElement | null;
+      const r = card?.getBoundingClientRect();
+      return {
+        cardX: r ? Math.round(r.x) : -1,
+        cardWidth: r ? Math.round(r.width) : -1,
+        docScrollable: document.documentElement.scrollHeight > window.innerHeight,
+      };
+    });
+    // the print-landscape family (the session-56 candidate 2 — the
+    // round-30 print posture at the orientation axis): the faces hold
+    // and ZERO @media print rules ride (the CSSMediaRule walk)
+    await page.emulateMedia({ media: "print" });
+    await page.goto(url, { waitUntil: "domcontentloaded" });
+    await page.waitForLoadState("networkidle", { timeout: 12_000 }).catch(() => {});
+    await page.waitForTimeout(1200);
+    const print = await page.evaluate(() => {
+      let printRules = 0;
+      for (const sheet of document.styleSheets) {
+        try {
+          for (const rule of sheet.cssRules) {
+            if (rule instanceof CSSMediaRule && rule.conditionText.includes("print")) printRules++;
+          }
+        } catch {
+          /* cross-origin sheet */
+        }
+      }
+      return {
+        heroH1: getComputedStyle(document.querySelector("h1")!).color,
+        bodyBg: getComputedStyle(document.body).backgroundColor,
+        htmlInk: getComputedStyle(document.documentElement).color,
+        printRules,
+      };
+    });
+    return { landing, login, print };
+  } finally {
+    await context.close();
+  }
+}
+
+{
+  const [refO, oursO] = await Promise.all([orientationFace(REF), orientationFace(OURS)]);
+  const label = "[orientation]";
+  // the IDENTICAL faces — real diffs (the landscape family is the
+  // positive census: the width-driven md flip, the max-w-md centering,
+  // the zero-handling print posture — every face identical both apps)
+  diff(label, refO.landing, oursO.landing, "the landscape landing's closed-state header flip (the hamburger retired, the desktop nav + CTA rendered, the h1's md step)", out);
+  diff(label, refO.login, oursO.login, "the landscape login's card geometry (the max-w-md centering + the short-height scrollability)", out);
+  diff(label, refO.print, oursO.print, "the print-landscape faces (the zero-handling posture at the orientation axis)", out);
+}
+
 {
   const [refS, oursS] = await Promise.all([schemeFace(REF), schemeFace(OURS)]);
   const label = "[color-scheme]";
@@ -2525,8 +2612,9 @@ if (out.length === 0) {
   console.log("[body-ink] BODY-INK/PRINT-MEDIA FACE: NO DRIFT — the element no probe ever read finally censused (F-30a): the html element's UA-default ink, the body bg and the whole print-emulation sweep IDENTICAL both apps; the body element's own color face rides the recorded per-side constants (the single-token compromise's sacrificed side — REF rgb(10, 10, 10), its landing bundle's stock shadcn neutral-950, vs OURS rgb(9, 9, 11), the zinc-950 the reference's platform bundle inks its auth card with — DEAD on both sides, zero true riders, pinned by tests/body-ink-faces.test.ts); the print census (F-30b): both apps ship ZERO @media print rules (the reference's own zero-handling posture — the white-on-white hazard of its dark sections is its own face, never mirrored)");
   console.log("[forced-colors] FORCED-COLORS/THEME-FACE: NO DRIFT — the last media axis in Playwright's emulateMedia surface finally censused (F-31a): under forcedColors active the whole face sweep computes IDENTICAL both apps (CanvasText ink, Canvas surfaces, the CTA's LinkText rgb(0, 0, 159) — the browser's system-palette collapse reaches everything; the featured card selected by CONTENT — F-31c: the reference's own card div carries no bg-amber-500 class, OURS spells it, the computed faces identical, the s11 doctrine); the media-rule census ZERO both sides (F-31b: the CSSMediaRule walk, never the substring — our rendered @layer utilities block contains the STRING forced-colors in Tailwind v4's own utility class definitions); the theme faces IDENTICAL (F-31d: accent-color auto + color-scheme normal, neither app declares either — the UA defaults ride); the media-axis set completed (round-29 reduce · round-30 print · round-31 forced-colors), pinned by tests/forced-colors-faces.test.ts");
   console.log("[color-scheme] COLOR-SCHEME FACE: NO DRIFT — the one emulateMedia axis round-31 excepted finally censused (F-32a): under colorScheme dark AND light the face sweep computes IDENTICAL both apps and NOTHING MOVES on either side (html color-scheme normal — neither app declares it; body bg white, the h1 white ink, the footer zinc-950, the login email's translucent fill — the at-screen constants hold under every emulation); the per-side scheme-invariance holds (each app's dark === light, both landings and both logins); the s18 serialization pair rides the recorded per-side constants (REF rgba(248, 250, 252, 0.5) vs OURS oklab — numerically equal paint); the scheme-rules census ZERO both sides (the CSSMediaRule walk — the reference ships no dark-mode face, OURS mirrors the zero-handling posture); with round-29 reduce · round-30 print · round-31 forced-colors · round-32 colorScheme EVERY emulateMedia axis rides a census leg, pinned by tests/color-scheme-faces.test.ts");
+  console.log("[orientation] ORIENTATION FACE: NO DRIFT — the landscape phone (844×390, the md boundary crossed from below) finally censused (F-35a/b/c, the session-56 candidate 2 closed): the closed-state header flip IDENTICAL both apps (the hamburger retired, the desktop nav + the amber CTA rendered, the h1's md step), the auth card's landscape geometry IDENTICAL (the max-w-md card at x=198 — the exact (844−448)/2 centering — width 448, the short-height scrollability), and the print-landscape faces IDENTICAL (h1 white, body bg white, html ink black, ZERO @media print rules both sides — the round-30 zero-handling posture at the orientation axis); the OPEN-menu rotation ride (the state-coupled leg — the menu survives the crossing hidden and reopens on the way back, the reference's own face) rides the e2e battery in tests/e2e/mobile-navigation.spec.ts, pinned by tests/orientation-faces.test.ts");
 } else {
-  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact + authfail + google + viewport + anchors + docs + routes + reset + reveal + motion-prefs + body-ink + forced-colors + color-scheme] DRIFT DETECTED — ${out.length} field(s):`);
+  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact + authfail + google + viewport + anchors + docs + routes + reset + reveal + motion-prefs + body-ink + forced-colors + color-scheme + orientation] DRIFT DETECTED — ${out.length} field(s):`);
   for (const line of out) console.log(line);
 }
 
