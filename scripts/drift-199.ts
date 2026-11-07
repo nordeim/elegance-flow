@@ -17,6 +17,13 @@
 // Run: bun scripts/drift-199.ts   (expects our dev server on :3000;
 // round-33: the navigation rides the HMR-tolerant probeLoad — the dev
 // server's Turbopack HMR websockets never let networkidle fire)
+// Round-36 (F-36b): budget the FULL runtime — the 21 legs ride ~40
+// page loads across both apps and take ~6.5 minutes end-to-end (measured
+// under bun AND node). NEVER wrap this script in a sub-10-minute
+// timeout: the kill cascade fakes a browser crash ("Target page,
+// context or browser has been closed" at whichever deep leg was in
+// flight) and bun hangs after the kill — a healthy script misdiagnosed
+// as broken (this round's own near-miss).
 import { createHash } from "node:crypto";
 import { chromium } from "@playwright/test";
 import { probeLoad } from "./probe-load";

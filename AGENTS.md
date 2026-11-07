@@ -26,7 +26,7 @@ bun run start                    # the standalone server (production)
 
 bun run lint                     # eslint --max-warnings 0 (the 0/0 standard)
 bun run typecheck                # tsc --noEmit
-bun run test                     # vitest run  (616 checks / 55 files)
+bun run test                     # vitest run  (623 checks / 55 files)
 bun run test:e2e                 # playwright (126 checks / 8 specs; needs build)
 CI=1 bun run test:e2e            # force a fresh server (never reuse stale)
 
@@ -130,6 +130,23 @@ settles against `bun run dev` — it wedges at its 30s timeout and hangs
 the probe silently (the round-33 F-33a live diagnosis). The reference
 and the standalone artifact keep their fast networkidle path; only the
 dev server rides the bounded fallback. Pinned by
+`tests/probe-load-contract.test.ts`.
+
+**The live probes detect the reload-loop pathology (round-36).** A
+cold dev-server boot — the first `bun run dev` after a gate's
+`next build` wiped `.next/dev` — can, intermittently, enter an
+infinite Fast-Refresh reload loop (the console signature
+`[HMR] connected` + `[Fast Refresh] rebuilding` at sub-second
+cadence; the page reloads forever, wedging every probe and reading
+un-hydrated faces — the mobile-menu toggle's aria-expanded false, the
+standing emphasis's exact false-negative). `probeLoad` counts
+main-frame navigations across its settle window and throws the
+DIAGNOSED error on a sustained loop; the empirical cure is to RESTART
+the dev server — the second boot reads the warmed `.next/dev` state
+and is stable. Budget the drift probe its full runtime: the 21 legs
+take ~6.5 minutes — never wrap `bun scripts/drift-199.ts` in a
+sub-10-minute timeout (the kill cascade fakes a browser crash at a
+deep leg). Pinned by the round-36 blocks of
 `tests/probe-load-contract.test.ts`.
 
 **The route-transition scroll superset (round-34):** `<html>` carries

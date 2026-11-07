@@ -46,7 +46,7 @@ re-pinned to the reference's v3 palette).
    seams in `src/lib/` rather than inlining logic. Keep lint green as
    you go.
 5. **VERIFY** — Run the full gate: `bun run lint` → `bun run typecheck`
-   → `bun run test` (616) → `bun run build` → `./scripts/smoke-test.sh`
+   → `bun run test` (623) → `bun run build` → `./scripts/smoke-test.sh`
    (14) → `CI=1 bun run test:e2e` (126). The `gate` script chains them.
 6. **DOCUMENT** — Update the touched docs (`README.md`, this file, the
    PAD, `worklog.md`) in the same change; the counts in the docs must
@@ -84,7 +84,7 @@ deep-linkable `/signup` + `/reset-password`.
 
 ```bash
 bun run dev        # :3000
-bun run test       # vitest (616 checks / 55 files)
+bun run test       # vitest (623 checks / 55 files)
 bun run test:e2e   # playwright (126 checks / 8 specs) — build first
 bun run gate       # the full chain, in order
 bun run db:census  # MUST print "pristine: MATCH" before you trust any db read
@@ -121,7 +121,7 @@ in production — the boot gate refuses to serve without it),
 
 ## Testing Strategy
 
-- **Unit (Vitest, 55 files / 616 checks)** — the seam batteries (auth,
+- **Unit (Vitest, 55 files / 623 checks)** — the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (`site-content`,
@@ -161,7 +161,15 @@ in production — the boot gate refuses to serve without it),
   against the dev server's Turbopack HMR websockets and wedges the
   probe; the helper's domcontentloaded-first + bounded-networkidle +
   settle contract pinned, plus the forced-colors landing-register
-  e2e leg's source contract),
+  e2e leg's source contract) — EXTENDED round-36 with the STABILITY
+  GUARD: the cold-boot Fast-Refresh reload-loop catch (a cold dev boot
+  after a gate's build can loop full-page reloads forever, wedging
+  every probe and reading un-hydrated faces — the mobile toggle's
+  aria-expanded false; the helper counts main-frame navigations across
+  its settle window, absorbs a stray reload through one confirming
+  extension, and throws the diagnosed restart-cure error on a
+  sustained loop; plus the drift runtime-budget doc pins — ~6.5
+  minutes, never a sub-10-minute wrapper),
   `scroll-behavior-attr` — the round-34 battery: the route-transition
   scroll cure (the `<html>` element's `data-scroll-behavior="smooth"`
   attribute — the Next.js 16 contract that lets the App Router wrap

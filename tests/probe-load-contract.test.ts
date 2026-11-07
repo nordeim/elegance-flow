@@ -186,3 +186,64 @@ describe("round-33: the AGENTS.md doc cure (the fresh-agent pointer)", () => {
     expect(agents).toContain("HMR");
   });
 });
+
+// ---------------------------------------------------------------------------
+// ⑥ the round-36 stability guard — the cold-boot Fast-Refresh reload loop
+// ---------------------------------------------------------------------------
+describe("round-36: the probe-load stability guard (F-36a — the cold-boot Fast-Refresh reload loop)", () => {
+  it("the helper counts main-frame navigations across the settle window (the framenavigated listener + the mainFrame filter)", () => {
+    expect(helperStripped).toContain('page.on("framenavigated"');
+    expect(helperStripped).toContain("page.mainFrame()");
+  });
+
+  it("the counter attaches AFTER the goto — the load's own navigation is never counted", () => {
+    expect(helperStripped.indexOf('page.on("framenavigated"')).toBeGreaterThan(
+      helperStripped.indexOf("page.goto("),
+    );
+  });
+
+  it("the listener detaches in a finally — no leak across the drift script's ~40 probeLoad calls", () => {
+    const offAt = helperStripped.indexOf('page.off("framenavigated"');
+    const finallyAt = helperStripped.indexOf("finally");
+    expect(offAt, "page.off must exist").toBeGreaterThan(-1);
+    expect(finallyAt, "a finally block must exist").toBeGreaterThan(-1);
+    expect(offAt).toBeGreaterThan(finallyAt);
+  });
+
+  it("a stray reload gets ONE confirming extension window (1_500) — the dev server's normal on-demand-compile reload settles, the load proceeds", () => {
+    expect(helperStripped).toContain("waitForTimeout(1_500)");
+  });
+
+  it("a SUSTAINED loop throws the DIAGNOSED error — the restart cure + the Fast-Refresh signature named in the message", () => {
+    expect(helperStripped).toContain("sustained reload loop");
+    expect(helperStripped).toContain("Fast-Refresh");
+    expect(helperStripped).toContain("RESTART the dev server");
+    expect(helperStripped).toContain("bun run dev");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// ⑦ the round-36 doc cures — the reload-loop note + the drift runtime budget
+// ---------------------------------------------------------------------------
+describe("round-36: the doc cures (the reload-loop note + the drift runtime budget)", () => {
+  // the note phrases wrap across lines in the markdown — the doc pins
+  // read the whitespace-normalized text (single-token pins stay on the
+  // raw read; PHRASE pins must not depend on the wrap point)
+  const agentsFlat = agents.replace(/\s+/g, " ");
+
+  it("AGENTS.md's probe-usage note names the stability guard, the restart cure and the reload-loop signature", () => {
+    expect(agentsFlat).toContain("reload loop");
+    expect(agentsFlat).toContain("RESTART the dev server");
+    expect(agentsFlat).toContain("Fast-Refresh");
+  });
+
+  it("AGENTS.md + the drift script's header name the drift runtime budget — never a sub-10-minute wrapper (F-36b)", () => {
+    expect(agentsFlat).toContain("6.5 minutes");
+    expect(agentsFlat).toContain("sub-10-minute");
+    // the drift header's usage note is documentation (the AGENTS.md
+    // class, not a source contract) — read unstripped, like the doc pins
+    const driftHeader = read("../scripts/drift-199.ts").replace(/\s+/g, " ");
+    expect(driftHeader).toContain("6.5 minutes");
+    expect(driftHeader).toContain("sub-10-minute");
+  });
+});

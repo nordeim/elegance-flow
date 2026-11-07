@@ -16,7 +16,7 @@ A production-grade clone of [the EleganceFlow reference site](https://colossal-e
 | 🔐 Email + password auth | Hand-rolled scrypt + HMAC cookie sessions, email-verification funnel, hashed single-use password-reset funnel, session revocation via `tokenVersion` |
 | 🛡️ Hardened API | Zod validation at every body-parsing seam, per-IP rate limits with `Retry-After`, CSRF content-type gate, bounded body reads, honest `{ ok, error }` envelopes |
 | ♿ WCAG 2.2 AA | Structural axe violations zero; every interactive control renders a visible focus ring (keyboard-operability e2e battery); reference-byte-parity colors cite a sanctioned register; the superset's own surfaces pass AA outright |
-| 🧪 Full test pyramid | 616 unit checks (55 files), 126 e2e checks (8 specs), a 14-rung smoke ladder against the production artifact, and the live parity probe |
+| 🧪 Full test pyramid | 623 unit checks (55 files), 126 e2e checks (8 specs), a 14-rung smoke ladder against the production artifact, and the live parity probe |
 
 ## Quick start
 
@@ -44,7 +44,7 @@ inbox.
 ### The full gate
 
 ```bash
-bun run gate   # lint → typecheck → test (616) → build → smoke (14) → e2e (126)
+bun run gate   # lint → typecheck → test (623) → build → smoke (14) → e2e (126)
 ```
 
 ## Architecture
@@ -116,7 +116,7 @@ NEXT_PUBLIC_SITE_URL="http://localhost:3000"  # canonical origin; INLINED AT BUI
 ## Testing
 
 ```bash
-bun run test                     # 616 checks — pure seams + source contracts
+bun run test                     # 623 checks — pure seams + source contracts
 bun run test:e2e                 # 126 checks — standalone artifact, seeded db/e2e.db
 ./scripts/smoke-test.sh          # 14 rungs — artifact on :3210 with db/smoke.db
 bun scripts/parity-199.ts        # live parity vs the reference (dev server on :3000)

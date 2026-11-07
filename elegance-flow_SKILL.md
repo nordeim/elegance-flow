@@ -191,7 +191,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 616 checks / 55 files**: the seam batteries (auth,
+- **Unit — Vitest, 623 checks / 55 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
@@ -482,7 +482,20 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   census, the REF-only parity-199b exemption, and the forced-colors
   landing-register e2e leg's source contract — under the collapse the
   landing's contrast citations collapse to exactly the three
-  amber-500 section eyebrows, the reference's own family) — and
+  amber-500 section eyebrows, the reference's own family) — EXTENDED
+  round-36 with the STABILITY GUARD pins (the cold-boot Fast-Refresh
+  reload-loop catch: a cold dev boot after a gate's `next build` wiped
+  `.next/dev` can loop full-page reloads forever — the console
+  signature `[HMR] connected` + `[Fast Refresh] rebuilding` at
+  sub-second cadence — wedging every probe and reading un-hydrated
+  faces (the mobile toggle's aria-expanded false, the standing
+  emphasis's exact false-negative); the helper counts main-frame
+  navigations across its settle window, absorbs a stray reload through
+  ONE confirming extension window, and throws the diagnosed
+  restart-cure error on a sustained loop — proven live against
+  synthetic loop/stray pages; plus the drift runtime-budget doc pins:
+  ~6.5 minutes end-to-end, never a sub-10-minute wrapper — the kill
+  cascade fakes a browser crash at a deep leg) — and
   scroll-behavior-attr — the round-34 battery that pins the
   ROUTE-TRANSITION SCROLL cure (the `<html>` element's
   `data-scroll-behavior="smooth"` attribute — the Next.js 16 contract:
