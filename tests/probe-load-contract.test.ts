@@ -246,7 +246,11 @@ describe("round-36: the doc cures (the reload-loop note + the drift runtime budg
     // count-ladder census's it/test-block counting exact.
     const budgetNamed = (t: string) => {
       const flat = t.replace(/\s+/g, " ");
-      return flat.includes("6.5 minutes") || flat.includes("6.5–7 minutes");
+      return (
+        flat.includes("6.5 minutes") ||
+        flat.includes("6.5–7 minutes") ||
+        flat.includes("6.5–7.5 minutes")
+      );
     };
     expect(budgetNamed(agents), "AGENTS.md names the drift runtime budget").toBe(true);
     expect(agentsFlat).toContain("sub-10-minute");
@@ -255,7 +259,9 @@ describe("round-36: the doc cures (the reload-loop note + the drift runtime budg
     const driftHeader = read("../scripts/drift-199.ts").replace(/\s+/g, " ");
     expect(budgetNamed(driftHeader), "the drift header names the runtime budget").toBe(true);
     expect(driftHeader).toContain("sub-10-minute");
-    // the round-37 leg-count update rides the header (21 → 22)
+    // the round-37 leg-count update rides the header (21 → 22), the
+    // round-38 update extends it (22 → 23, the [network] leg)
     expect(driftHeader).toContain("22");
+    expect(driftHeader).toContain("23");
   });
 });

@@ -186,6 +186,7 @@ const SOURCE_CONTRACTS = [
   "scroll-behavior-attr",
   "orientation-faces",
   "storage-faces",
+  "network-faces",
 ];
 
 const fileOf = (family: string) => `${family}.test.ts`;

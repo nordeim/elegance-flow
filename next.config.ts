@@ -59,6 +59,22 @@ const nextConfig: NextConfig = {
   // Hide the Next.js dev-tools indicator (the floating "N" button) so dev
   // server screenshots stay clean — it never ships in production anyway.
   devIndicators: false,
+  // Round-38 (F-38a — THE TECH-DISCLOSURE CURE, the network census's
+  // catch): Next's scaffold default (`poweredByHeader: true`,
+  // config-shared.js) stamped `X-Powered-By: Next.js` on every
+  // server-rendered HTML face of the artifact (/, /login, /signup,
+  // /reset-password, /dashboard, the 404 — curl-verified) while the
+  // reference ships NO tech-disclosure header on any face (its platform
+  // edge's server: cloudflare / via: Caddy / x-render-origin-server
+  // family is the PLATFORM's infra stack, never the app's own face).
+  // Thirty-seven rounds shipped the disclosure because no probe ever
+  // read the response-header axis — the axis nobody reads is the axis
+  // that rots (the round-37 storage pattern). The one-flag cure; the
+  // session-20 headers() three-security-set below rides a different
+  // config key and is untouched. Pinned by tests/http-headers.test.ts
+  // (the config pin) + tests/network-faces.test.ts (the census) + the
+  // drift [network] leg + the round-38 e2e describe.
+  poweredByHeader: false,
   // Session-174 (F-174a — THE TYPE-GATE HARDENING): the scaffold-era
   // `typescript: { ignoreBuildErrors: true }` block is RETIRED — the
   // build IS the type gate now (the zero-balance graft, per the repo's

@@ -17,9 +17,9 @@
 // Run: bun scripts/drift-199.ts   (expects our dev server on :3000;
 // round-33: the navigation rides the HMR-tolerant probeLoad — the dev
 // server's Turbopack HMR websockets never let networkidle fire)
-// Round-36 (F-36b, updated round-37): budget the FULL runtime — the 22
-// legs (round-37 added [storage]) ride ~40
-// page loads across both apps and take ~6.5–7 minutes end-to-end (measured
+// Round-36 (F-36b, updated round-37/38): budget the FULL runtime — the 23
+// legs (round-37 added [storage]; round-38 added [network]) ride ~40
+// page loads across both apps and take ~6.5–7.5 minutes end-to-end (measured
 // under bun AND node). NEVER wrap this script in a sub-10-minute
 // timeout: the kill cascade fakes a browser crash ("Target page,
 // context or browser has been closed" at whichever deep leg was in
@@ -2726,6 +2726,137 @@ async function storageFace(url: string): Promise<StorageFace> {
   expectConst(label, "REF", "len24-hex", refSt.appIdShape, out);
 }
 
+// The round-38 [network] leg — the NETWORK-FAMILY census: the request
+// axis no probe ever read. The load-time request family per app (the
+// document + every api-like request, the 24-hex platform ids masked,
+// the POST payloads decoded as SHAPES — key sets and array lengths,
+// never values) and the document response-header face (the session-20
+// three-header security set present; the tech disclosure absent). The
+// reference's four-beacon platform family is base44 implementation,
+// never mirrored — the network is not a rendered face; OURS ships the
+// zero-beacon posture (the document alone). F-38a (the round's catch):
+// OUR artifact's X-Powered-By disclosure — cured by
+// `poweredByHeader: false` (the shared face below was born RED).
+type NetworkFace = {
+  requestFamily: string[]; // "METHOD /api/path/<hex-masked>" per load
+  postShapes: string[]; // "pathname => {events:array(N)}" — shapes only
+  poweredBy: string; // "absent" | "present"
+  securitySet: string[]; // the three-header set, present-value form
+};
+
+async function networkFace(url: string): Promise<NetworkFace> {
+  // one fresh context per app — the request family is per-load (a
+  // reused context would replay cached assets and mask the beacons)
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const page = await context.newPage();
+  const requestFamily: string[] = [];
+  const postShapes: string[] = [];
+  page.on("request", (r) => {
+    const isDoc = r.resourceType() === "document";
+    const isApiLike = /api|analytics|collect|track|beacon|telemetry|monitor|function/i.test(
+      r.url(),
+    );
+    if (!isDoc && !isApiLike) return;
+    let pathname: string;
+    try {
+      pathname = new URL(r.url()).pathname;
+    } catch {
+      return;
+    }
+    // mask the platform's 24-hex ids (per-app constant, never re-pinned
+    // per-census) and the analytics/collector's opaque tail
+    const masked = pathname.replace(/[0-9a-f]{24}/g, "<hex24>");
+    requestFamily.push(`${r.method()} ${masked}`);
+    const postData = r.postData();
+    if (postData) {
+      try {
+        const parsed = JSON.parse(postData) as Record<string, unknown>;
+        const shape = Object.entries(parsed)
+          .map(([k, v]) => `${k}:${Array.isArray(v) ? `array(${v.length})` : typeof v}`)
+          .join(",");
+        postShapes.push(`${masked} => {${shape}}`);
+      } catch {
+        postShapes.push(`${masked} => <non-json ${postData.length}B>`);
+      }
+    }
+  });
+  let poweredBy = "absent";
+  let securitySet: string[] = [];
+  try {
+    // the document response's header face: waitForResponse armed BEFORE
+    // the probeLoad goto (probeLoad returns void; the response event is
+    // the header face's source)
+    const docRes = page.waitForResponse(
+      (r) => r.request().resourceType() === "document" && !r.url().includes("/_next/"),
+      { timeout: 30_000 },
+    );
+    await probeLoad(page, url);
+    await page.waitForTimeout(5000); // let the platform's beacon family fire
+    const res = await docRes.catch(() => null);
+    if (res) {
+      const h = await res.allHeaders();
+      poweredBy = h["x-powered-by"] ? "present" : "absent";
+      securitySet = [
+        h["referrer-policy"] ?? "(missing)",
+        h["x-content-type-options"] ?? "(missing)",
+        h["strict-transport-security"] ?? "(missing)",
+      ];
+    }
+  } finally {
+    await context.close();
+  }
+  return { requestFamily: [...new Set(requestFamily)].sort(), postShapes, poweredBy, securitySet };
+}
+
+{
+  const [refN, oursN] = await Promise.all([networkFace(REF), networkFace(OURS)]);
+  const label = "[network]";
+  // the IDENTICAL faces — the response-header contract both apps ship
+  diff(label, refN.poweredBy, oursN.poweredBy, "the document's X-Powered-By face (absent both apps — the F-38a cure)", out);
+  // the per-side recorded constants — the request families (the
+  // reference's four-beacon platform family vs OUR zero-beacon
+  // document-only posture; the platform family is base44
+  // implementation, never mirrored)
+  expectConst(
+    label,
+    "REF",
+    {
+      requestFamily: [
+        "GET /",
+        "GET /api/apps/<hex24>/entities/User/me",
+        "GET /api/apps/public/prod/public-settings/by-id/<hex24>",
+        "POST /api/app-logs/<hex24>/log-user-in-app/home",
+        "POST /api/apps/<hex24>/analytics/track/batch",
+      ],
+      postShapes: ["/api/apps/<hex24>/analytics/track/batch => {events:array(1)}"],
+      poweredBy: "absent",
+      securitySet: [
+        "strict-origin-when-cross-origin",
+        "nosniff",
+        "max-age=31536000",
+      ],
+    },
+    refN,
+    out,
+  );
+  expectConst(
+    label,
+    "OURS",
+    {
+      requestFamily: ["GET /"],
+      postShapes: [],
+      poweredBy: "absent",
+      securitySet: [
+        "strict-origin-when-cross-origin",
+        "nosniff",
+        "max-age=31536000",
+      ],
+    },
+    oursN,
+    out,
+  );
+}
+
 if (out.length === 0) {
   console.log("[390] CONTENT + MOBILE-MENU FACE: NO DRIFT — the reference matches our byte-mirror");
   console.log("[login] AUTH-CARD FACE: NO DRIFT — the reference matches our login mirror (round-27: the LOGO family now censused — the reference's real img mirrored: the alt, the object-fit cover, the 96×96 box, the byte-class circle span, the blue-dot regression; the spanRadius/imgSrc ride their per-side constants — F-27a)");
@@ -2749,8 +2880,9 @@ if (out.length === 0) {
   console.log("[color-scheme] COLOR-SCHEME FACE: NO DRIFT — the one emulateMedia axis round-31 excepted finally censused (F-32a): under colorScheme dark AND light the face sweep computes IDENTICAL both apps and NOTHING MOVES on either side (html color-scheme normal — neither app declares it; body bg white, the h1 white ink, the footer zinc-950, the login email's translucent fill — the at-screen constants hold under every emulation); the per-side scheme-invariance holds (each app's dark === light, both landings and both logins); the s18 serialization pair rides the recorded per-side constants (REF rgba(248, 250, 252, 0.5) vs OURS oklab — numerically equal paint); the scheme-rules census ZERO both sides (the CSSMediaRule walk — the reference ships no dark-mode face, OURS mirrors the zero-handling posture); with round-29 reduce · round-30 print · round-31 forced-colors · round-32 colorScheme EVERY emulateMedia axis rides a census leg, pinned by tests/color-scheme-faces.test.ts");
   console.log("[orientation] ORIENTATION FACE: NO DRIFT — the landscape phone (844×390, the md boundary crossed from below) finally censused (F-35a/b/c, the session-56 candidate 2 closed): the closed-state header flip IDENTICAL both apps (the hamburger retired, the desktop nav + the amber CTA rendered, the h1's md step), the auth card's landscape geometry IDENTICAL (the max-w-md card at x=198 — the exact (844−448)/2 centering — width 448, the short-height scrollability), and the print-landscape faces IDENTICAL (h1 white, body bg white, html ink black, ZERO @media print rules both sides — the round-30 zero-handling posture at the orientation axis); the OPEN-menu rotation ride (the state-coupled leg — the menu survives the crossing hidden and reopens on the way back, the reference's own face) rides the e2e battery in tests/e2e/mobile-navigation.spec.ts, pinned by tests/orientation-faces.test.ts");
   console.log("[storage] STORAGE-FAMILY FACE: NO DRIFT — the axis no probe ever read finally censused (F-37b): sessionStorage EMPTY on both pages both apps; the localStorage families ride the recorded per-side constants (the reference's platform implementation face, never mirrored — the landing's analytics four + the accumulated login union vs OUR zero-key posture everywhere; OURS the session rides the httpOnly cookie, document.cookie reads empty); the analytics id pinned by SHAPE (lowercase-alnum, length 20–22 observed, the 18–24 window — per-session random, never value-pinned), the app_id by its 24-hex shape; localStorage is per-origin — the login-after-landing face carries the union (the leg's own born-red catch); pinned by tests/storage-faces.test.ts");
+  console.log("[network] NETWORK-FAMILY FACE: NO DRIFT — the request axis no probe ever read finally censused (F-38b): the document response-header face IDENTICAL both apps (the session-20 three-header security set present; the tech disclosure absent — the F-38a cure: OUR artifact's X-Powered-By retired by poweredByHeader: false, the scaffold default that disclosed the framework on every HTML face while the reference discloses none); the load-time request families ride the recorded per-side constants (the reference's four-beacon platform family — the User/me session check, the bodyless app-log, the public-settings fetch, the analytics batch with its {events:array(1)} shape — vs OUR zero-beacon document-only posture: every fetch in src/ is user-initiated, the beacon families absent from the tree; the platform family is base44 implementation, never mirrored); pinned by tests/network-faces.test.ts + tests/http-headers.test.ts");
 } else {
-  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact + authfail + google + viewport + anchors + docs + routes + reset + reveal + motion-prefs + body-ink + forced-colors + color-scheme + orientation + storage] DRIFT DETECTED — ${out.length} field(s):`);
+  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact + authfail + google + viewport + anchors + docs + routes + reset + reveal + motion-prefs + body-ink + forced-colors + color-scheme + orientation + storage + network] DRIFT DETECTED — ${out.length} field(s):`);
   for (const line of out) console.log(line);
 }
 

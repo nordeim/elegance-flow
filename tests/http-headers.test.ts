@@ -80,6 +80,21 @@ describe("session-20: the security-header set (S20-P1/P2/P3)", () => {
     expect(src).toContain("outputFileTracingRoot");
     expect(src).toContain("devIndicators: false");
   });
+
+  it("next.config.ts disables the X-Powered-By disclosure (round-38, F-38a — the network census catch)", () => {
+    // the reference ships NO tech-disclosure header on any face; the
+    // scaffold default (poweredByHeader: true, Next's config-shared
+    // default) disclosed `X-Powered-By: Next.js` on every
+    // server-rendered HTML face of the artifact (/, /login, /signup,
+    // /reset-password, /dashboard, the 404 — curl-verified) through 37
+    // rounds: no probe ever read the response-header axis. The one-flag
+    // cure; the headers() three-security-set above rides a different
+    // config key and is untouched. Pinned live by the drift [network]
+    // leg + the round-38 e2e describe (tests/e2e/landing.spec.ts);
+    // censused by tests/network-faces.test.ts.
+    const src = configSrc();
+    expect(src).toContain("poweredByHeader: false");
+  });
 });
 
 describe("session-20: the static-file content-types (S20-P4)", () => {

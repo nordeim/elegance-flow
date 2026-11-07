@@ -26,8 +26,8 @@ bun run start                    # the standalone server (production)
 
 bun run lint                     # eslint --max-warnings 0 (the 0/0 standard)
 bun run typecheck                # tsc --noEmit
-bun run test                     # vitest run  (633 checks / 56 files)
-bun run test:e2e                 # playwright (128 checks / 8 specs; needs build)
+bun run test                     # vitest run  (641 checks / 57 files)
+bun run test:e2e                 # playwright (130 checks / 8 specs; needs build)
 CI=1 bun run test:e2e            # force a fresh server (never reuse stale)
 
 bun run db:push                  # prisma db push (SQLite at repo/db/custom.db)
@@ -143,8 +143,9 @@ standing emphasis's exact false-negative). `probeLoad` counts
 main-frame navigations across its settle window and throws the
 DIAGNOSED error on a sustained loop; the empirical cure is to RESTART
 the dev server — the second boot reads the warmed `.next/dev` state
-and is stable. Budget the drift probe its full runtime: the 22 legs
-take ~6.5 minutes — never wrap `bun scripts/drift-199.ts` in a
+and is stable. Budget the drift probe its full runtime: the 23 legs
+(reaching back through the round-37 [storage] and round-38 [network]
+additions) take ~6.5–7.5 minutes — never wrap `bun scripts/drift-199.ts` in a
 sub-10-minute timeout (the kill cascade fakes a browser crash at a
 deep leg). Pinned by the round-36 blocks of
 `tests/probe-load-contract.test.ts`.
@@ -200,6 +201,26 @@ the round-37 F-37a cure; the bare call shipped an inert cooldown:
 the flag never written, zero-cooldown reloads). Never plant a
 `localStorage`/`sessionStorage` reference anywhere else in `src/` —
 `tests/storage-faces.test.ts` census-pins the posture.
+
+**The network posture (round-38):** the request axis no probe ever
+read is censused end-to-end. OUR app fires ZERO api-like requests on
+load — the document alone; every `fetch()` in `src/` is
+user-initiated (the contact-form POST, the auth forms, the dashboard
+ops, the logout), and the beacon families (`navigator.sendBeacon`,
+`XMLHttpRequest`, absolute-URL fetch) are absent from the tree —
+never plant a load-time beacon. The reference's platform fires a
+four-request family per landing load (the User/me session check, the
+bodyless app-log beacon, the public-settings fetch, the analytics
+batch) — base44 implementation, never mirrored: the network is not a
+rendered face. The response-header face: the artifact ships NO
+`X-Powered-By` (`poweredByHeader: false` — the round-38 F-38a cure;
+Next's scaffold default disclosed the framework on every HTML face
+while the reference discloses none); the per-side infra families (the
+reference's cloudflare/Caddy/uvicorn, OURS the x-nextjs cache
+diagnostics) are implementation plumbing, recorded per side, never
+mirrored. Pinned by `tests/network-faces.test.ts` +
+`tests/http-headers.test.ts` (the config pin); re-probed live by
+the drift `[network]` leg (the 23rd).
 
 **The one recorded dead-face divergence (round-30):** the BODY
 element's own `color` — the reference's landing bundle computes

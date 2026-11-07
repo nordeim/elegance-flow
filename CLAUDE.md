@@ -46,8 +46,8 @@ re-pinned to the reference's v3 palette).
    seams in `src/lib/` rather than inlining logic. Keep lint green as
    you go.
 5. **VERIFY** — Run the full gate: `bun run lint` → `bun run typecheck`
-   → `bun run test` (633) → `bun run build` → `./scripts/smoke-test.sh`
-   (14) → `CI=1 bun run test:e2e` (128). The `gate` script chains them.
+   → `bun run test` (641) → `bun run build` → `./scripts/smoke-test.sh`
+   (14) → `CI=1 bun run test:e2e` (130). The `gate` script chains them.
 6. **DOCUMENT** — Update the touched docs (`README.md`, this file, the
    PAD, `worklog.md`) in the same change; the counts in the docs must
    match the suites (the lockstep doctrine — doc claims about the tree
@@ -84,8 +84,8 @@ deep-linkable `/signup` + `/reset-password`.
 
 ```bash
 bun run dev        # :3000
-bun run test       # vitest (633 checks / 56 files)
-bun run test:e2e   # playwright (128 checks / 8 specs) — build first
+bun run test       # vitest (641 checks / 57 files)
+bun run test:e2e   # playwright (130 checks / 8 specs) — build first
 bun run gate       # the full chain, in order
 bun run db:census  # MUST print "pristine: MATCH" before you trust any db read
 ```
@@ -121,7 +121,7 @@ in production — the boot gate refuses to serve without it),
 
 ## Testing Strategy
 
-- **Unit (Vitest, 56 files / 633 checks)** — the seam batteries (auth,
+- **Unit (Vitest, 57 files / 641 checks)** — the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (`site-content`,
@@ -197,7 +197,20 @@ in production — the boot gate refuses to serve without it),
   cured by the guarded `browserSessionStorage()` hand-off; the app-wide
   zero-localStorage census + the single sanctioned sessionStorage seam +
   the seam's storage purity + the drift [storage] leg + the AGENTS.md
-  doc pin) —
+  doc pin),
+  `network-faces` — the round-38 battery: the network-family census +
+  the tech-disclosure cure (the request axis no probe ever read: the
+  reference's platform fires a four-request beacon family per landing
+  load — the User/me session check, the bodyless app-log, the
+  public-settings fetch, the analytics batch — vs OUR zero-beacon
+  document-only posture: every fetch in src/ user-initiated, the
+  beacon families absent from the tree; the F-38a catch: the scaffold
+  default `poweredByHeader: true` disclosed `X-Powered-By: Next.js` on
+  every server-rendered HTML face while the reference ships none —
+  cured by the one-flag `poweredByHeader: false`; the beacon
+  impossibility census + the same-origin fetch census + the drift
+  [network] leg + the e2e zero-disclosure legs + the AGENTS.md doc
+  pin) —
   comment-stripped source reads; a literal pinned
   by a comment alone is vacuous.
 - **E2E (Playwright, `tests/e2e/*.spec.ts`)** — the standalone

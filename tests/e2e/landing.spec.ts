@@ -1386,3 +1386,44 @@ test.describe("round-37: the authed storage face (the httpOnly session posture)"
     expect(st.cookie, "document.cookie under an authed session").toBe("");
   });
 });
+
+test.describe("round-38: the zero-disclosure header face (the network-family census contract)", () => {
+  // The request axis no probe ever read, finally censused (F-38a/F-38b).
+  // The response-header face of the standalone artifact: NO tech
+  // disclosure (the F-38a cure — the scaffold default stamped
+  // `X-Powered-By: Next.js` on every server-rendered HTML face while
+  // the reference ships none) + the session-20 three-header security
+  // set present. The live-tense half of tests/network-faces.test.ts's
+  // source contracts; the load-time request family (OUR zero-beacon
+  // posture vs the reference's four-beacon platform family) rides the
+  // drift [network] leg (the dev server's face) — this describe pins
+  // the ARTIFACT's face.
+
+  test("the document face — no X-Powered-By, the three-header security set present", async ({ page }) => {
+    const res = await page.goto("/");
+    expect(res, "the document response").toBeTruthy();
+    const headers = await res!.allHeaders();
+    // the F-38a cure: the scaffold default's framework disclosure is
+    // retired (the reference's own zero-disclosure posture)
+    expect(headers["x-powered-by"], "the tech-disclosure header").toBeUndefined();
+    // the session-20 set rides the headers() config block — untouched
+    // by the cure (they ride a different config key)
+    expect(headers["referrer-policy"]).toBe("strict-origin-when-cross-origin");
+    expect(headers["x-content-type-options"]).toBe("nosniff");
+    expect(headers["strict-transport-security"]).toBe("max-age=31536000");
+  });
+
+  test("the 404 face — the unknown route rides the same zero-disclosure + security face", async ({ page }) => {
+    // the 404 is a server-rendered HTML face too (one of the exact
+    // faces that carried the disclosure pre-cure); its response keeps
+    // the true 404 status and the same header contract
+    const res = await page.goto("/nonexistent-round-38-probe");
+    expect(res, "the 404 response").toBeTruthy();
+    expect(res!.status(), "the honest 404 status").toBe(404);
+    const headers = await res!.allHeaders();
+    expect(headers["x-powered-by"], "the tech-disclosure header").toBeUndefined();
+    expect(headers["referrer-policy"]).toBe("strict-origin-when-cross-origin");
+    expect(headers["x-content-type-options"]).toBe("nosniff");
+    expect(headers["strict-transport-security"]).toBe("max-age=31536000");
+  });
+});
