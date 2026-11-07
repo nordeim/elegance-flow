@@ -260,8 +260,11 @@ describe("round-36: the doc cures (the reload-loop note + the drift runtime budg
     expect(budgetNamed(driftHeader), "the drift header names the runtime budget").toBe(true);
     expect(driftHeader).toContain("sub-10-minute");
     // the round-37 leg-count update rides the header (21 → 22), the
-    // round-38 update extends it (22 → 23, the [network] leg)
+    // round-38 update extends it (22 → 23, the [network] leg), the
+    // round-39 update extends it again (23 → 24, the [stack] leg —
+    // wrap-safe: the pin reads the LATEST count, never the full ladder)
     expect(driftHeader).toContain("22");
     expect(driftHeader).toContain("23");
+    expect(driftHeader).toContain("24");
   });
 });

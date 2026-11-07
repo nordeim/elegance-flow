@@ -46,8 +46,8 @@ re-pinned to the reference's v3 palette).
    seams in `src/lib/` rather than inlining logic. Keep lint green as
    you go.
 5. **VERIFY** — Run the full gate: `bun run lint` → `bun run typecheck`
-   → `bun run test` (641) → `bun run build` → `./scripts/smoke-test.sh`
-   (14) → `CI=1 bun run test:e2e` (130). The `gate` script chains them.
+   → `bun run test` (648) → `bun run build` → `./scripts/smoke-test.sh`
+   (14) → `CI=1 bun run test:e2e` (133). The `gate` script chains them.
 6. **DOCUMENT** — Update the touched docs (`README.md`, this file, the
    PAD, `worklog.md`) in the same change; the counts in the docs must
    match the suites (the lockstep doctrine — doc claims about the tree
@@ -84,8 +84,8 @@ deep-linkable `/signup` + `/reset-password`.
 
 ```bash
 bun run dev        # :3000
-bun run test       # vitest (641 checks / 57 files)
-bun run test:e2e   # playwright (130 checks / 8 specs) — build first
+bun run test       # vitest (648 checks / 58 files)
+bun run test:e2e   # playwright (133 checks / 8 specs) — build first
 bun run gate       # the full chain, in order
 bun run db:census  # MUST print "pristine: MATCH" before you trust any db read
 ```
@@ -121,7 +121,7 @@ in production — the boot gate refuses to serve without it),
 
 ## Testing Strategy
 
-- **Unit (Vitest, 57 files / 641 checks)** — the seam batteries (auth,
+- **Unit (Vitest, 58 files / 648 checks)** — the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (`site-content`,
@@ -211,6 +211,20 @@ in production — the boot gate refuses to serve without it),
   impossibility census + the same-origin fetch census + the drift
   [network] leg + the e2e zero-disclosure legs + the AGENTS.md doc
   pin) —
+  `stack-faces` — the round-39 battery: the combination-matrix census +
+  the stack-a11y pin (the media-axis combinations no probe ever read:
+  the pairwise forced+scheme-dark and the full triple stack censused —
+  every shared face IDENTICAL both apps under every stack, the dark
+  system palette composing with the emulated scheme, the html
+  color-scheme light-dark forced reporting; the recorded per-side
+  constants COMPOSE additively — the reduce collapse survives the
+  forced palette, the a11y superset composes; the axe-under-combination
+  artifact families decoded and pinned — the login's 11 nodes
+  byte-identical both apps, the landing's 16, OUR dashboard's 22, the
+  CanvasText-white-over-transparent mechanism, the render pixel-proven
+  legible — plus the reduce block's universal-selector mechanism + the
+  zero-forced-colors-rules posture + the e2e round-39 describe's
+  triple-stack shape + the AGENTS.md doc pin) —
   comment-stripped source reads; a literal pinned
   by a comment alone is vacuous.
 - **E2E (Playwright, `tests/e2e/*.spec.ts`)** — the standalone
@@ -222,7 +236,10 @@ in production — the boot gate refuses to serve without it),
   (round-10) pins the keyboard rides + the focus-visible computed
   faces; the inbox-states battery (round-11) pins the five state faces
   + the client-error census (zero console/page errors, the designed
-  404's sanctioned register).
+  404's sanctioned register); the round-39 a11y describe pins the
+  combination-family census baseline (the login 11 / landing 16 /
+  dashboard 22 node counts under the full triple stack — the
+  artifact-class baseline a moved count must re-record consciously).
 - **Smoke (`scripts/smoke-test.sh`)** — 14 rungs against the
   standalone artifact on :3210 with `db/smoke.db`: health, auth walls,
   the SSR faces, the login round-trip, the Zod 400, the public inquiry

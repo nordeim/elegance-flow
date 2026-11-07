@@ -26,8 +26,8 @@ bun run start                    # the standalone server (production)
 
 bun run lint                     # eslint --max-warnings 0 (the 0/0 standard)
 bun run typecheck                # tsc --noEmit
-bun run test                     # vitest run  (641 checks / 57 files)
-bun run test:e2e                 # playwright (130 checks / 8 specs; needs build)
+bun run test                     # vitest run  (648 checks / 58 files)
+bun run test:e2e                 # playwright (133 checks / 8 specs; needs build)
 CI=1 bun run test:e2e            # force a fresh server (never reuse stale)
 
 bun run db:push                  # prisma db push (SQLite at repo/db/custom.db)
@@ -143,9 +143,9 @@ standing emphasis's exact false-negative). `probeLoad` counts
 main-frame navigations across its settle window and throws the
 DIAGNOSED error on a sustained loop; the empirical cure is to RESTART
 the dev server — the second boot reads the warmed `.next/dev` state
-and is stable. Budget the drift probe its full runtime: the 23 legs
+and is stable. Budget the drift probe its full runtime: the 24 legs
 (reaching back through the round-37 [storage] and round-38 [network]
-additions) take ~6.5–7.5 minutes — never wrap `bun scripts/drift-199.ts` in a
+and round-39 [stack] additions) take ~6.5–7.5 minutes — never wrap `bun scripts/drift-199.ts` in a
 sub-10-minute timeout (the kill cascade fakes a browser crash at a
 deep leg). Pinned by the round-36 blocks of
 `tests/probe-load-contract.test.ts`.
@@ -221,6 +221,34 @@ diagnostics) are implementation plumbing, recorded per side, never
 mirrored. Pinned by `tests/network-faces.test.ts` +
 `tests/http-headers.test.ts` (the config pin); re-probed live by
 the drift `[network]` leg (the 23rd).
+
+**The stack posture (round-39):** the media-axis COMBINATIONS are
+censused end-to-end. Rounds 29/31/32 censused reduce / forcedColors /
+colorScheme INDIVIDUALLY; the pairwise `forced+scheme-dark` and the
+full triple stack were never read until round-39 — the combination matrix is now censused (the drift `[stack]` leg (the 24th)): every
+shared computed face IDENTICAL both apps under every stack (the dark
+system palette — the forced palette composes with the emulated
+scheme), the html `color-scheme` face reads `light dark` under
+forcedColors (the UA's forced reporting, `normal` at screen), and the
+recorded per-side constants COMPOSE additively — the round-29 reduce
+collapse (OURS 0.01ms vs the reference's full-duration animation)
+survives the forced palette: **the a11y superset composes**. The
+axe-under-combination families are the recorded artifact baseline
+(round-33's F-33b class extended): under `forced+scheme-dark` axe's
+color-contrast citations EXPLODE (the login's 11 nodes BYTE-IDENTICAL
+both apps — the reference's own face; the landing's 16; OUR
+dashboard's 22) because text computes CanvasText WHITE while
+backgrounds serialize `rgba(0,0,0,0)`/`rgba(0,0,0,0.5/0.7)` — axe
+cannot resolve the backdrop. The RENDER is pixel-verified legible
+(CanvasText-on-Canvas 21:1) — the flags are the axe math artifact,
+never a painted divergence. The counts are pinned by the round-39
+e2e describe in `tests/e2e/a11y.spec.ts`: a moved count REDs the pin
+and forces a conscious re-record. Never pin a pairwise-only stack
+leg — the census value is the FULL triple (all three axes in ONE
+emulateMedia call), and never "fix" the artifact families by
+repainting (the render is already legible; the families are the
+browser-emulation baseline, the reference's own face on the shared
+surfaces). Pinned by `tests/stack-faces.test.ts`.
 
 **The one recorded dead-face divergence (round-30):** the BODY
 element's own `color` — the reference's landing bundle computes

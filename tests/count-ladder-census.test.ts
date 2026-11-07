@@ -187,6 +187,7 @@ const SOURCE_CONTRACTS = [
   "orientation-faces",
   "storage-faces",
   "network-faces",
+  "stack-faces",
 ];
 
 const fileOf = (family: string) => `${family}.test.ts`;

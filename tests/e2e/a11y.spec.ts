@@ -300,3 +300,92 @@ test.describe("round-33: the forced-colors landing-register census (the session-
     }
   });
 });
+
+test.describe("round-39: the combination-matrix census (the stack families, the full triple emulation)", () => {
+  // F-39a/F-39b (live-probed 2026-11-08, both apps): the media-axis
+  // COMBINATIONS no probe ever read. Under the pairwise
+  // forced+scheme-dark the axe color-contrast artifact family EXPLODES
+  // beyond every recorded per-axis constant — /login 11 nodes
+  // (BYTE-IDENTICAL on both apps: the h1, the subtitle, the Google
+  // span, the divider, both labels, both inputs, both bottom buttons +
+  // the Sign up span — the reference's own face), the landing 16 (the
+  // at-screen count with the eyebrow→hero swap), OUR /dashboard 22.
+  // The MECHANISM (the round-33 F-33b artifact class extended): under
+  // forced+scheme-dark text computes CanvasText WHITE while
+  // backgrounds serialize rgba(0,0,0,0)/rgba(0,0,0,0.5/0.7) — axe
+  // cannot resolve the backdrop and flags the pair. The RENDER is
+  // pixel-verified legible (CanvasText-on-Canvas 21:1). The per-axis
+  // decomposition (live, /login): default ZERO · reduce only ZERO ·
+  // scheme-dark only ZERO · forced only (light) ZERO — the finding is
+  // COMBINATION-ONLY. These legs pin the family SHAPES as the
+  // artifact's census baseline: a moved count REDs the pin and forces
+  // a conscious re-record (the round-33 precedent's census-safety
+  // shape). The emulation rides ALL THREE axes in ONE call (never a
+  // pairwise-only stack — the unread-axis class this round closes).
+  const STACK = { forcedColors: "active", colorScheme: "dark", reducedMotion: "reduce" } as const;
+
+  async function stackScan(page: import("@playwright/test").Page, route: string) {
+    await page.emulateMedia(STACK);
+    await page.goto(route);
+    await page.waitForLoadState("networkidle").catch(() => {});
+    await page.waitForTimeout(1200);
+    await page.addScriptTag({ path: AXE_PATH });
+    return page.evaluate(async () => {
+      const axe = (
+        window as unknown as {
+          axe: { run: (o: object) => Promise<{ violations: Array<{ id: string; nodes: Array<{ target: string[] }> }> }> };
+        }
+      ).axe;
+      const r = await axe.run({
+        runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"] },
+      });
+      return r.violations.map((v) => ({ id: v.id, count: v.nodes.length, targets: v.nodes.map((n) => n.target.join(" ")) }));
+    });
+  }
+
+  test("desktop /login under the full triple stack — the combination family shape: color-contrast(11), structural zero", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    const violations = await stackScan(page, "/login");
+    // GATE 1 — structural: everything outside the artifact rule is zero
+    const structural = violations.filter((v) => v.id !== "color-contrast");
+    expect(structural, "the login stack census: structural violations must be zero").toEqual([]);
+    // GATE 2 — the census SHAPE: exactly the 11-node combination family
+    const contrast = violations.find((v) => v.id === "color-contrast");
+    expect(contrast, "the stack census carries the color-contrast rule").toBeDefined();
+    expect(contrast?.count, "the login's combination family is exactly 11 nodes (the artifact baseline)").toBe(11);
+  });
+
+  test("desktop / under the full triple stack — the combination family shape: color-contrast(16), structural zero", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    const violations = await stackScan(page, "/");
+    const structural = violations.filter((v) => v.id !== "color-contrast");
+    expect(structural, "the landing stack census: structural violations must be zero").toEqual([]);
+    const contrast = violations.find((v) => v.id === "color-contrast");
+    expect(contrast, "the stack census carries the color-contrast rule").toBeDefined();
+    expect(contrast?.count, "the landing's combination family is exactly 16 nodes (the at-screen count, the eyebrow→hero swap)").toBe(16);
+  });
+
+  test("desktop /dashboard under the full triple stack — the combination family shape: color-contrast(22) + the render-legibility proof", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    const violations = await stackScan(page, "/dashboard");
+    const structural = violations.filter((v) => v.id !== "color-contrast");
+    expect(structural, "the dashboard stack census: structural violations must be zero").toEqual([]);
+    const contrast = violations.find((v) => v.id === "color-contrast");
+    expect(contrast, "the stack census carries the color-contrast rule").toBeDefined();
+    expect(contrast?.count, "the dashboard's combination family is exactly 22 nodes (the superset's own artifact baseline)").toBe(22);
+    // THE RENDER-LEGIBILITY PROOF (the artifact-class classification):
+    // under the stack the h1 computes CanvasText WHITE over the black
+    // canvas — the pair the browser actually paints at 21:1 (the
+    // flags are the axe backdrop-resolution math, never the paint)
+    const paint = await page.evaluate(() => {
+      const h1 = document.querySelector("h1") as HTMLElement | null;
+      const body = document.querySelector("body");
+      return {
+        h1Color: h1 ? getComputedStyle(h1).color : "MISSING",
+        bodyBg: body ? getComputedStyle(body).backgroundColor : "MISSING",
+      };
+    });
+    expect(paint.h1Color, "the stack's h1 ink is the white CanvasText").toBe("rgb(255, 255, 255)");
+    expect(paint.bodyBg, "the stack's canvas is the opaque black").toBe("rgb(0, 0, 0)");
+  });
+});

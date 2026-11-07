@@ -191,7 +191,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 641 checks / 57 files**: the seam batteries (auth,
+- **Unit — Vitest, 648 checks / 58 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
@@ -541,6 +541,21 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   impossibility census + the same-origin fetch census + the drift
   [network] leg + the e2e zero-disclosure legs + the AGENTS.md doc
   pin) — and
+  stack-faces — the round-39 battery that pins the COMBINATION-MATRIX
+  census + the stack-a11y pin (the media-axis combinations no probe
+  ever read: the pairwise forced+scheme-dark and the full triple stack
+  — every shared computed face IDENTICAL both apps under every stack,
+  the dark system palette composing with the emulated scheme, the html
+  color-scheme light-dark forced reporting, the recorded per-side
+  constants COMPOSING additively (the reduce collapse survives the
+  forced palette — the a11y superset composes); the F-39a catch: the
+  axe-under-combination artifact families EXPANDING unpinned — the
+  login's color-contrast 11 nodes byte-identical both apps, the
+  landing's 16, OUR dashboard's 22, the CanvasText-white-over-
+  transparent mechanism, the render pixel-proven legible — pinned by
+  the e2e round-39 describe's census-baseline counts; the reduce
+  block's universal-selector mechanism + the zero-forced-colors-rules
+  posture + the AGENTS.md doc pin) — and
   error-faces — the round-27 battery that pins the CRM-BLUE/
   RESILIENCE-BOUNDARY family no probe ever censused (the token-axis
   blind spot of the session-199 domain transformation: the login card's
@@ -556,7 +571,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   boundaries' comments always claimed) —
   comment-stripped source reads; a
   literal pinned by a comment alone is vacuous.
-- **E2E — Playwright, 130 checks / 8 specs**: the standalone artifact on
+- **E2E — Playwright, 133 checks / 8 specs**: the standalone artifact on
   :3100 with `db/e2e.db`; ONE shared login (`auth.setup.ts` →
   storageState — the auth endpoints are rate-limited 10/IP/15-min); one
   worker; alphabetical file order → every spec SELF-SUFFICIENT (its own

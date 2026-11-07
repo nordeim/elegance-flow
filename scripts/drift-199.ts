@@ -17,8 +17,9 @@
 // Run: bun scripts/drift-199.ts   (expects our dev server on :3000;
 // round-33: the navigation rides the HMR-tolerant probeLoad — the dev
 // server's Turbopack HMR websockets never let networkidle fire)
-// Round-36 (F-36b, updated round-37/38): budget the FULL runtime — the 23
-// legs (round-37 added [storage]; round-38 added [network]) ride ~40
+// Round-36 (F-36b, updated round-37/38/39): budget the FULL runtime — the 24
+// legs (round-37 added [storage]; round-38 added [network]; round-39
+// added [stack]) ride ~40
 // page loads across both apps and take ~6.5–7.5 minutes end-to-end (measured
 // under bun AND node). NEVER wrap this script in a sub-10-minute
 // timeout: the kill cascade fakes a browser crash ("Target page,
@@ -2857,6 +2858,122 @@ async function networkFace(url: string): Promise<NetworkFace> {
   );
 }
 
+// The round-39 [stack] leg — the COMBINATION-MATRIX census: the
+// media-axis COMBINATIONS no probe ever read (rounds 29/31/32 censused
+// reduce / forcedColors / colorScheme INDIVIDUALLY; the pairwise
+// forced+scheme-dark and the full triple stack were never censused).
+// One fresh context per app carrying the FULL triple stack — all three
+// axes in ONE emulateMedia call (never a pairwise-only stack — the
+// unread-axis class this leg closes) — sweeping the computed faces the
+// stack produces: the dark system palette (the forced palette composes
+// with the emulated scheme), the UA's forced color-scheme reporting,
+// and the transition-duration pair where the recorded per-side
+// constants COMPOSE additively (the reduce collapse survives the
+// forced palette — the a11y superset composes). F-39a (the round's
+// catch, the coverage gap): the axe-under-combination families this
+// census decoded are pinned by the round-39 e2e describe (the a11y
+// spec), not this leg — this leg owns the computed-face axis.
+type StackFace = {
+  h1Color: string;
+  ctaColor: string;
+  featuredBg: string;
+  featuredInk: string;
+  footerColor: string;
+  bodyBg: string;
+  htmlColorScheme: string;
+  revealDuration: string;
+  headerDuration: string;
+  revealOpacity: string;
+};
+
+async function stackFace(url: string): Promise<StackFace> {
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const page = await context.newPage();
+  try {
+    await page.goto(url, { waitUntil: "commit" });
+    await page.waitForSelector("header", { timeout: 20000 });
+    await page.waitForTimeout(1500);
+    // the FULL triple stack in one call (the combination-matrix census
+    // never rides a pairwise-only emulation)
+    await page.emulateMedia({
+      forcedColors: "active",
+      colorScheme: "dark",
+      reducedMotion: "reduce",
+    });
+    await page.waitForTimeout(300);
+    // warm the reveals (the round-28 settle-wait precedent)
+    await page.mouse.wheel(0, 4000);
+    await page.waitForTimeout(1200);
+    return await page.evaluate(() => {
+      // the cross-app content selectors: the reference's featured card
+      // carries NO bg-amber-500 class (F-31c) — select by TITLE
+      const cardOf = (title: string): HTMLElement | null => {
+        const h = Array.from(document.querySelectorAll("h3")).find((el) => (el.textContent ?? "").trim() === title);
+        return h ? ((h.closest("div")?.parentElement as HTMLElement) ?? null) : null;
+      };
+      const featured = cardOf("Design & Web");
+      const cta = Array.from(document.querySelectorAll("header a")).find((a) => (a.textContent ?? "").trim() === "Get in Touch") ?? null;
+      const read = (el: Element | null, prop: string): string =>
+        el ? String(getComputedStyle(el)[prop as keyof CSSStyleDeclaration]) : "MISSING";
+      const revealEl = document.querySelector("#services .grid > div") ?? document.querySelector("#services h3");
+      return {
+        h1Color: read(document.querySelector("h1"), "color"),
+        ctaColor: read(cta, "color"),
+        featuredBg: read(featured, "backgroundColor"),
+        featuredInk: read(featured, "color"),
+        footerColor: read(document.querySelector("footer"), "color"),
+        bodyBg: read(document.querySelector("body"), "backgroundColor"),
+        htmlColorScheme: getComputedStyle(document.documentElement).getPropertyValue("color-scheme"),
+        revealDuration: read(revealEl, "transitionDuration"),
+        headerDuration: read(document.querySelector("header"), "transitionDuration"),
+        revealOpacity: read(revealEl, "opacity"),
+      };
+    });
+  } finally {
+    await context.close();
+  }
+}
+
+{
+  const [refS, oursS] = await Promise.all([stackFace(REF), stackFace(OURS)]);
+  const label = "[stack]";
+  // the IDENTICAL faces — the dark system palette both apps compute
+  // under the full triple stack (the forced palette composes with the
+  // emulated scheme; the shared faces diff directly)
+  diff(label, refS.h1Color, oursS.h1Color, "the h1 ink (CanvasText white under the dark system palette)", out);
+  diff(label, refS.ctaColor, oursS.ctaColor, "the CTA ink (LinkText yellow under the dark system palette)", out);
+  diff(label, refS.featuredBg, oursS.featuredBg, "the featured card surface (the dark Canvas)", out);
+  diff(label, refS.featuredInk, oursS.featuredInk, "the featured card ink", out);
+  diff(label, refS.footerColor, oursS.footerColor, "the footer ink", out);
+  diff(label, refS.bodyBg, oursS.bodyBg, "the body canvas (the opaque black)", out);
+  diff(
+    label,
+    refS.htmlColorScheme,
+    oursS.htmlColorScheme,
+    "the html color-scheme face (the UA's forced light-dark reporting — vs normal at screen)",
+    out,
+  );
+  diff(label, refS.revealOpacity, oursS.revealOpacity, "the reveal at-rest opacity", out);
+  // the per-side recorded constants — the reduce collapse pair COMPOSES
+  // (the round-29 superset survives the forced palette: the composition
+  // proof — REF still animates at full duration under the stack, OURS
+  // still collapses to the 0.01ms face)
+  expectConst(
+    label,
+    "REF",
+    { revealDuration: "0.3s", headerDuration: "0.5s" },
+    { revealDuration: refS.revealDuration, headerDuration: refS.headerDuration },
+    out,
+  );
+  expectConst(
+    label,
+    "OURS",
+    { revealDuration: "1e-05s", headerDuration: "1e-05s" },
+    { revealDuration: oursS.revealDuration, headerDuration: oursS.headerDuration },
+    out,
+  );
+}
+
 if (out.length === 0) {
   console.log("[390] CONTENT + MOBILE-MENU FACE: NO DRIFT — the reference matches our byte-mirror");
   console.log("[login] AUTH-CARD FACE: NO DRIFT — the reference matches our login mirror (round-27: the LOGO family now censused — the reference's real img mirrored: the alt, the object-fit cover, the 96×96 box, the byte-class circle span, the blue-dot regression; the spanRadius/imgSrc ride their per-side constants — F-27a)");
@@ -2881,8 +2998,9 @@ if (out.length === 0) {
   console.log("[orientation] ORIENTATION FACE: NO DRIFT — the landscape phone (844×390, the md boundary crossed from below) finally censused (F-35a/b/c, the session-56 candidate 2 closed): the closed-state header flip IDENTICAL both apps (the hamburger retired, the desktop nav + the amber CTA rendered, the h1's md step), the auth card's landscape geometry IDENTICAL (the max-w-md card at x=198 — the exact (844−448)/2 centering — width 448, the short-height scrollability), and the print-landscape faces IDENTICAL (h1 white, body bg white, html ink black, ZERO @media print rules both sides — the round-30 zero-handling posture at the orientation axis); the OPEN-menu rotation ride (the state-coupled leg — the menu survives the crossing hidden and reopens on the way back, the reference's own face) rides the e2e battery in tests/e2e/mobile-navigation.spec.ts, pinned by tests/orientation-faces.test.ts");
   console.log("[storage] STORAGE-FAMILY FACE: NO DRIFT — the axis no probe ever read finally censused (F-37b): sessionStorage EMPTY on both pages both apps; the localStorage families ride the recorded per-side constants (the reference's platform implementation face, never mirrored — the landing's analytics four + the accumulated login union vs OUR zero-key posture everywhere; OURS the session rides the httpOnly cookie, document.cookie reads empty); the analytics id pinned by SHAPE (lowercase-alnum, length 20–22 observed, the 18–24 window — per-session random, never value-pinned), the app_id by its 24-hex shape; localStorage is per-origin — the login-after-landing face carries the union (the leg's own born-red catch); pinned by tests/storage-faces.test.ts");
   console.log("[network] NETWORK-FAMILY FACE: NO DRIFT — the request axis no probe ever read finally censused (F-38b): the document response-header face IDENTICAL both apps (the session-20 three-header security set present; the tech disclosure absent — the F-38a cure: OUR artifact's X-Powered-By retired by poweredByHeader: false, the scaffold default that disclosed the framework on every HTML face while the reference discloses none); the load-time request families ride the recorded per-side constants (the reference's four-beacon platform family — the User/me session check, the bodyless app-log, the public-settings fetch, the analytics batch with its {events:array(1)} shape — vs OUR zero-beacon document-only posture: every fetch in src/ is user-initiated, the beacon families absent from the tree; the platform family is base44 implementation, never mirrored); pinned by tests/network-faces.test.ts + tests/http-headers.test.ts");
+  console.log("[stack] COMBINATION-MATRIX FACE: NO DRIFT — the media-axis combinations no probe ever read finally censused (F-39b): under the FULL triple stack (forcedColors + colorScheme dark + reducedMotion, one emulateMedia call) every shared computed face IDENTICAL both apps — the dark system palette (the forced palette composes with the emulated scheme: the body canvas opaque black, the h1 CanvasText white, the CTA LinkText yellow, the featured card the dark Canvas) and the html color-scheme face reading light dark (the UA's forced reporting, vs normal at screen — a fresh constant both apps); the transition-duration pair rides the recorded per-side constants COMPOSING additively (the round-29 reduce collapse survives the forced palette — the a11y superset composes: REF still animates 0.3s/0.5s under the stack while OURS still collapses to the 1e-05s face — never beaten by the system palette); pinned by tests/stack-faces.test.ts + the round-39 e2e describe (the axe-under-combination families: the login's color-contrast(11) byte-identical both apps, the landing's 16, OUR dashboard's 22 — the artifact-class baseline)");
 } else {
-  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact + authfail + google + viewport + anchors + docs + routes + reset + reveal + motion-prefs + body-ink + forced-colors + color-scheme + orientation + storage + network] DRIFT DETECTED — ${out.length} field(s):`);
+  console.log(`[390 + login + preflight + motion + geometry + auth-validation + head + interact + authfail + google + viewport + anchors + docs + routes + reset + reveal + motion-prefs + body-ink + forced-colors + color-scheme + orientation + storage + network + stack] DRIFT DETECTED — ${out.length} field(s):`);
   for (const line of out) console.log(line);
 }
 
