@@ -191,7 +191,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 661 checks / 58 files**: the seam batteries (auth,
+- **Unit — Vitest, 665 checks / 58 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
@@ -515,7 +515,15 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   print/login/axe faces all IDENTICAL both apps; neither app ships an
   orientation directive — the landscape face is purely width-driven;
   the md:hidden pair + the three e2e legs' source contracts + the
-  AGENTS.md doc pin) — and
+  AGENTS.md doc pin) — EXTENDED round-43 with the ORIENTATION-A11Y
+  PIN (the round-42 recorded candidate, the five-round unshipped pin
+  shipped: the axe family at the landscape phone now rides e2e legs —
+  the auth family /login + /signup + /reset-password at 844×390 ZERO
+  violations outright, the landing's at-rest family pinned at exactly
+  the 16-node sanctioned register, the dashboard outright zero (the
+  F-32d orientation twin); the census live-probed both apps + the
+  artifact, byte-stable; the e2e source contracts + the AGENTS.md/PAD
+  doc pins) — and
   storage-faces — the round-37 battery that pins the STORAGE-FAMILY
   census + the inert-cooldown cure (the axis no probe ever read: the
   reference's platform writes localStorage key families per surface
@@ -592,7 +600,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   boundaries' comments always claimed) —
   comment-stripped source reads; a
   literal pinned by a comment alone is vacuous.
-- **E2E — Playwright, 137 checks / 8 specs**: the standalone artifact on
+- **E2E — Playwright, 142 checks / 8 specs**: the standalone artifact on
   :3100 with `db/e2e.db`; ONE shared login (`auth.setup.ts` →
   storageState — the auth endpoints are rate-limited 10/IP/15-min); one
   worker; alphabetical file order → every spec SELF-SUFFICIENT (its own

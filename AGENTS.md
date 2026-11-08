@@ -26,8 +26,8 @@ bun run start                    # the standalone server (production)
 
 bun run lint                     # eslint --max-warnings 0 (the 0/0 standard)
 bun run typecheck                # tsc --noEmit
-bun run test                     # vitest run  (661 checks / 58 files)
-bun run test:e2e                 # playwright (137 checks / 8 specs; needs build)
+bun run test                     # vitest run  (665 checks / 58 files)
+bun run test:e2e                 # playwright (142 checks / 8 specs; needs build)
 CI=1 bun run test:e2e            # force a fresh server (never reuse stale)
 
 bun run db:push                  # prisma db push (SQLite at repo/db/custom.db)
@@ -179,6 +179,8 @@ ships an orientation directive (no lock, no landscape meta); the
 toggle button and the panel wrap both carry `md:hidden` (remove either
 and the rotation ride breaks). Pinned by
 `tests/orientation-faces.test.ts`.
+
+**The orientation-a11y census (round-43):** the round-42 recorded candidate — the five-round unshipped pin shipped. The axe family at the landscape phone rides real e2e legs — the auth family at 844×390 (/login, /signup, /reset-password) computes ZERO violations outright (the reference's /login and /reset-password zero too; its /signup flag is its own soft-404 DeadEndPage h1 — OURS the working-signup superset, clean), the landing flags exactly the 16-node at-rest sanctioned family (byte-identical on the reference + its own select-name gap), and OUR /dashboard is zero outright (the round-32 F-32d sweep's orientation twin). Pinned by the round-43 describes in `tests/e2e/a11y.spec.ts` + the round-43 blocks of `tests/orientation-faces.test.ts`.
 
 **The storage posture (round-37):** the storage axis no probe ever
 read is censused end-to-end. OUR app ships the ZERO-KEY posture —

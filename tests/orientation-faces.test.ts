@@ -134,3 +134,70 @@ describe("round-35: the AGENTS.md doc cure (the fresh-agent pointer)", () => {
     expect(agents).toContain("WIDTH-DRIVEN");
   });
 });
+
+// ---------------------------------------------------------------------------
+// round-43: the ORIENTATION-A11Y PIN — the axe family at the landscape phone
+// (the round-42 recorded candidate, re-probed zero-violations rounds 37/39/
+// 40/41/42, the pin shipped here). The census (live 2026-11-08, both apps
+// twice + the standalone artifact once, byte-stable): the auth family at
+// 844×390 computes ZERO axe violations outright on OURS (/login, /signup,
+// /reset-password — the reference's /login and /reset-password zero too;
+// its /signup flag is its own soft-404 DeadEndPage h1), the landing flags
+// exactly the 16-NODE AT-REST SANCTIONED FAMILY (byte-identical node family
+// on the reference + its own select-name gap), and OUR /dashboard is ZERO
+// outright (the round-32 F-32d forced-colors sweep's orientation twin).
+// ---------------------------------------------------------------------------
+describe("round-43: the orientation-a11y e2e legs (the source contracts)", () => {
+  const a11y = strip(read("../tests/e2e/a11y.spec.ts"));
+
+  it("a11y.spec.ts rides the auth-family landscape describe — the guest-state census at 844×390, three outright-zero legs", () => {
+    // ① the describe's own name (a re-title or a deletion REDs)
+    expect(a11y).toContain("orientation-a11y census — the auth family at the landscape phone");
+    // the guest state — the auth surfaces ride the logged-out face (the
+    // auth-card describe's own opt-out shape)
+    expect(a11y).toMatch(/test\.use\(\{\s*storageState:\s*\{\s*cookies:\s*\[\],\s*origins:\s*\[\]\s*\}\s*\}\)/);
+    // the landscape viewport — the md-crossed width (the rotation family's
+    // own 844×390)
+    expect(a11y).toMatch(/setViewportSize\(\{\s*width:\s*844,\s*height:\s*390\s*\}\)/);
+    // the three auth surfaces each ride a leg (the construction anchors)
+    expect(a11y).toMatch(/landscape \/login \(844×390\)/);
+    expect(a11y).toMatch(/landscape \/signup \(844×390\)/);
+    expect(a11y).toMatch(/landscape \/reset-password \(844×390\)/);
+  });
+
+  it("the landscape landing leg pins the at-rest family at EXACTLY 16 with the register-citation loop", () => {
+    // ② the leg's own name
+    expect(a11y).toContain("landscape / (844×390)");
+    // the count pin — the census baseline (toHaveLength(16) is unique to
+    // this leg: the round-33 collapsed census rides toHaveLength(3) and
+    // the round-39 stack legs ride toBe(N); a moved count REDs here and
+    // forces a conscious re-record)
+    expect(a11y).toMatch(/toHaveLength\(16\)/);
+    // every flagged node must cite the sanctioned register (the two-gate
+    // arm — the loop the leg carries)
+    expect(a11y).toMatch(/cites no sanctioned matcher/);
+  });
+
+  it("the landscape dashboard leg pins outright zero — the F-32d orientation twin", () => {
+    // ③ the leg's own name + the outright-zero assertion it rides
+    expect(a11y).toContain("landscape /dashboard (844×390)");
+    expect(a11y).toMatch(/landscape \/dashboard \(844×390\)[\s\S]*?toEqual\(\[\]\)/);
+  });
+});
+
+describe("round-43: the doc cures (the fresh-agent pointers)", () => {
+  it("AGENTS.md's orientation-a11y census note + the PAD's orientation record carry the round-43 pin phrases", () => {
+    // ④ AGENTS.md gains the census note (the phrases UNWRAPPED — the
+    // round-40 line-wrap lesson: a pinned phrase broken across lines
+    // reads as absent from the raw doc)
+    expect(agents).toContain("The orientation-a11y census (round-43)");
+    expect(agents).toContain("ZERO violations outright");
+    expect(agents).toContain("16-node at-rest sanctioned family");
+    // the PAD's orientation-family census record gains the round-43
+    // extension (the pin's own record — the auth family + the count +
+    // the artifact legs)
+    const pad = read("../Project_Architecture_Document.md");
+    expect(pad).toContain("The orientation-a11y pin (round-43");
+    expect(pad).toContain("round-43 describes in `tests/e2e/a11y.spec.ts`");
+  });
+});

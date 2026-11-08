@@ -389,3 +389,92 @@ test.describe("round-39: the combination-matrix census (the stack families, the 
     expect(paint.bodyBg, "the stack's canvas is the opaque black").toBe("rgb(0, 0, 0)");
   });
 });
+
+// ---------------------------------------------------------------------------
+// Round-43: the ORIENTATION-A11Y census — the axe family at the landscape
+// phone (844×390, the md boundary crossed from below), the round-42 recorded
+// candidate (re-probed zero-violations rounds 37/39/40/41/42, the pin shipped
+// here). Live-probed 2026-11-08 both apps (twice) + the standalone artifact,
+// byte-stable across every run.
+// ---------------------------------------------------------------------------
+
+/** The round-43 landscape scan: axe at 844×390, the same declared-devDep
+ *  engine and settle shape as every census leg (never a CDN). */
+async function landscapeAxeScan(page: import("@playwright/test").Page, route: string) {
+  await page.setViewportSize({ width: 844, height: 390 });
+  await page.goto(route);
+  await page.waitForLoadState("networkidle").catch(() => {});
+  await page.waitForTimeout(1200);
+  await page.addScriptTag({ path: AXE_PATH });
+  return page.evaluate(async () => {
+    const axe = (
+      window as unknown as {
+        axe: { run: (o: object) => Promise<{ violations: Array<{ id: string; nodes: Array<{ target: string[] }> }> }> };
+      }
+    ).axe;
+    const r = await axe.run({
+      runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"] },
+    });
+    return r.violations.map((v) => ({ id: v.id, count: v.nodes.length, targets: v.nodes.map((n) => n.target.join(" ")) }));
+  });
+}
+
+test.describe("round-43: the orientation-a11y census — the auth family at the landscape phone (844×390)", () => {
+  // F-43a/F-43b (the census): the auth family at landscape computes ZERO
+  // axe violations OUTRIGHT on OURS — /login, /signup, /reset-password,
+  // structural AND contrast, no sanctioned register needed. The reference's
+  // /login and /reset-password are zero too (byte-identical clean faces);
+  // its /signup flags only its soft-404 DeadEndPage h1 (its own face —
+  // OURS is the working-signup superset, clean). The auth surfaces ride
+  // the GUEST face (the auth-card describe's own opt-out shape).
+  test.use({ storageState: { cookies: [], origins: [] } });
+
+  test("landscape /login (844×390) — structural zero AND contrast zero, outright (the F-43b census)", async ({ page }) => {
+    const violations = await landscapeAxeScan(page, "/login");
+    expect(violations, "the login landscape a11y census must be clean outright").toEqual([]);
+  });
+
+  test("landscape /signup (844×390) — structural zero AND contrast zero, outright (the working-signup superset)", async ({ page }) => {
+    const violations = await landscapeAxeScan(page, "/signup");
+    expect(violations, "the signup landscape a11y census must be clean outright").toEqual([]);
+  });
+
+  test("landscape /reset-password (844×390) — structural zero AND contrast zero, outright (the platform-family mirror)", async ({ page }) => {
+    const violations = await landscapeAxeScan(page, "/reset-password");
+    expect(violations, "the reset landscape a11y census must be clean outright").toEqual([]);
+  });
+});
+
+test.describe("round-43: the orientation-a11y census — the landing + workspace at the landscape phone (844×390)", () => {
+  // The same round's landing + workspace legs (the default authed state —
+  // the landing is public either way; the dashboard rides the storageState
+  // the suite's other dashboard legs ride). The census: the landing at
+  // landscape flags EXACTLY the 16-node AT-REST sanctioned family — the
+  // mount-visible hero eyebrow + the always-visible chips/testimonial/
+  // footer families, every node citing the register's existing arms (the
+  // count byte-identical on the reference, which additionally carries its
+  // own select-name gap OURS never ships); the dashboard at landscape is
+  // ZERO outright — the round-32 F-32d forced-colors sweep's orientation
+  // twin.
+  test("landscape /dashboard (844×390) — outright zero (the F-32d orientation twin)", async ({ page }) => {
+    const violations = await landscapeAxeScan(page, "/dashboard");
+    expect(violations, "the dashboard landscape a11y census must be clean outright").toEqual([]);
+  });
+
+  test("landscape / (844×390) — structural zero + the at-rest sanctioned family pinned at exactly 16 (the F-43b census)", async ({ page }) => {
+    const violations = await landscapeAxeScan(page, "/");
+    // GATE 1 — structural: everything outside color-contrast must be zero
+    const structural = violations.filter((v) => v.id !== "color-contrast");
+    expect(structural, "the landing landscape census: structural violations must be zero").toEqual([]);
+    // GATE 2 — the census SHAPE: exactly the 16-node at-rest family, every
+    // node citing the sanctioned register (the two-gate arm; a NEW
+    // unsanctioned landscape family REDs here)
+    const contrast = violations.find((v) => v.id === "color-contrast");
+    expect(contrast, "the landscape census carries the color-contrast rule").toBeDefined();
+    expect(contrast?.targets, "the landing's at-rest landscape family is exactly 16 nodes (the census baseline)").toHaveLength(16);
+    for (const target of contrast?.targets ?? []) {
+      const sanctioned = SANCTIONED["color-contrast"].some((m) => m.any.some((a) => target.includes(a)));
+      expect(sanctioned, `the landscape node "${target}" cites no sanctioned matcher`).toBe(true);
+    }
+  });
+});

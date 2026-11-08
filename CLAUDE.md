@@ -46,8 +46,8 @@ re-pinned to the reference's v3 palette).
    seams in `src/lib/` rather than inlining logic. Keep lint green as
    you go.
 5. **VERIFY** — Run the full gate: `bun run lint` → `bun run typecheck`
-   → `bun run test` (661) → `bun run build` → `./scripts/smoke-test.sh`
-   (14) → `CI=1 bun run test:e2e` (137). The `gate` script chains them.
+   → `bun run test` (665) → `bun run build` → `./scripts/smoke-test.sh`
+   (14) → `CI=1 bun run test:e2e` (142). The `gate` script chains them.
 6. **DOCUMENT** — Update the touched docs (`README.md`, this file, the
    PAD, `worklog.md`) in the same change; the counts in the docs must
    match the suites (the lockstep doctrine — doc claims about the tree
@@ -84,8 +84,8 @@ deep-linkable `/signup` + `/reset-password`.
 
 ```bash
 bun run dev        # :3000
-bun run test       # vitest (661 checks / 58 files)
-bun run test:e2e   # playwright (137 checks / 8 specs) — build first
+bun run test       # vitest (665 checks / 58 files)
+bun run test:e2e   # playwright (142 checks / 8 specs) — build first
 bun run gate       # the full chain, in order
 bun run db:census  # MUST print "pristine: MATCH" before you trust any db read
 ```
@@ -121,7 +121,7 @@ in production — the boot gate refuses to serve without it),
 
 ## Testing Strategy
 
-- **Unit (Vitest, 58 files / 661 checks)** — the seam batteries (auth,
+- **Unit (Vitest, 58 files / 665 checks)** — the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (`site-content`,
@@ -185,7 +185,16 @@ in production — the boot gate refuses to serve without it),
   reference's own face; the landscape print/login/axe faces all
   IDENTICAL both apps; neither app ships an orientation directive —
   the landscape face is purely width-driven; the md:hidden pair +
-  the three e2e legs' source contracts + the AGENTS.md doc pin),
+  the three e2e legs' source contracts + the AGENTS.md doc pin) —
+  EXTENDED round-43 with the ORIENTATION-A11Y PIN (the round-42
+  recorded candidate, the five-round unshipped pin shipped: the axe
+  family at the landscape phone now rides e2e legs — the auth family
+  /login + /signup + /reset-password at 844×390 ZERO violations
+  outright, the landing's at-rest family pinned at exactly the
+  16-node sanctioned register, the dashboard outright zero (the
+  F-32d orientation twin); the census live-probed both apps + the
+  artifact, byte-stable; the e2e source contracts + the AGENTS.md/
+  PAD doc pins),
   `storage-faces` — the round-37 battery: the storage-family census +
   the inert-cooldown cure (the axis no probe ever read: the reference's
   platform writes localStorage key families per surface — the landing's
