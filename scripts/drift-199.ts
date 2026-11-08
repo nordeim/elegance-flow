@@ -2738,11 +2738,24 @@ async function storageFace(url: string): Promise<StorageFace> {
 // zero-beacon posture (the document alone). F-38a (the round's catch):
 // OUR artifact's X-Powered-By disclosure — cured by
 // `poweredByHeader: false` (the shared face below was born RED).
+//
+// Round-40 extension (F-40a/b): the beacon payload's VALUE semantics
+// decoded (the round-38 leg pinned SHAPES only) — the event_name
+// CONSTANT, the timestamp/page_url/user_id/referrer/session_id SEMANTIC
+// FACES (constants and shapes, never per-session values), the
+// session_id ↔ localStorage LINKAGE (the [storage] leg's analytics id
+// and the beacon's session_id are two views of ONE per-session id),
+// and the INTERACTIVE sweep (the load-time family is the COMPLETE
+// family — interaction fires zero api-like requests, so
+// events:array(1) is the per-load constant, never a batching artifact).
 type NetworkFace = {
   requestFamily: string[]; // "METHOD /api/path/<hex-masked>" per load
   postShapes: string[]; // "pathname => {events:array(N)}" — shapes only
   poweredBy: string; // "absent" | "present"
   securitySet: string[]; // the three-header set, present-value form
+  beaconSemantics: string[]; // the decoded payload VALUE faces (round-40)
+  sessionLinkage: string; // the beacon session_id ↔ localStorage linkage (round-40)
+  interactiveFamily: string[]; // the api-like family fired post-settle interaction (round-40)
 };
 
 async function networkFace(url: string): Promise<NetworkFace> {
@@ -2752,6 +2765,16 @@ async function networkFace(url: string): Promise<NetworkFace> {
   const page = await context.newPage();
   const requestFamily: string[] = [];
   const postShapes: string[] = [];
+  // round-40: the beacon body captured for the VALUE decode + the
+  // post-settle linkage/interactive sweeps (never re-pinned per-value).
+  // A holder object — the closure assignment inside the listener is
+  // invisible to TS's control-flow narrowing of a bare `let` (the
+  // property read keeps the declared type)
+  const beacon: { body: { events?: Array<Record<string, unknown>> } | null } = { body: null };
+  // round-40: the interactive-phase router — after the load family
+  // settles the arrays clear and the listener routes new api-like
+  // requests to interactiveFamily (the complete-family census)
+  let interactivePhase = false;
   page.on("request", (r) => {
     const isDoc = r.resourceType() === "document";
     const isApiLike = /api|analytics|collect|track|beacon|telemetry|monitor|function/i.test(
@@ -2767,7 +2790,12 @@ async function networkFace(url: string): Promise<NetworkFace> {
     // mask the platform's 24-hex ids (per-app constant, never re-pinned
     // per-census) and the analytics/collector's opaque tail
     const masked = pathname.replace(/[0-9a-f]{24}/g, "<hex24>");
-    requestFamily.push(`${r.method()} ${masked}`);
+    const entry = `${r.method()} ${masked}`;
+    if (interactivePhase) {
+      interactiveFamily.push(entry);
+      return;
+    }
+    requestFamily.push(entry);
     const postData = r.postData();
     if (postData) {
       try {
@@ -2776,6 +2804,11 @@ async function networkFace(url: string): Promise<NetworkFace> {
           .map(([k, v]) => `${k}:${Array.isArray(v) ? `array(${v.length})` : typeof v}`)
           .join(",");
         postShapes.push(`${masked} => {${shape}}`);
+        // round-40: capture the analytics batch body (the ONE beacon
+        // family carrying events) for the VALUE-semantics decode
+        if (pathname.includes("/analytics/") && Array.isArray(parsed.events)) {
+          beacon.body = parsed as { events: Array<Record<string, unknown>> };
+        }
       } catch {
         postShapes.push(`${masked} => <non-json ${postData.length}B>`);
       }
@@ -2783,6 +2816,13 @@ async function networkFace(url: string): Promise<NetworkFace> {
   });
   let poweredBy = "absent";
   let securitySet: string[] = [];
+  // round-40: the linkage + interactive + value-semantics faces (computed
+  // in the try block below, AFTER the settle — the beacon body is
+  // captured by the listener during the load; decoding before the load
+  // reads an empty holder, the leg's own born-red live catch)
+  let sessionLinkage = "no-beacon";
+  const interactiveFamily: string[] = [];
+  const beaconSemantics: string[] = [];
   try {
     // the document response's header face: waitForResponse armed BEFORE
     // the probeLoad goto (probeLoad returns void; the response event is
@@ -2803,10 +2843,82 @@ async function networkFace(url: string): Promise<NetworkFace> {
         h["strict-transport-security"] ?? "(missing)",
       ];
     }
+    // round-40: the LINKAGE cross-check — the beacon's session_id vs
+    // localStorage's base44_analytics_session_id, read post-settle in
+    // the SAME context (the [storage] leg's analytics id and this leg's
+    // beacon session_id are two views of ONE per-session id; OURS has
+    // neither beacon nor storage key — the no-beacon face)
+    //
+    // The VALUE-semantics decode rides here too — AFTER the settle (the
+    // beacon body is captured by the listener during the load): constants
+    // and semantic FACES only, never per-session values (the event_name is
+    // a platform CONSTANT; the timestamp/page_url/user_id/referrer/
+    // session_id ride face decodes)
+    if (beacon.body && Array.isArray(beacon.body.events) && beacon.body.events[0]) {
+      const ev = beacon.body.events[0] as Record<string, unknown>;
+      beaconSemantics.push(
+        `event_name:${ev.event_name === "__initialization_event__" ? "const-__initialization_event__" : `other:${String(ev.event_name)}`}`,
+      );
+      const ts = typeof ev.timestamp === "string" ? ev.timestamp : "";
+      beaconSemantics.push(
+        `timestamp:${/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(ts) ? "iso8601-utc-ms" : "other"}`,
+      );
+      const pu = typeof ev.page_url === "string" ? ev.page_url : "";
+      beaconSemantics.push(
+        `page_url:${pu.startsWith("/") && !pu.includes("://") ? "path-only" : "other"}`,
+      );
+      beaconSemantics.push(`user_id:${ev.user_id === null ? "null-guest" : "other"}`);
+      const props = (ev.properties ?? {}) as Record<string, unknown>;
+      beaconSemantics.push(
+        `referrer:${props.referrer === "" ? "empty-direct" : "other"}`,
+      );
+      const sid = typeof ev.session_id === "string" ? ev.session_id : "";
+      beaconSemantics.push(
+        `session_id:${/^[0-9a-z]{18,24}$/.test(sid) ? "lower-alnum-18-24" : "other"}`,
+      );
+    }
+    const lsId = await page
+      .evaluate(() => window.localStorage.getItem("base44_analytics_session_id"))
+      .catch(() => null);
+    const beaconSid =
+      beacon.body?.events?.[0] && typeof beacon.body.events[0].session_id === "string"
+        ? (beacon.body.events[0].session_id as string)
+        : null;
+    sessionLinkage =
+      beaconSid === null
+        ? "no-beacon"
+        : lsId === null
+          ? "no-storage-key"
+          : beaconSid === lsId
+            ? "linked"
+            : "unlinked";
+    // round-40: the INTERACTIVE sweep — the load family settles, the
+    // phase flips (the listener routes to interactiveFamily), one CTA
+    // click rides, and the api-like family fired by the interaction is
+    // captured (the complete-family census: the platform fires NOTHING
+    // further — events:array(1) is the per-load constant, never a
+    // batching artifact)
+    interactivePhase = true;
+    // the hero's primary CTA anchor (both apps carry the byte-identical
+    // landing; .first() disambiguates from the header's matching CTA)
+    await page
+      .locator('a:has-text("Start a Project")')
+      .first()
+      .click()
+      .catch(() => {}); // the CTA anchor ride (both apps carry it)
+    await page.waitForTimeout(2000);
   } finally {
     await context.close();
   }
-  return { requestFamily: [...new Set(requestFamily)].sort(), postShapes, poweredBy, securitySet };
+  return {
+    requestFamily: [...new Set(requestFamily)].sort(),
+    postShapes,
+    poweredBy,
+    securitySet,
+    beaconSemantics,
+    sessionLinkage,
+    interactiveFamily: [...new Set(interactiveFamily)].sort(),
+  };
 }
 
 {
@@ -2814,6 +2926,11 @@ async function networkFace(url: string): Promise<NetworkFace> {
   const label = "[network]";
   // the IDENTICAL faces — the response-header contract both apps ship
   diff(label, refN.poweredBy, oursN.poweredBy, "the document's X-Powered-By face (absent both apps — the F-38a cure)", out);
+  // round-40: the IDENTICAL interactive family — the complete-family
+  // census (interaction fires ZERO api-like requests on BOTH apps; the
+  // platform's batch endpoint carries its one per-load event, never a
+  // click-driven batch)
+  diff(label, refN.interactiveFamily, oursN.interactiveFamily, "the interactive api-like family (zero both apps — the load-time family is the COMPLETE family)", out);
   // the per-side recorded constants — the request families (the
   // reference's four-beacon platform family vs OUR zero-beacon
   // document-only posture; the platform family is base44
@@ -2836,6 +2953,21 @@ async function networkFace(url: string): Promise<NetworkFace> {
         "nosniff",
         "max-age=31536000",
       ],
+      // round-40 (F-40b): the beacon payload's decoded VALUE semantics —
+      // the event_name CONSTANT, the semantic FACES (iso8601-utc-ms,
+      // path-only, null-guest, empty-direct, lower-alnum-18-24), and the
+      // LINKAGE (the beacon's session_id === the storage leg's
+      // base44_analytics_session_id — two views of ONE per-session id)
+      beaconSemantics: [
+        "event_name:const-__initialization_event__",
+        "timestamp:iso8601-utc-ms",
+        "page_url:path-only",
+        "user_id:null-guest",
+        "referrer:empty-direct",
+        "session_id:lower-alnum-18-24",
+      ],
+      sessionLinkage: "linked",
+      interactiveFamily: [],
     },
     refN,
     out,
@@ -2852,6 +2984,11 @@ async function networkFace(url: string): Promise<NetworkFace> {
         "nosniff",
         "max-age=31536000",
       ],
+      // round-40: OUR zero-beacon posture — no beacon to decode, no
+      // storage key to link (the strictly cleaner face)
+      beaconSemantics: [],
+      sessionLinkage: "no-beacon",
+      interactiveFamily: [],
     },
     oursN,
     out,

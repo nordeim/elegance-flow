@@ -1427,3 +1427,43 @@ test.describe("round-38: the zero-disclosure header face (the network-family cen
     expect(headers["strict-transport-security"]).toBe("max-age=31536000");
   });
 });
+
+test.describe("round-40: the runtime zero-request family (the beacon-payload value census contract)", () => {
+  // F-40c: the runtime twin of the network-faces source census. The
+  // source pins read src/ only — a dependency-planted beacon (its
+  // sendBeacon living in node_modules, outside the census needles)
+  // would fire on the wire while every source pin stays green. This
+  // describe pins what actually fires: the ARTIFACT's landing load is
+  // the document alone (zero api-like requests), and interaction (the
+  // CTA click) fires nothing further — the load-time family is the
+  // COMPLETE family (the reference's own platform fires exactly one
+  // __initialization_event__ batch per load and NOTHING on interaction;
+  // OURS ships the strictly cleaner zero-beacon posture).
+  const apiLike = /api|analytics|collect|track|beacon|telemetry|monitor|function/i;
+
+  test("the load-time family is the document alone — zero api-like requests on the landing load", async ({ page }) => {
+    const fired: string[] = [];
+    page.on("request", (r) => {
+      if (r.resourceType() === "document") return; // the document itself
+      if (r.url().match(apiLike) === null) return; // (never apiLike.test( — the count-ladder census counts bare test( blocks)
+      fired.push(`${r.method()} ${new URL(r.url()).pathname}`);
+    });
+    await page.goto("/");
+    await page.waitForTimeout(2500); // the settle window (a planted load-time beacon fires here)
+    expect(fired, "the api-like load-time request family (the zero-beacon posture)").toEqual([]);
+  });
+
+  test("the interactive zero — a CTA click fires no api-like request (the complete family)", async ({ page }) => {
+    await page.goto("/");
+    await page.waitForTimeout(1000);
+    const fired: string[] = [];
+    page.on("request", (r) => {
+      if (r.resourceType() === "document") return;
+      if (r.url().match(apiLike) === null) return;
+      fired.push(`${r.method()} ${new URL(r.url()).pathname}`);
+    });
+    await page.locator('a:has-text("Start a Project")').first().click();
+    await page.waitForTimeout(1500);
+    expect(fired, "the api-like interactive request family (zero — interaction never beacons)").toEqual([]);
+  });
+});

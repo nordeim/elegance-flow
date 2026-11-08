@@ -26,8 +26,8 @@ bun run start                    # the standalone server (production)
 
 bun run lint                     # eslint --max-warnings 0 (the 0/0 standard)
 bun run typecheck                # tsc --noEmit
-bun run test                     # vitest run  (648 checks / 58 files)
-bun run test:e2e                 # playwright (133 checks / 8 specs; needs build)
+bun run test                     # vitest run  (653 checks / 58 files)
+bun run test:e2e                 # playwright (135 checks / 8 specs; needs build)
 CI=1 bun run test:e2e            # force a fresh server (never reuse stale)
 
 bun run db:push                  # prisma db push (SQLite at repo/db/custom.db)
@@ -218,9 +218,20 @@ Next's scaffold default disclosed the framework on every HTML face
 while the reference discloses none); the per-side infra families (the
 reference's cloudflare/Caddy/uvicorn, OURS the x-nextjs cache
 diagnostics) are implementation plumbing, recorded per side, never
-mirrored. Pinned by `tests/network-faces.test.ts` +
-`tests/http-headers.test.ts` (the config pin); re-probed live by
-the drift `[network]` leg (the 23rd).
+mirrored. Extended round-40 (F-40b — the beacon payload's VALUE
+semantics): the platform's only event is the CONSTANT
+`__initialization_event__` (an iso8601-utc-ms timestamp, a path-only
+page_url, a null-guest user_id, an empty-direct referrer on the
+guest load, a lower-alnum-18-24 session_id) — and
+the load-time family is the COMPLETE family (interaction fires zero
+api-like requests; `events:array(1)` is the per-load constant, never
+a batching artifact). The beacon's session_id and the storage
+family's `base44_analytics_session_id` are
+two views of ONE per-session id (the [network]/[storage] legs
+cross-check the linkage; never assume they are independent). Pinned
+by `tests/network-faces.test.ts` + `tests/http-headers.test.ts` (the
+config pin) + the round-40 e2e runtime zero-request legs; re-probed
+live by the drift `[network]` leg (the 23rd).
 
 **The stack posture (round-39):** the media-axis COMBINATIONS are
 censused end-to-end. Rounds 29/31/32 censused reduce / forcedColors /

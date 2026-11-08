@@ -160,3 +160,95 @@ describe("round-38: the doc + battery cures (the fresh-agent pointers)", () => {
     expect(headers).toContain("F-38a");
   });
 });
+
+// ---------------------------------------------------------------------------
+// ③ round-40: the beacon-payload VALUE census + the runtime zero-request
+// pin (F-40a/b/c — born RED: the leg/e2e/doc ships land with R-3/R-4/R-6)
+// ---------------------------------------------------------------------------
+describe("round-40: the beacon-payload value semantics (the value census + the linkage)", () => {
+  it("the drift [network] leg decodes the beacon payload VALUES — the event_name constant, the ISO-timestamp shape, the path-only page_url, the guest user_id, the direct-load referrer, the session_id shape", () => {
+    // F-40a/F-40b: the round-38 leg pinned SHAPES only ({events:array(1)});
+    // the values were never decoded — the platform's semantics (the
+    // __initialization_event__ constant, the ISO-8601-with-ms timestamp,
+    // the path-only page_url, the guest null user_id, the empty-string
+    // direct-load referrer, the lower-alnum session_id in the 18–24
+    // window) are now census constants a platform change must re-record
+    const drift = read("../scripts/drift-199.ts");
+    expect(drift).toContain("beaconSemantics");
+    expect(drift).toContain("__initialization_event__");
+    expect(drift, "the ISO-8601 timestamp shape decode").toContain(
+      "iso8601-utc-ms",
+    );
+    expect(drift, "the path-only page_url face").toContain("path-only");
+    expect(drift, "the guest user_id face").toContain("null-guest");
+    expect(drift, "the direct-load referrer face").toContain("empty-direct");
+    // decode-unique construction anchors (the face strings alone live in
+    // the recorded constants too — a pin that cannot distinguish the
+    // decode from the constants cannot catch the decode's removal):
+    // the event_name comparison + the ISO-8601 regex ride ONLY in the
+    // networkFace decode block
+    expect(drift, "the decode's event_name comparison").toContain(
+      'ev.event_name === "__initialization_event__"',
+    );
+    expect(drift, "the decode's ISO-8601 regex").toContain(
+      "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}",
+    );
+  });
+
+  it("the drift [network] leg cross-checks the LINKAGE — the beacon's session_id === localStorage's base44_analytics_session_id (the storage family and the beacon family ride ONE per-session id)", () => {
+    // F-40b's cross-leg finding: the [storage] leg's analytics-id key and
+    // the [network] leg's beacon session_id are two views of ONE id —
+    // born in different rounds, never cross-checked until round-40; the
+    // leg now reads the storage key post-settle and compares it against
+    // the decoded beacon body in the SAME context
+    const drift = read("../scripts/drift-199.ts");
+    expect(drift).toContain("sessionLinkage");
+    // the linkage read rides INSIDE networkFace (the [network] leg's own
+    // post-settle evaluate — not merely the key name, which the [storage]
+    // leg also carries; this pins the cross-check's construction site)
+    expect(drift, "the [network] leg's own analytics-id read").toContain(
+      'getItem("base44_analytics_session_id")',
+    );
+    // the decode's outcome vocabulary — "no-storage-key" rides ONLY the
+    // networkFace ternary (the recorded constants carry "linked", so the
+    // bare "linked" cannot distinguish the compute from the constant)
+    expect(drift).toContain('"no-storage-key"');
+    expect(drift).toContain('"unlinked"');
+  });
+
+  it("the drift [network] leg sweeps the INTERACTIVE axis — the load-time family is the COMPLETE family (interaction fires zero api-like requests)", () => {
+    // F-40b's batch question answered: the endpoint's name says "batch"
+    // but interaction (the CTA click) fires ZERO further requests — the
+    // events:array(1) shape is the per-load constant, never a batching
+    // artifact; the leg clears the family post-settle, clicks, and
+    // expects zero on BOTH apps (the shared face)
+    const drift = read("../scripts/drift-199.ts");
+    expect(drift).toContain("interactiveFamily");
+    // the interactive-phase router — the flag that flips the listener's
+    // routing after the settle (unique to the sweep's construction; the
+    // bare name also rides the type field and the recorded constants)
+    expect(drift, "the interactive-phase router flag").toContain(
+      "interactivePhase",
+    );
+  });
+
+  it("AGENTS.md names the value semantics — the event_name constant, the linkage, the complete-family rule", () => {
+    // a fresh agent must know the beacon's decoded semantics before
+    // "fixing" a shape pin or planting a load-time/interactive beacon
+    expect(agents).toContain("__initialization_event__");
+    expect(agents).toContain("the load-time family is the COMPLETE family");
+    expect(agents, "the cross-leg linkage rule").toContain(
+      "two views of ONE per-session id",
+    );
+  });
+
+  it("the e2e battery pins the ARTIFACT's runtime load-time zero-request family — the round-40 describe in landing.spec.ts", () => {
+    // F-40c: the source census reads src/ only — a dependency-planted
+    // beacon (its sendBeacon living in node_modules) would fire on the
+    // wire while every source pin stays green; the runtime leg closes
+    // the class: whatever fires, fires on the wire (the document alone)
+    const spec = read("../tests/e2e/landing.spec.ts");
+    expect(spec).toContain("round-40");
+    expect(spec).toContain("zero-request");
+  });
+});

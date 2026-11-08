@@ -46,8 +46,8 @@ re-pinned to the reference's v3 palette).
    seams in `src/lib/` rather than inlining logic. Keep lint green as
    you go.
 5. **VERIFY** — Run the full gate: `bun run lint` → `bun run typecheck`
-   → `bun run test` (648) → `bun run build` → `./scripts/smoke-test.sh`
-   (14) → `CI=1 bun run test:e2e` (133). The `gate` script chains them.
+   → `bun run test` (653) → `bun run build` → `./scripts/smoke-test.sh`
+   (14) → `CI=1 bun run test:e2e` (135). The `gate` script chains them.
 6. **DOCUMENT** — Update the touched docs (`README.md`, this file, the
    PAD, `worklog.md`) in the same change; the counts in the docs must
    match the suites (the lockstep doctrine — doc claims about the tree
@@ -84,8 +84,8 @@ deep-linkable `/signup` + `/reset-password`.
 
 ```bash
 bun run dev        # :3000
-bun run test       # vitest (648 checks / 58 files)
-bun run test:e2e   # playwright (133 checks / 8 specs) — build first
+bun run test       # vitest (653 checks / 58 files)
+bun run test:e2e   # playwright (135 checks / 8 specs) — build first
 bun run gate       # the full chain, in order
 bun run db:census  # MUST print "pristine: MATCH" before you trust any db read
 ```
@@ -121,7 +121,7 @@ in production — the boot gate refuses to serve without it),
 
 ## Testing Strategy
 
-- **Unit (Vitest, 58 files / 648 checks)** — the seam batteries (auth,
+- **Unit (Vitest, 58 files / 653 checks)** — the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (`site-content`,
@@ -198,19 +198,28 @@ in production — the boot gate refuses to serve without it),
   zero-localStorage census + the single sanctioned sessionStorage seam +
   the seam's storage purity + the drift [storage] leg + the AGENTS.md
   doc pin),
-  `network-faces` — the round-38 battery: the network-family census +
-  the tech-disclosure cure (the request axis no probe ever read: the
-  reference's platform fires a four-request beacon family per landing
-  load — the User/me session check, the bodyless app-log, the
-  public-settings fetch, the analytics batch — vs OUR zero-beacon
-  document-only posture: every fetch in src/ user-initiated, the
-  beacon families absent from the tree; the F-38a catch: the scaffold
-  default `poweredByHeader: true` disclosed `X-Powered-By: Next.js` on
-  every server-rendered HTML face while the reference ships none —
-  cured by the one-flag `poweredByHeader: false`; the beacon
-  impossibility census + the same-origin fetch census + the drift
-  [network] leg + the e2e zero-disclosure legs + the AGENTS.md doc
-  pin) —
+  `network-faces` — the round-38 battery (extended round-40): the
+  network-family census + the tech-disclosure cure (the request axis
+  no probe ever read: the reference's platform fires a four-request
+  beacon family per landing load — the User/me session check, the
+  bodyless app-log, the public-settings fetch, the analytics batch —
+  vs OUR zero-beacon document-only posture: every fetch in src/
+  user-initiated, the beacon families absent from the tree; the F-38a
+  catch: the scaffold default `poweredByHeader: true` disclosed
+  `X-Powered-By: Next.js` on every server-rendered HTML face while
+  the reference ships none — cured by the one-flag
+  `poweredByHeader: false`; the beacon impossibility census + the
+  same-origin fetch census + the drift [network] leg + the e2e
+  zero-disclosure legs + the AGENTS.md doc pin; the round-40
+  extension — the beacon-payload VALUE census: the event_name
+  constant `__initialization_event__`, the iso8601-utc-ms timestamp,
+  the path-only page_url, the null-guest user_id, the session_id ↔
+  localStorage LINKAGE (two views of ONE per-session id), the
+  interactive-zero sweep (the load-time family is the COMPLETE
+  family — interaction fires zero api-like requests), and the e2e
+  runtime zero-request legs (the artifact's on-the-wire twin of the
+  source census — a dependency-planted beacon in node_modules evades
+  the src-only needles; the wire closes the class)) —
   `stack-faces` — the round-39 battery: the combination-matrix census +
   the stack-a11y pin (the media-axis combinations no probe ever read:
   the pairwise forced+scheme-dark and the full triple stack censused —
