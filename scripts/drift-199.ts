@@ -142,6 +142,16 @@ function diff(label: string, a: unknown, b: unknown, path: string, out: string[]
 // The img's SRC rides per-side constants (theirs the base44 CDN vs ours
 // /icon.png — the round-24 never-their-CDN doctrine, the expectConst
 // pattern).
+// Round-42 (F-42b) EXTENSION: the PLATFORM-CONFIG family — the
+// frontend-config.js script response the leg loads but never read
+// (the /login surface's own member: the platform auth chrome's config
+// record, `window.__APP_CONFIG__ = {...}`, application/javascript).
+// Decoded as faces: the sorted KEY SET (the structural census — 35 at
+// the record), the marker constants (APP_FLAVOR/FIVERR_ENV), the
+// MOVING values masked (GIT_SHA → the hex40 shape; the per-VISITOR
+// experiments uuid → the visitor face), and the flag constants.
+// OURS ships the ZERO-SCRIPT-CONFIG posture (the login surface fires
+// no platform-config family — the strictly cleaner face).
 type LoginFace = {
   cardColor: string;
   google: { color: string; border: string };
@@ -149,6 +159,7 @@ type LoginFace = {
   dividerColor: string;
   inputPad: string;
   submitPad: string;
+  platformConfig: string[];
   logo: {
     spanRadius: string;
     spanOverflow: string;
@@ -166,12 +177,34 @@ type LoginFace = {
 async function loginFace(url: string): Promise<LoginFace> {
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   const page = await context.newPage();
+  // round-42: the PLATFORM-CONFIG capture — the response listener armed
+  // BEFORE the probeLoad goto (the script fires during the load; the
+  // body is gathered as it arrives and decoded post-settle — the
+  // round-41 networkFace promise-collection pattern)
+  const platformConfig: string[] = [];
+  const configBody: { text: string | null } = { text: null };
+  let configType = "";
+  const configPromise = (async () => {
+    try {
+      const resp = await page.waitForResponse(
+        (r) => r.url().includes("frontend-config.js") && r.request().resourceType() !== "document",
+        { timeout: 8_000 },
+      );
+      configType = (resp.headers()["content-type"] ?? "").split(";")[0];
+      configBody.text = await resp.text();
+    } catch {
+      configBody.text = null; // the surface fired no config script (OURS)
+    }
+  })();
   await probeLoad(page, `${url}/login`);
   await page.waitForTimeout(1200);
   // The permissive annotation widens the evaluate's inferred literal so
   // the dynamic googleHover addition below type-checks (the parity
-  // script's Face pattern).
-  const base: LoginFace = await page.evaluate(() => {
+  // script's Face pattern). platformConfig rides OUTSIDE the evaluate —
+  // the round-42 decode happens in node (the response body never
+  // touches the page context), so the evaluate's literal is the
+  // Omit<LoginFace, "platformConfig"> subset.
+  const base: Omit<LoginFace, "platformConfig"> = await page.evaluate(() => {
     const cs = (el: Element | null | undefined) => (el ? getComputedStyle(el as HTMLElement) : null);
     const h1 = document.querySelector("h1");
     const card = h1?.closest("form")?.parentElement ?? h1?.closest("div[class*='rounded']");
@@ -223,8 +256,36 @@ async function loginFace(url: string): Promise<LoginFace> {
     });
     if (hover) base.googleHover = hover;
   }
+  // round-42: the PLATFORM-CONFIG decode — post-settle (the promise has
+  // resolved or timed out by now; the round-41 timing lesson: never
+  // decode before the load settles). Faces only: the sorted key set
+  // (the structural census), the marker constants, the MOVING values
+  // masked (the per-build sha → hex40; the per-visitor uuid → the
+  // visitor face) — never per-visitor or per-build values
+  await configPromise;
+  if (configBody.text !== null) {
+    const m = configBody.text.match(/window\.__APP_CONFIG__\s*=\s*([\s\S]*?)\s*;?\s*$/);
+    if (m) {
+      try {
+        const obj = JSON.parse(m[1]) as Record<string, unknown>;
+        platformConfig.push(`content-type:${configType}`);
+        platformConfig.push(`keyset:${Object.keys(obj).sort().join(",")}`);
+        if (obj.APP_FLAVOR === "platform") platformConfig.push("APP_FLAVOR:platform");
+        if (obj.FIVERR_ENV === "prod") platformConfig.push("FIVERR_ENV:prod");
+        if (typeof obj.GIT_SHA === "string" && /^[0-9a-f]{40}$/.test(obj.GIT_SHA)) {
+          platformConfig.push("GIT_SHA:hex40");
+        }
+        const exp = obj.PRE_AUTH_EXPERIMENTS;
+        if (exp !== null && typeof exp === "object" && typeof (exp as Record<string, unknown>).visitor_id === "string") {
+          platformConfig.push("PRE_AUTH_EXPERIMENTS:visitor-uuid+assignments");
+        }
+      } catch {
+        platformConfig.push(`config-parse-failed:${configBody.text.length}B`);
+      }
+    }
+  }
   await context.close();
-  return base;
+  return { ...base, platformConfig };
 }
 
 // The round-14 PREFLIGHT-FACE census: the form faces the preflights
@@ -488,6 +549,20 @@ expectConst(
   out,
 );
 expectConst("[login]", "OURS", "/icon.png", oursLogin.logo.imgSrc, out);
+// round-42 (F-42b): the PLATFORM-CONFIG per-side constants — the
+// reference's decoded config-script faces (the sorted 35-key set, the
+// marker constants, the masked moving values) vs OURS's
+// zero-script-config posture (the login surface fires no
+// platform-config family)
+expectConst("[login]", "REF", [
+  "content-type:application/javascript",
+  "keyset:APPS_BASE_DOMAIN,APP_FLAVOR,BACKEND_URL,BACKOFFICE_OKTA_LOGIN_ENABLED,BACKOFFICE_OKTA_ONLY,BACKOFFICE_RESOURCE_SEARCH_AVAILABLE,BACKOFFICE_URL,CODER_REMOTE_DEV_PLATFORM_BASE_DOMAIN,DATADOG_APPLICATION_ID,DATADOG_CLIENT_TOKEN,DATADOG_ENABLE_DEV,DATADOG_SERVICE,DATADOG_SITE,FERPA_STAFF_ACCESS_NOTIFICATIONS_ENABLED,FIVERR_ENV,FIVERR_SDK_CDN_PROD,FIVERR_SDK_CDN_TEST,FROG_ENABLED,GIT_SHA,GOOGLE_CLIENT_ID,MIXPANEL_ENABLED,MP_CDN_DOMAIN,NATIVE_CONSENT_ENABLED,PLATFORM_URL,PRE_AUTH_EXPERIMENTS,PRE_AUTH_FLAGS,PRE_AUTH_FLAG_OVERRIDES,SDK_BACKEND_URL,SUPERAGENT_PLATFORM_URL,TENZAI_APP_URL,TURNSTILE_ENABLED,TURNSTILE_LOGIN_ENABLED,TURNSTILE_PASSWORD_RESET_ENABLED,TURNSTILE_SITE_KEY,WS_BACKEND_URL",
+  "APP_FLAVOR:platform",
+  "FIVERR_ENV:prod",
+  "GIT_SHA:hex40",
+  "PRE_AUTH_EXPERIMENTS:visitor-uuid+assignments",
+], refLogin.platformConfig, out);
+expectConst("[login]", "OURS", [], oursLogin.platformConfig, out);
 
 // The round-14 preflight-face leg (the landing's form faces at 1280)
 const [refPreflight, oursPreflight] = await Promise.all([preflightFace(REF), preflightFace(OURS)]);

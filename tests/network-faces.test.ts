@@ -337,3 +337,83 @@ describe("round-41: the response-body semantics (the response census + the statu
     expect(spec).toContain("zero-response");
   });
 });
+
+describe("round-42: the frontend-config platform-config semantics (the login-surface family's last unread member)", () => {
+  it("the drift [login] leg decodes the PLATFORM-CONFIG record — the key set, the marker constants, the moving-value faces (the sha + the per-visitor experiments)", () => {
+    // F-42a/F-42b: round-41 decoded the login-surface family's
+    // domain/login-info/User-me members and SAW the frontend-config.js
+    // script response; its structure rode no record — the platform's
+    // config record (35 keys, the BACKEND/TURNSTILE/GOOGLE_CLIENT_ID/
+    // DATADOG/MIXPANEL families, the per-build GIT_SHA, the per-VISITOR
+    // experiments uuid) is now a census a platform change must re-record
+    const drift = read("../scripts/drift-199.ts");
+    expect(drift).toContain("platformConfig");
+    // decode-unique construction anchors (the response listener armed
+    // inside loginFace BEFORE the probeLoad goto — the script fires
+    // during the load; the frontend-config capture rides ONLY here)
+    expect(drift, "the frontend-config capture").toContain(
+      "frontend-config.js",
+    );
+    // the keyset decode — the structural census (which key moved, not
+    // just how many); the construction anchor rides the sorted-join
+    // (decode-unique — the bare "keyset:" prefix also rides the
+    // recorded constants row)
+    expect(drift, "the keyset sorted-join decode").toContain(
+      "Object.keys(obj).sort().join",
+    );
+    // the MOVING-value faces, masked (never pinned per-value): the
+    // per-build sha → the hex40 shape; the per-visitor experiments →
+    // the visitor-uuid face
+    expect(drift, "the sha hex40 mask").toContain("hex40");
+    expect(drift, "the per-visitor face vocabulary").toContain(
+      "visitor-uuid+assignments",
+    );
+  });
+
+  it("the drift leg's recorded constants carry the decoded platformConfig rows — OURS's zero-script-config face", () => {
+    // the RECORDED per-side constants (the constants-block literals —
+    // decode-unique in reverse: the decode produces these faces from
+    // the wire, never from literals, so the literals live ONLY in the
+    // expectConst rows a mutation of the constants block must trip)
+    const drift = read("../scripts/drift-199.ts");
+    expect(drift, "the marker constant APP_FLAVOR").toContain(
+      "APP_FLAVOR:platform",
+    );
+    expect(drift, "the marker constant FIVERR_ENV").toContain(
+      "FIVERR_ENV:prod",
+    );
+    expect(drift, "the sha face constant").toContain("GIT_SHA:hex40");
+    expect(drift, "the keyset constant rides the sorted 35").toContain(
+      "keyset:APPS_BASE_DOMAIN,APP_FLAVOR",
+    );
+  });
+
+  it("AGENTS.md + the PAD name the frontend-config semantics — the key-set census, the moving-value rule, the surface scope", () => {
+    // a fresh agent must know the platform-config record's shape before
+    // "fixing" a keyset pin or planting a script-config responder — and
+    // the PAD §2 record carries the decoded census (the 35-key set, the
+    // per-visitor face, the login-surface-only scope)
+    expect(agents, "the never-mirror rule for the platform config").toContain(
+      "never mirror the platform's config script",
+    );
+    expect(agents, "the login-surface scope rule").toContain(
+      "the LANDING never fetches it",
+    );
+    const pad = read("../Project_Architecture_Document.md");
+    expect(pad, "the PAD §2 record's key count").toContain("35 keys");
+    expect(pad, "the per-visitor face record").toContain(
+      "per-VISITOR uuid",
+    );
+  });
+
+  it("the e2e battery pins the ARTIFACT's LOGIN-surface zero-api-like-RESPONSE family — the round-42 describe in landing.spec.ts", () => {
+    // F-42c: the login-surface runtime twin — the round-40/41 legs pin
+    // the LANDING's request/response families; the AUTH surface's
+    // response family rides its own runtime leg (a dependency-planted
+    // script-config responder on the login surface would arrive on the
+    // wire while every landing-scoped pin stays green)
+    const spec = read("../tests/e2e/landing.spec.ts");
+    expect(spec).toContain("round-42");
+    expect(spec).toContain("login surface");
+  });
+});

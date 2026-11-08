@@ -26,8 +26,8 @@ bun run start                    # the standalone server (production)
 
 bun run lint                     # eslint --max-warnings 0 (the 0/0 standard)
 bun run typecheck                # tsc --noEmit
-bun run test                     # vitest run  (657 checks / 58 files)
-bun run test:e2e                 # playwright (136 checks / 8 specs; needs build)
+bun run test                     # vitest run  (661 checks / 58 files)
+bun run test:e2e                 # playwright (137 checks / 8 specs; needs build)
 CI=1 bun run test:e2e            # force a fresh server (never reuse stale)
 
 bun run db:push                  # prisma db push (SQLite at repo/db/custom.db)
@@ -242,7 +242,18 @@ The response side rides the drift `[network]` leg's
 `responseSemantics` constants + the round-41 e2e runtime zero-response
 leg (the response-event twin of the round-40 request legs — a
 service-worker-served or prefetched api-like response arrives without
-a page-initiated request event). Pinned
+a page-initiated request event). Extended round-42 (F-42b — the
+frontend-config platform-config census): the /login surface's own
+config member, `GET /api/frontend-config.js?v=3` → 200
+application/javascript — the `window.__APP_CONFIG__` record (35 keys:
+the BACKEND/PLATFORM/SDK URL family, the TURNSTILE key + its three
+flags, GOOGLE_CLIENT_ID, the DATADOG/MIXPANEL/FIVERR families,
+GIT_SHA, APP_FLAVOR "platform"); the LANDING never fetches it (the
+platform auth chrome's own script); the MOVING values are
+face-decoded (the per-build GIT_SHA hex40, the per-VISITOR
+experiments uuid — never pinned per-value); never mirror the platform's config script — OURS ships the zero-script-config posture
+(the drift `[login]` leg's `platformConfig` constants + the round-42
+e2e login-surface zero-response leg pin it). Pinned
 by `tests/network-faces.test.ts` + `tests/http-headers.test.ts` (the
 config pin) + the round-40 e2e runtime zero-request legs + the
 round-41 e2e runtime zero-response leg; re-probed

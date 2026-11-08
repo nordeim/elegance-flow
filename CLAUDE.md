@@ -46,8 +46,8 @@ re-pinned to the reference's v3 palette).
    seams in `src/lib/` rather than inlining logic. Keep lint green as
    you go.
 5. **VERIFY** — Run the full gate: `bun run lint` → `bun run typecheck`
-   → `bun run test` (657) → `bun run build` → `./scripts/smoke-test.sh`
-   (14) → `CI=1 bun run test:e2e` (136). The `gate` script chains them.
+   → `bun run test` (661) → `bun run build` → `./scripts/smoke-test.sh`
+   (14) → `CI=1 bun run test:e2e` (137). The `gate` script chains them.
 6. **DOCUMENT** — Update the touched docs (`README.md`, this file, the
    PAD, `worklog.md`) in the same change; the counts in the docs must
    match the suites (the lockstep doctrine — doc claims about the tree
@@ -84,8 +84,8 @@ deep-linkable `/signup` + `/reset-password`.
 
 ```bash
 bun run dev        # :3000
-bun run test       # vitest (657 checks / 58 files)
-bun run test:e2e   # playwright (136 checks / 8 specs) — build first
+bun run test       # vitest (661 checks / 58 files)
+bun run test:e2e   # playwright (137 checks / 8 specs) — build first
 bun run gate       # the full chain, in order
 bun run db:census  # MUST print "pristine: MATCH" before you trust any db read
 ```
@@ -121,7 +121,7 @@ in production — the boot gate refuses to serve without it),
 
 ## Testing Strategy
 
-- **Unit (Vitest, 58 files / 657 checks)** — the seam batteries (auth,
+- **Unit (Vitest, 58 files / 661 checks)** — the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (`site-content`,
@@ -228,7 +228,13 @@ in production — the boot gate refuses to serve without it),
   + the drift [network] leg's responseSemantics constants + the e2e
   runtime zero-response leg (the response-event twin — a
   service-worker-served or prefetched api-like response arrives
-  without a page-initiated request event)) —
+  without a page-initiated request event); the round-42 extension —
+  the frontend-config platform-config census: the /login surface's
+  own config script (window.__APP_CONFIG__, 35 keys — the sorted
+  set, the marker constants APP_FLAVOR/FIVERR_ENV, the MOVING
+  values masked: GIT_SHA hex40 + the per-VISITOR experiments uuid)
+  + the drift [login] leg's platformConfig constants + the e2e
+  login-surface zero-response leg (the auth-surface runtime twin)) —
   `stack-faces` — the round-39 battery: the combination-matrix census +
   the stack-a11y pin (the media-axis combinations no probe ever read:
   the pairwise forced+scheme-dark and the full triple stack censused —

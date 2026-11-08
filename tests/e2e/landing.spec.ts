@@ -1495,3 +1495,27 @@ test.describe("round-41: the runtime zero-response family (the response-body cen
     expect(arrived, "the api-like load-time response family (the zero-response posture)").toEqual([]);
   });
 });
+
+test.describe("round-42: the login-surface zero-api-like-response family (the frontend-config census contract)", () => {
+  // F-42c: the login-surface runtime twin. The round-40/41 legs pin the
+  // ARTIFACT's LANDING request/response families; the AUTH surface's
+  // response family rides its own runtime leg — the reference's own
+  // platform fires the frontend-config.js script-config family on
+  // /login (the 35-key window.__APP_CONFIG__ record — the drift [login]
+  // leg's platformConfig constants), while OURS ships the strictly
+  // cleaner zero-script-config posture (zero api-like responses on the
+  // auth surface).
+  const apiLike = /api|analytics|collect|track|beacon|telemetry|monitor|function/i;
+
+  test("the login surface fires zero api-like responses on load (the zero-script-config posture)", async ({ page }) => {
+    const arrived: string[] = [];
+    page.on("response", (r) => {
+      if (r.request().resourceType() === "document") return; // the document itself
+      if (r.url().match(apiLike) === null) return; // (never apiLike.test( — the count-ladder census counts bare test( blocks)
+      arrived.push(`${r.status()} ${r.request().method()} ${new URL(r.url()).pathname}`);
+    });
+    await page.goto("/login");
+    await page.waitForTimeout(2500); // the settle window (a planted script-config responder answers here)
+    expect(arrived, "the api-like login-surface response family (the zero-script-config posture)").toEqual([]);
+  });
+});
