@@ -46,8 +46,8 @@ re-pinned to the reference's v3 palette).
    seams in `src/lib/` rather than inlining logic. Keep lint green as
    you go.
 5. **VERIFY** — Run the full gate: `bun run lint` → `bun run typecheck`
-   → `bun run test` (665) → `bun run build` → `./scripts/smoke-test.sh`
-   (14) → `CI=1 bun run test:e2e` (142). The `gate` script chains them.
+   → `bun run test` (669) → `bun run build` → `./scripts/smoke-test.sh`
+   (14) → `CI=1 bun run test:e2e` (143). The `gate` script chains them.
 6. **DOCUMENT** — Update the touched docs (`README.md`, this file, the
    PAD, `worklog.md`) in the same change; the counts in the docs must
    match the suites (the lockstep doctrine — doc claims about the tree
@@ -84,8 +84,8 @@ deep-linkable `/signup` + `/reset-password`.
 
 ```bash
 bun run dev        # :3000
-bun run test       # vitest (665 checks / 58 files)
-bun run test:e2e   # playwright (142 checks / 8 specs) — build first
+bun run test       # vitest (669 checks / 58 files)
+bun run test:e2e   # playwright (143 checks / 8 specs) — build first
 bun run gate       # the full chain, in order
 bun run db:census  # MUST print "pristine: MATCH" before you trust any db read
 ```
@@ -121,7 +121,7 @@ in production — the boot gate refuses to serve without it),
 
 ## Testing Strategy
 
-- **Unit (Vitest, 58 files / 665 checks)** — the seam batteries (auth,
+- **Unit (Vitest, 58 files / 669 checks)** — the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (`site-content`,
@@ -207,7 +207,8 @@ in production — the boot gate refuses to serve without it),
   zero-localStorage census + the single sanctioned sessionStorage seam +
   the seam's storage purity + the drift [storage] leg + the AGENTS.md
   doc pin),
-  `network-faces` — the round-38 battery (extended round-40): the
+  `network-faces` — the round-38 battery (extended round-40, round-44):
+  the
   network-family census + the tech-disclosure cure (the request axis
   no probe ever read: the reference's platform fires a four-request
   beacon family per landing load — the User/me session check, the
@@ -243,7 +244,15 @@ in production — the boot gate refuses to serve without it),
   set, the marker constants APP_FLAVOR/FIVERR_ENV, the MOVING
   values masked: GIT_SHA hex40 + the per-VISITOR experiments uuid)
   + the drift [login] leg's platformConfig constants + the e2e
-  login-surface zero-response leg (the auth-surface runtime twin)) —
+  login-surface zero-response leg (the auth-surface runtime twin);
+  the round-44 extension — the beacon path-suffix census: the suffix
+  is the page's own first path segment (the landing's `home`, the
+  404 shells' own segments — PATH-DERIVED, never a fixed path), the
+  auth-chrome family fires no beacon or session check, and the
+  reference's SPA 404 shells fire User/me TWICE (the double session
+  check, a five-request family) vs OUR designed true-404 zero-request
+  face — the drift [network] leg's beaconSuffix + the [routes] leg's
+  shell404 constants + the e2e 404-surface zero-request leg) —
   `stack-faces` — the round-39 battery: the combination-matrix census +
   the stack-a11y pin (the media-axis combinations no probe ever read:
   the pairwise forced+scheme-dark and the full triple stack censused —

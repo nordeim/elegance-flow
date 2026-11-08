@@ -417,3 +417,108 @@ describe("round-42: the frontend-config platform-config semantics (the login-sur
     expect(spec).toContain("login surface");
   });
 });
+
+// ---------------------------------------------------------------------------
+// ④ round-44: the app-log beacon's PATH-SUFFIX semantics + the 404-shell
+// network family (F-44a/b — born RED: the leg extensions/e2e/doc ship
+// land with R-3/R-5)
+// ---------------------------------------------------------------------------
+describe("round-44: the beacon path-suffix semantics (the suffix census + the 404-shell family)", () => {
+  it("the drift [network] leg decodes the beacon's PATH SUFFIX — the landing's home constant + the no-beacon face on OURS (the suffix as its own face, never a baked literal)", () => {
+    // F-44a: the [network] leg's recorded constant bakes
+    // log-user-in-app/home as a landing literal, but the suffix's
+    // DERIVATION rode no decode — the round-43 recorded candidate. The
+    // suffix is now a decoded face: extracted from the captured app-log
+    // request path, its own field, censused per surface
+    const drift = read("../scripts/drift-199.ts");
+    expect(drift, "the suffix face's field").toContain("beaconSuffix");
+    // decode-unique construction anchors (the face strings alone live
+    // in the recorded constants too, and the app-log path split rides
+    // BOTH leg decodes — the [network] leg's suffix decode is anchored
+    // on ITS OWN holder construction: the appLog holder + its listener
+    // assignment + its return read ride ONLY in networkFace; a pin on
+    // the bare literals cannot catch the decode's removal)
+    expect(drift, "the suffix holder's listener assignment").toContain(
+      "appLog.suffix = pathname.split",
+    );
+    expect(drift, "the suffix holder's return read").toContain(
+      "beaconSuffix: appLog.suffix",
+    );
+    // the face vocabulary — the OURS-side no-beacon face (the
+    // zero-beacon posture's suffix decode) rides the decode AND the
+    // recorded constants; the landing's home constant rides the REF
+    // constants row (the live-censused value, never a hand-typed
+    // guess)
+    expect(drift, "the no-beacon face vocabulary").toContain(
+      "no-beacon",
+    );
+    expect(drift, "the landing's home suffix constant").toContain(
+      'beaconSuffix: "home"',
+    );
+  });
+
+  it("the drift [routes] leg decodes the 404-SHELL network family — the five-request double-mount family + the path-derived suffix + the User/me count (the reference's own 404-shell face, never enumerated before round-44)", () => {
+    // F-44b: the reference's SPA 404 shells fire a family no probe
+    // ever enumerated — the [routes] leg read titles/statuses/bodies,
+    // never requests; the [network] leg loaded the landing alone. The
+    // shell family: 2× User/me (the double session check — the SPA
+    // shell's double mount) + the app-log beacon with the shell's OWN
+    // path-derived suffix + public-settings + the analytics batch; OURS
+    // serves the designed true-404 with ZERO api-like requests
+    const drift = read("../scripts/drift-199.ts");
+    // the shell capture's construction anchors — the fresh-context
+    // 404-shell load rides ONLY in the routesFace extension (the
+    // /nonexistent-xyz surface of the leg's own loop, re-ridden on a
+    // fresh context so the request family is per-load)
+    expect(drift, "the shell capture's face field").toContain("shell404");
+    expect(drift, "the double-mount count decode").toContain("meCount");
+    // the recorded per-side constants — REF's five-request family
+    // (User/me ×2 + the suffix beacon + settings + the batch, the
+    // dedup'd four-entry family with the count decode carrying the
+    // double mount) vs OURS's zero-request true-404 face
+    expect(drift, "the REF shell's path-derived suffix constant").toContain(
+      'beaconSuffix: "nonexistent-xyz"',
+    );
+    expect(drift, "the REF shell's double-mount count constant").toContain(
+      "meCount: 2",
+    );
+    expect(drift, "the OURS shell's zero-request face constant").toContain(
+      "meCount: 0",
+    );
+  });
+
+  it("AGENTS.md + the PAD name the suffix rule + the surface-family split + the 404-shell double mount — the round-44 record", () => {
+    // a fresh agent must know the beacon's suffix is PATH-DERIVED (a
+    // per-surface family, never a fixed path) and that the auth-chrome
+    // family fires no beacon at all — before "fixing" a suffix pin or
+    // planting a load-time beacon on an uncensused surface
+    expect(agents, "the path-derived suffix rule").toContain(
+      "the beacon's path suffix is the page's own first path segment",
+    );
+    expect(agents, "the auth-chrome no-beacon rule").toContain(
+      "the auth-chrome family fires no beacon",
+    );
+    expect(agents, "the 404-shell double-mount record").toContain(
+      "double session check",
+    );
+    const pad = read("../Project_Architecture_Document.md");
+    expect(pad, "the PAD §2 path-suffix record").toContain(
+      "path-suffix record (round-44",
+    );
+    expect(pad, "the PAD's double-mount record").toContain(
+      "fire User/me TWICE",
+    );
+  });
+
+  it("the e2e battery pins the ARTIFACT's 404-SURFACE zero-request family — the round-44 describe in landing.spec.ts (the designed 404's runtime twin)", () => {
+    // F-44c: the 404-surface runtime twin — the round-40/41/42 legs pin
+    // the LANDING and LOGIN surfaces' request/response families; the
+    // 404 surface rides its own runtime leg (a dependency-planted
+    // beacon that fires only on the error shell would arrive on the
+    // wire while every landing/login-scoped pin stays green — OURS
+    // serves the designed true-404 with zero api-like requests)
+    const spec = read("../tests/e2e/landing.spec.ts");
+    expect(spec).toContain("round-44");
+    expect(spec).toContain("404 surface");
+  });
+});

@@ -1519,3 +1519,31 @@ test.describe("round-42: the login-surface zero-api-like-response family (the fr
     expect(arrived, "the api-like login-surface response family (the zero-script-config posture)").toEqual([]);
   });
 });
+
+test.describe("round-44: the 404 surface zero-request family (the beacon path-suffix census contract)", () => {
+  // F-44c: the 404-surface runtime twin. The round-40/41/42 legs pin
+  // the ARTIFACT's LANDING and LOGIN surfaces' request/response
+  // families; the 404 surface rides its own runtime leg — the
+  // reference's own SPA 404 shells fire the FIVE-request double-mount
+  // family (2× User/me — the double session check — plus the app-log
+  // beacon with the shell's OWN path-derived suffix + public-settings
+  // + the analytics batch; the drift [routes] leg's shell404
+  // constants), while OURS serves the designed TRUE 404 with zero
+  // api-like requests (the strictly cleaner posture — an
+  // error-shell-scoped beacon planted in a dependency would arrive on
+  // the wire while every landing/login-scoped pin stays green).
+  const apiLike = /api|analytics|collect|track|beacon|telemetry|monitor|function/i;
+
+  test("the 404 surface fires zero api-like requests on load (the designed 404's zero-request face)", async ({ page }) => {
+    const fired: string[] = [];
+    page.on("request", (r) => {
+      if (r.resourceType() === "document") return; // the document itself (the true-404 response)
+      if (r.url().match(apiLike) === null) return; // (never apiLike.test( — the count-ladder census counts bare test( blocks)
+      fired.push(`${r.method()} ${new URL(r.url()).pathname}`);
+    });
+    const resp = await page.goto("/nonexistent-e2e-probe");
+    expect(resp?.status(), "the designed 404's TRUE status (the superset vs the reference's SPA-200 shell)").toBe(404);
+    await page.waitForTimeout(2500); // the settle window (the reference's shell family fires within ~4s; a planted error-shell beacon fires here)
+    expect(fired, "the api-like 404-surface request family (the zero-request posture)").toEqual([]);
+  });
+});

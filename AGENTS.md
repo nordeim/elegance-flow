@@ -26,8 +26,8 @@ bun run start                    # the standalone server (production)
 
 bun run lint                     # eslint --max-warnings 0 (the 0/0 standard)
 bun run typecheck                # tsc --noEmit
-bun run test                     # vitest run  (665 checks / 58 files)
-bun run test:e2e                 # playwright (142 checks / 8 specs; needs build)
+bun run test                     # vitest run  (669 checks / 58 files)
+bun run test:e2e                 # playwright (143 checks / 8 specs; needs build)
 CI=1 bun run test:e2e            # force a fresh server (never reuse stale)
 
 bun run db:push                  # prisma db push (SQLite at repo/db/custom.db)
@@ -255,7 +255,22 @@ platform auth chrome's own script); the MOVING values are
 face-decoded (the per-build GIT_SHA hex40, the per-VISITOR
 experiments uuid — never pinned per-value); never mirror the platform's config script — OURS ships the zero-script-config posture
 (the drift `[login]` leg's `platformConfig` constants + the round-42
-e2e login-surface zero-response leg pin it). Pinned
+e2e login-surface zero-response leg pin it). Extended round-44
+(F-44a/b — the beacon path-suffix semantics + the 404-shell network
+family, the round-43 recorded candidate): the beacon's path suffix is the page's own first path segment
+(`/` maps to the literal `home`, `/signup` to `signup`,
+`/nonexistent-xyz` to `nonexistent-xyz` — the suffix is PATH-DERIVED,
+never a fixed path; the drift `[network]` leg's `beaconSuffix` face
+decodes it), the auth-chrome family fires no beacon
+and no session check at all (`/login` + `/reset-password` fire the
+public domain/login-info pair only — the round-41 record's own
+family), and the reference's SPA 404 shells fire the FIVE-request
+family with a double session check
+(the shells fire User/me TWICE per load while the landing fires it
+once — the drift `[routes]` leg's `shell404` constants: the
+double-mount count + the shell's own path-derived suffix; OURS serves
+the designed true-404 with zero api-like requests — the round-44 e2e
+404-surface zero-request leg pins the runtime twin). Pinned
 by `tests/network-faces.test.ts` + `tests/http-headers.test.ts` (the
 config pin) + the round-40 e2e runtime zero-request legs + the
 round-41 e2e runtime zero-response leg; re-probed

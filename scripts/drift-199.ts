@@ -1348,8 +1348,49 @@ async function routesFace(url: string) {
     finalPath: gu.pathname,
     title: await page.title(),
   };
+  // Round-44 (F-44b) EXTENSION: the 404-shell NETWORK family — the
+  // SPA shell's own request face, the family no probe ever enumerated
+  // (the [network] leg loads the landing alone; the reference's SPA 404
+  // shells fire User/me TWICE per load — the double session check, the
+  // shell's double mount — plus the app-log beacon with the shell's OWN
+  // path-derived suffix + public-settings + the analytics batch). A
+  // FRESH context per app loading the leg's canonical 404 surface
+  // (/nonexistent-xyz) so the request family is per-load (a reused
+  // context would replay cached assets); the api-like router mirrors
+  // the [network] leg's own family decode.
+  const shellCtx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const shellPage = await shellCtx.newPage();
+  const shellRequests: string[] = [];
+  let shellMeCount = 0;
+  let shellBeaconSuffix = "no-beacon";
+  shellPage.on("request", (r) => {
+    if (r.resourceType() === "document") return;
+    const isApiLike = /api|analytics|collect|track|beacon|telemetry|monitor|function/i.test(
+      r.url(),
+    );
+    if (!isApiLike) return;
+    let pathname: string;
+    try {
+      pathname = new URL(r.url()).pathname;
+    } catch {
+      return;
+    }
+    if (pathname.includes("/entities/User/me")) shellMeCount += 1;
+    if (pathname.includes("log-user-in-app/")) {
+      shellBeaconSuffix = pathname.split("log-user-in-app/")[1] ?? "no-beacon";
+    }
+    shellRequests.push(`${r.method()} ${pathname.replace(/[0-9a-f]{24}/g, "<hex24>")}`);
+  });
+  await probeLoad(shellPage, `${url}/nonexistent-xyz`);
+  await shellPage.waitForTimeout(4500); // the platform's shell family fires within ~4s of the load
+  await shellCtx.close();
+  const shell404 = {
+    requestFamily: [...new Set(shellRequests)].sort(),
+    meCount: shellMeCount,
+    beaconSuffix: shellBeaconSuffix,
+  };
   await context.close();
-  return { titles, statuses, quoted, slash, query, dash, goHome };
+  return { titles, statuses, quoted, slash, query, dash, goHome, shell404 };
 }
 
 // The round-19 interact leg — sequential on ONE context per app (the
@@ -1710,6 +1751,28 @@ async function deepLinkFace(url: string) {
   diff("[routes]", refRoutes.goHome.before, oursRoutes.goHome.before, "goHome titleBefore (the derived 404 title)", out);
   diff("[routes]", refRoutes.goHome.finalPath, oursRoutes.goHome.finalPath, "goHome finalPath (the landing)", out);
   diff("[routes]", refRoutes.goHome.title, oursRoutes.goHome.title, "goHome titleAfter (the stale-title cure — the bare brand)", out);
+  // Round-44 (F-44b) EXTENSION: the 404-shell NETWORK family —
+  // per-side constants (the reference's SPA shells fire the FIVE-
+  // request double-mount family — 2× User/me, the dedup'd four-entry
+  // request family with the count decode carrying the double, the
+  // shell's own path-derived beacon suffix — vs OUR designed true-404
+  // face: ZERO api-like requests, no session check, no beacon; the
+  // platform family is base44 implementation, never mirrored)
+  expectConst("[routes]", "REF", {
+    requestFamily: [
+      "GET /api/apps/<hex24>/entities/User/me",
+      "GET /api/apps/public/prod/public-settings/by-id/<hex24>",
+      "POST /api/app-logs/<hex24>/log-user-in-app/nonexistent-xyz",
+      "POST /api/apps/<hex24>/analytics/track/batch",
+    ],
+    meCount: 2,
+    beaconSuffix: "nonexistent-xyz",
+  }, refRoutes.shell404, out);
+  expectConst("[routes]", "OURS", {
+    requestFamily: [],
+    meCount: 0,
+    beaconSuffix: "no-beacon",
+  }, oursRoutes.shell404, out);
 }
 
 // The round-26 [reset] leg — the PLATFORM RESET FAMILY census: the
@@ -2832,6 +2895,14 @@ async function storageFace(url: string): Promise<StorageFace> {
 // {"success":true}/{"accepted":1} receipt constants, the 401's 5-key
 // auth-required error envelope). OURS ships the zero-response face
 // (zero requests, zero responses — the strictly cleaner posture).
+// Round-44 extension (F-44a/b): the app-log beacon's PATH SUFFIX
+// decoded as its own face — the suffix is the page's own first path
+// segment (`home` on the root's landing load, the segment verbatim on
+// every other surface; `no-beacon` on OURS). The 404-shell network
+// family rides the [routes] leg's shell404 capture (the same decode
+// on the /nonexistent-xyz surface — the reference's SPA shells fire
+// the FIVE-request double-mount family: 2× User/me + the suffix
+// beacon + public-settings + the batch).
 type NetworkFace = {
   requestFamily: string[]; // "METHOD /api/path/<hex-masked>" per load
   postShapes: string[]; // "pathname => {events:array(N)}" — shapes only
@@ -2841,6 +2912,7 @@ type NetworkFace = {
   sessionLinkage: string; // the beacon session_id ↔ localStorage linkage (round-40)
   interactiveFamily: string[]; // the api-like family fired post-settle interaction (round-40)
   responseSemantics: string[]; // "[status] METHOD <path> => <body-face>" — the response census (round-41)
+  beaconSuffix: string; // the app-log beacon's path suffix — the page's own first path segment (round-44)
 };
 
 async function networkFace(url: string): Promise<NetworkFace> {
@@ -2856,6 +2928,11 @@ async function networkFace(url: string): Promise<NetworkFace> {
   // invisible to TS's control-flow narrowing of a bare `let` (the
   // property read keeps the declared type)
   const beacon: { body: { events?: Array<Record<string, unknown>> } | null } = { body: null };
+  // round-44: the app-log beacon's PATH SUFFIX — the page's own first
+  // path segment, decoded from the captured app-log request path (the
+  // landing's `home` constant; `no-beacon` on OURS). A holder object
+  // for the same closure-narrowing reason as the beacon body above
+  const appLog: { suffix: string } = { suffix: "no-beacon" };
   // round-40: the interactive-phase router — after the load family
   // settles the arrays clear and the listener routes new api-like
   // requests to interactiveFamily (the complete-family census)
@@ -2875,6 +2952,15 @@ async function networkFace(url: string): Promise<NetworkFace> {
     // mask the platform's 24-hex ids (per-app constant, never re-pinned
     // per-census) and the analytics/collector's opaque tail
     const masked = pathname.replace(/[0-9a-f]{24}/g, "<hex24>");
+    // round-44: the app-log beacon's PATH SUFFIX decode — the suffix is
+    // the page's own first path segment (`home` on the root, the
+    // segment verbatim on every other surface). Extracted from the
+    // app-log request path as its own face (the requestFamily row bakes
+    // it as a landing literal; the suffix decode makes it a censused
+    // value a platform change must re-record)
+    if (pathname.includes("log-user-in-app/")) {
+      appLog.suffix = pathname.split("log-user-in-app/")[1] ?? "no-beacon";
+    }
     const entry = `${r.method()} ${masked}`;
     if (interactivePhase) {
       interactiveFamily.push(entry);
@@ -3074,6 +3160,7 @@ async function networkFace(url: string): Promise<NetworkFace> {
     sessionLinkage,
     interactiveFamily: [...new Set(interactiveFamily)].sort(),
     responseSemantics: [...new Set(responseSemantics)].sort(),
+    beaconSuffix: appLog.suffix,
   };
 }
 
@@ -3135,6 +3222,12 @@ async function networkFace(url: string): Promise<NetworkFace> {
         '200 POST /api/apps/<hex24>/analytics/track/batch => {"accepted":1}',
         "401 GET /api/apps/<hex24>/entities/User/me => {message,detail,traceback,extra_data,request_id}",
       ],
+      // round-44 (F-44b): the app-log beacon's PATH SUFFIX — the page's
+      // own first path segment, decoded from the app-log request path
+      // (the landing's `home` is the root's own literal mapping; the
+      // suffix is PATH-DERIVED, never a fixed path — the [routes] leg's
+      // shell404 capture censuses the same decode on a 404 surface)
+      beaconSuffix: "home",
     },
     refN,
     out,
@@ -3160,6 +3253,9 @@ async function networkFace(url: string): Promise<NetworkFace> {
       // load means zero api-like responses (the strictly cleaner
       // posture; the e2e round-41 leg pins the runtime twin)
       responseSemantics: [],
+      // round-44: OUR zero-beacon suffix face — no app-log beacon fires,
+      // so no suffix exists to decode (the strictly cleaner posture)
+      beaconSuffix: "no-beacon",
     },
     oursN,
     out,
