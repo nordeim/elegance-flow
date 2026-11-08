@@ -46,8 +46,8 @@ re-pinned to the reference's v3 palette).
    seams in `src/lib/` rather than inlining logic. Keep lint green as
    you go.
 5. **VERIFY** — Run the full gate: `bun run lint` → `bun run typecheck`
-   → `bun run test` (653) → `bun run build` → `./scripts/smoke-test.sh`
-   (14) → `CI=1 bun run test:e2e` (135). The `gate` script chains them.
+   → `bun run test` (657) → `bun run build` → `./scripts/smoke-test.sh`
+   (14) → `CI=1 bun run test:e2e` (136). The `gate` script chains them.
 6. **DOCUMENT** — Update the touched docs (`README.md`, this file, the
    PAD, `worklog.md`) in the same change; the counts in the docs must
    match the suites (the lockstep doctrine — doc claims about the tree
@@ -84,8 +84,8 @@ deep-linkable `/signup` + `/reset-password`.
 
 ```bash
 bun run dev        # :3000
-bun run test       # vitest (653 checks / 58 files)
-bun run test:e2e   # playwright (135 checks / 8 specs) — build first
+bun run test       # vitest (657 checks / 58 files)
+bun run test:e2e   # playwright (136 checks / 8 specs) — build first
 bun run gate       # the full chain, in order
 bun run db:census  # MUST print "pristine: MATCH" before you trust any db read
 ```
@@ -121,7 +121,7 @@ in production — the boot gate refuses to serve without it),
 
 ## Testing Strategy
 
-- **Unit (Vitest, 58 files / 653 checks)** — the seam batteries (auth,
+- **Unit (Vitest, 58 files / 657 checks)** — the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (`site-content`,
@@ -219,7 +219,16 @@ in production — the boot gate refuses to serve without it),
   family — interaction fires zero api-like requests), and the e2e
   runtime zero-request legs (the artifact's on-the-wire twin of the
   source census — a dependency-planted beacon in node_modules evades
-  the src-only needles; the wire closes the class)) —
+  the src-only needles; the wire closes the class); the round-41
+  extension — the RESPONSE-body census: the status semantics (the
+  guest User/me session check's DESIGNED 401 — the guest landing
+  family is 3×200 + 1×401) + the body constants (the
+  public_without_login policy constant, the {"success":true}/
+  {"accepted":1} receipts, the 401's 5-key auth-required envelope)
+  + the drift [network] leg's responseSemantics constants + the e2e
+  runtime zero-response leg (the response-event twin — a
+  service-worker-served or prefetched api-like response arrives
+  without a page-initiated request event)) —
   `stack-faces` — the round-39 battery: the combination-matrix census +
   the stack-a11y pin (the media-axis combinations no probe ever read:
   the pairwise forced+scheme-dark and the full triple stack censused —

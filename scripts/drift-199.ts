@@ -2748,6 +2748,15 @@ async function storageFace(url: string): Promise<StorageFace> {
 // and the INTERACTIVE sweep (the load-time family is the COMPLETE
 // family — interaction fires zero api-like requests, so
 // events:array(1) is the per-load constant, never a batching artifact).
+//
+// Round-41 extension (F-41a/b): the RESPONSE-body semantics decoded
+// (the response side the request censuses never read) — the STATUS
+// semantics (the guest User/me session check's DESIGNED 401 — the
+// guest landing family is 3×200 + 1×401) + the body constants (the
+// public-settings policy constant public_without_login, the
+// {"success":true}/{"accepted":1} receipt constants, the 401's 5-key
+// auth-required error envelope). OURS ships the zero-response face
+// (zero requests, zero responses — the strictly cleaner posture).
 type NetworkFace = {
   requestFamily: string[]; // "METHOD /api/path/<hex-masked>" per load
   postShapes: string[]; // "pathname => {events:array(N)}" — shapes only
@@ -2756,6 +2765,7 @@ type NetworkFace = {
   beaconSemantics: string[]; // the decoded payload VALUE faces (round-40)
   sessionLinkage: string; // the beacon session_id ↔ localStorage linkage (round-40)
   interactiveFamily: string[]; // the api-like family fired post-settle interaction (round-40)
+  responseSemantics: string[]; // "[status] METHOD <path> => <body-face>" — the response census (round-41)
 };
 
 async function networkFace(url: string): Promise<NetworkFace> {
@@ -2823,6 +2833,71 @@ async function networkFace(url: string): Promise<NetworkFace> {
   let sessionLinkage = "no-beacon";
   const interactiveFamily: string[] = [];
   const beaconSemantics: string[] = [];
+  // round-41: the RESPONSE-family decode — the status semantics + the
+  // body constants of the load-time request family (the response side
+  // the request censuses never read). Load-phase only (the interactive
+  // family is already request-censused; a response requires its
+  // request). resp.text() is async — the bodies are gathered as the
+  // responses arrive and awaited post-settle (an awaited listener would
+  // drop bodies that arrive after the listener returns)
+  const responseSemantics: string[] = [];
+  const bodyPromises: Array<Promise<void>> = [];
+  page.on("response", (resp) => {
+    if (interactivePhase) return; // the load family alone (round-41 scope)
+    const isDoc = resp.request().resourceType() === "document";
+    const isApiLike = /api|analytics|collect|track|beacon|telemetry|monitor|function/i.test(
+      resp.url(),
+    );
+    if (isDoc || !isApiLike) return;
+    bodyPromises.push(
+      (async () => {
+        let body: string | null = null;
+        try {
+          body = await resp.text();
+        } catch {
+          body = null; // a body that cannot be read (a stream already
+          // consumed by the platform's own instrumentation, a redirect)
+        }
+        let pathname: string;
+        try {
+          pathname = new URL(resp.url()).pathname;
+        } catch {
+          return;
+        }
+        // the same hex mask the request family rides
+        const masked = pathname.replace(/[0-9a-f]{24}/g, "<hex24>");
+        // the body face: ≤2-key bodies ≤96 chars ride VERBATIM (the
+        // platform's constants — hex-masked, never per-session values);
+        // larger objects ride their key set (the 401 envelope's shape);
+        // non-JSON bodies ride their byte length
+        let bodyFace: string;
+        if (body === null) {
+          bodyFace = "<unreadable>";
+        } else if (body === "") {
+          bodyFace = "<empty>";
+        } else {
+          bodyFace = `<non-json ${body.length}B>`;
+          try {
+            const parsed = JSON.parse(body) as unknown;
+            if (parsed !== null && typeof parsed === "object" && !Array.isArray(parsed)) {
+              const keys = Object.keys(parsed as Record<string, unknown>);
+              bodyFace =
+                keys.length <= 2 && body.length <= 96
+                  ? body.replace(/[0-9a-f]{24}/g, "<hex24>")
+                  : `{${keys.join(",")}}`;
+            } else {
+              bodyFace = `<json ${typeof parsed}>`;
+            }
+          } catch {
+            // keep the non-json face
+          }
+        }
+        responseSemantics.push(
+          `${resp.status()} ${resp.request().method()} ${masked} => ${bodyFace}`,
+        );
+      })(),
+    );
+  });
   try {
     // the document response's header face: waitForResponse armed BEFORE
     // the probeLoad goto (probeLoad returns void; the response event is
@@ -2833,6 +2908,11 @@ async function networkFace(url: string): Promise<NetworkFace> {
     );
     await probeLoad(page, url);
     await page.waitForTimeout(5000); // let the platform's beacon family fire
+    // round-41: the load family's response bodies are all in by the
+    // settle — collect the decoded faces (the promises were gathered
+    // as the responses arrived; a rejection here means a body read
+    // raced the context teardown, absorbed as a settled-no-op)
+    await Promise.allSettled(bodyPromises);
     const res = await docRes.catch(() => null);
     if (res) {
       const h = await res.allHeaders();
@@ -2918,6 +2998,7 @@ async function networkFace(url: string): Promise<NetworkFace> {
     beaconSemantics,
     sessionLinkage,
     interactiveFamily: [...new Set(interactiveFamily)].sort(),
+    responseSemantics: [...new Set(responseSemantics)].sort(),
   };
 }
 
@@ -2968,6 +3049,17 @@ async function networkFace(url: string): Promise<NetworkFace> {
       ],
       sessionLinkage: "linked",
       interactiveFamily: [],
+      // round-41 (F-41b): the load family's RESPONSE semantics — the
+      // status semantics (the guest User/me check's DESIGNED 401) +
+      // the body constants (the public-settings access-policy
+      // constant, the app-log/analytics receipt constants, the 401's
+      // 5-key auth-required error envelope shape)
+      responseSemantics: [
+        '200 GET /api/apps/public/prod/public-settings/by-id/<hex24> => {"id":"<hex24>","public_settings":"public_without_login"}',
+        '200 POST /api/app-logs/<hex24>/log-user-in-app/home => {"success":true}',
+        '200 POST /api/apps/<hex24>/analytics/track/batch => {"accepted":1}',
+        "401 GET /api/apps/<hex24>/entities/User/me => {message,detail,traceback,extra_data,request_id}",
+      ],
     },
     refN,
     out,
@@ -2989,6 +3081,10 @@ async function networkFace(url: string): Promise<NetworkFace> {
       beaconSemantics: [],
       sessionLinkage: "no-beacon",
       interactiveFamily: [],
+      // round-41: OUR zero-response face — zero api-like requests on
+      // load means zero api-like responses (the strictly cleaner
+      // posture; the e2e round-41 leg pins the runtime twin)
+      responseSemantics: [],
     },
     oursN,
     out,

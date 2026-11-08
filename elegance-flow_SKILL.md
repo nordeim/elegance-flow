@@ -191,7 +191,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 653 checks / 58 files**: the seam batteries (auth,
+- **Unit — Vitest, 657 checks / 58 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
@@ -548,7 +548,14 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   interactive-zero sweep (the load-time family is the COMPLETE
   family — interaction fires zero api-like requests), and the e2e
   runtime zero-request legs (the artifact's on-the-wire twin of the
-  source census)) — and
+  source census); the round-41 extension — the RESPONSE-body census:
+  the status semantics (the guest User/me session check's DESIGNED
+  401 — the guest landing family is 3×200 + 1×401) + the body
+  constants (the public_without_login policy constant, the
+  {"success":true}/{"accepted":1} receipts, the 401's 5-key
+  auth-required envelope) + the drift [network] leg's
+  responseSemantics constants + the e2e runtime zero-response leg
+  (the response-event twin of the round-40 request legs)) — and
   stack-faces — the round-39 battery that pins the COMBINATION-MATRIX
   census + the stack-a11y pin (the media-axis combinations no probe
   ever read: the pairwise forced+scheme-dark and the full triple stack
@@ -579,7 +586,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   boundaries' comments always claimed) —
   comment-stripped source reads; a
   literal pinned by a comment alone is vacuous.
-- **E2E — Playwright, 135 checks / 8 specs**: the standalone artifact on
+- **E2E — Playwright, 136 checks / 8 specs**: the standalone artifact on
   :3100 with `db/e2e.db`; ONE shared login (`auth.setup.ts` →
   storageState — the auth endpoints are rate-limited 10/IP/15-min); one
   worker; alphabetical file order → every spec SELF-SUFFICIENT (its own

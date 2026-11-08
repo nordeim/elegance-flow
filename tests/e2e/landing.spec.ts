@@ -1467,3 +1467,31 @@ test.describe("round-40: the runtime zero-request family (the beacon-payload val
     expect(fired, "the api-like interactive request family (zero — interaction never beacons)").toEqual([]);
   });
 });
+
+test.describe("round-41: the runtime zero-response family (the response-body census contract)", () => {
+  // F-41c: the response-side runtime twin. The round-40 legs pin the
+  // ARTIFACT's zero-REQUEST family; the RESPONSE event is a distinct
+  // instrumentation — a service-worker-served or prefetched api-like
+  // response arrives without a page-initiated request event — so the
+  // response side rides its own runtime leg: whatever arrives, arrives
+  // on the wire. The reference's own platform answers its four-request
+  // load family with 3×200 + a DESIGNED 401 (the guest User/me session
+  // check's auth-required rejection, the public-settings
+  // public_without_login policy constant, the {"success":true}/
+  // {"accepted":1} receipt constants — the drift [network] leg's
+  // responseSemantics constants); OURS ships the strictly cleaner
+  // zero-response posture (zero requests, zero responses).
+  const apiLike = /api|analytics|collect|track|beacon|telemetry|monitor|function/i;
+
+  test("the load-time response family is empty — zero api-like responses on the landing load", async ({ page }) => {
+    const arrived: string[] = [];
+    page.on("response", (r) => {
+      if (r.request().resourceType() === "document") return; // the document itself
+      if (r.url().match(apiLike) === null) return; // (never apiLike.test( — the count-ladder census counts bare test( blocks)
+      arrived.push(`${r.status()} ${r.request().method()} ${new URL(r.url()).pathname}`);
+    });
+    await page.goto("/");
+    await page.waitForTimeout(2500); // the settle window (a planted load-time responder answers here)
+    expect(arrived, "the api-like load-time response family (the zero-response posture)").toEqual([]);
+  });
+});

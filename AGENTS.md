@@ -26,8 +26,8 @@ bun run start                    # the standalone server (production)
 
 bun run lint                     # eslint --max-warnings 0 (the 0/0 standard)
 bun run typecheck                # tsc --noEmit
-bun run test                     # vitest run  (653 checks / 58 files)
-bun run test:e2e                 # playwright (135 checks / 8 specs; needs build)
+bun run test                     # vitest run  (657 checks / 58 files)
+bun run test:e2e                 # playwright (136 checks / 8 specs; needs build)
 CI=1 bun run test:e2e            # force a fresh server (never reuse stale)
 
 bun run db:push                  # prisma db push (SQLite at repo/db/custom.db)
@@ -228,9 +228,24 @@ api-like requests; `events:array(1)` is the per-load constant, never
 a batching artifact). The beacon's session_id and the storage
 family's `base44_analytics_session_id` are
 two views of ONE per-session id (the [network]/[storage] legs
-cross-check the linkage; never assume they are independent). Pinned
+cross-check the linkage; never assume they are independent). Extended
+round-41 (F-41b — the RESPONSE-body semantics): the platform answers
+its four-request load family with 3×200 + a DESIGNED 401 — the guest
+User/me session check's rejection IS the platform's own face (the
+DESIGNED failing session check; never "fix" a status pin to 200) —
+carrying the body constants: the public-settings access-policy
+constant `public_without_login`, the app-log receipt
+`{"success":true}`, the analytics receipt `{"accepted":1}` (mirroring
+the request's `events:array(1)`), and the 401's 5-key auth-required
+error envelope (`message,detail,traceback,extra_data,request_id`).
+The response side rides the drift `[network]` leg's
+`responseSemantics` constants + the round-41 e2e runtime zero-response
+leg (the response-event twin of the round-40 request legs — a
+service-worker-served or prefetched api-like response arrives without
+a page-initiated request event). Pinned
 by `tests/network-faces.test.ts` + `tests/http-headers.test.ts` (the
-config pin) + the round-40 e2e runtime zero-request legs; re-probed
+config pin) + the round-40 e2e runtime zero-request legs + the
+round-41 e2e runtime zero-response leg; re-probed
 live by the drift `[network]` leg (the 23rd).
 
 **The stack posture (round-39):** the media-axis COMBINATIONS are

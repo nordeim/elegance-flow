@@ -252,3 +252,88 @@ describe("round-40: the beacon-payload value semantics (the value census + the l
     expect(spec).toContain("zero-request");
   });
 });
+
+describe("round-41: the response-body semantics (the response census + the status semantics)", () => {
+  it("the drift [network] leg decodes the RESPONSE family — the status semantics + the body constants (the public-settings policy constant, the receipt constants, the designed 401 envelope)", () => {
+    // F-41a/F-41b: round-38 pinned the request family's SHAPES and
+    // round-40 the beacon's request-payload VALUES; the RESPONSES those
+    // requests carry rode no record — the platform's response
+    // semantics (the public_without_login policy constant, the
+    // {"success":true}/{"accepted":1} receipt constants, the guest
+    // User/me check's DESIGNED 401 with the 5-key auth-required error
+    // envelope — the guest landing family is 3×200 + 1×401) are now
+    // census constants a platform change must re-record
+    const drift = read("../scripts/drift-199.ts");
+    expect(drift).toContain("responseSemantics");
+    // decode-unique construction anchors (the response listener at
+    // large is NOT unique — the auth-validation leg rides its own; the
+    // decode's collection + body-face rule ride ONLY in networkFace):
+    // the promise collection (resp.text() is async — the bodies are
+    // gathered during the load and awaited post-settle)
+    expect(drift, "the post-settle body collection").toContain(
+      "Promise.allSettled",
+    );
+    // the body decode's verbatim/key-set rule — ≤2-key bodies ≤96
+    // chars ride VERBATIM (the constants, hex-masked), larger objects
+    // ride their key set (the 401 envelope's shape), never per-session
+    // values
+    expect(drift, "the ≤2-key verbatim rule").toContain("keys.length <= 2");
+    // the status rides every entry (the DESIGNED 401 is the census
+    // value — the guest session check's rejection is the platform's
+    // own face, never "fixed" to 200)
+    expect(drift, "the status-semantics carrier").toContain(
+      "${resp.status()}",
+    );
+  });
+
+  it("the drift leg's recorded constants carry the four decoded response rows — OURS's zero-response face", () => {
+    // the RECORDED per-side constants (the constants-block literals —
+    // decode-unique in reverse: the decode produces these faces from
+    // the wire, never from literals, so the literals live ONLY in the
+    // expectConst rows a mutation of the constants block must trip)
+    const drift = read("../scripts/drift-199.ts");
+    expect(drift, "the public-settings policy constant").toContain(
+      "public_without_login",
+    );
+    expect(drift, "the app-log receipt constant").toContain(
+      '{"success":true}',
+    );
+    expect(drift, "the analytics receipt constant").toContain(
+      '{"accepted":1}',
+    );
+    expect(drift, "the 401 envelope's key-set shape").toContain(
+      "{message,detail,traceback,extra_data,request_id}",
+    );
+  });
+
+  it("AGENTS.md + the PAD name the response semantics — the policy constant, the designed 401, the receipt constants", () => {
+    // a fresh agent must know the platform's response semantics before
+    // "fixing" a status pin or planting a load-time responder — and the
+    // PAD §2 record carries the response-body census (incl. the
+    // login-surface family: the domain resolution + the login-info
+    // record whose auth_config drives the reference's login card)
+    expect(agents).toContain("public_without_login");
+    expect(agents, "the designed-failing-check rule").toContain(
+      "DESIGNED failing session check",
+    );
+    const pad = read("../Project_Architecture_Document.md");
+    expect(pad, "the PAD §2 response-body record").toContain(
+      "response-body record (round-41",
+    );
+    expect(pad, "the login-info record's driver note").toContain(
+      "auth_config",
+    );
+  });
+
+  it("the e2e battery pins the ARTIFACT's runtime load-time zero-RESPONSE family — the round-41 describe in landing.spec.ts", () => {
+    // F-41c: the response-side runtime twin — the round-40 legs pin
+    // the zero-REQUEST family; the RESPONSE event is a distinct
+    // instrumentation (a service-worker-served or prefetched api-like
+    // response arrives without a page-initiated request event), so the
+    // response side rides its own runtime leg: whatever arrives,
+    // arrives on the wire
+    const spec = read("../tests/e2e/landing.spec.ts");
+    expect(spec).toContain("round-41");
+    expect(spec).toContain("zero-response");
+  });
+});
