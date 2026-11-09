@@ -1547,3 +1547,58 @@ test.describe("round-44: the 404 surface zero-request family (the beacon path-su
     expect(fired, "the api-like 404-surface request family (the zero-request posture)").toEqual([]);
   });
 });
+
+test.describe("round-45: the 404 surface separator-variant zero-request family (the beacon suffix's edge spellings)", () => {
+  // F-45c: the round-44 e2e leg pins ONE 404 surface
+  // (/nonexistent-e2e-probe); the separator variants ride no runtime
+  // leg. The reference's SPA shells fire the SAME five-request
+  // double-mount family on every spelling (the drift [routes] leg's
+  // separatorFamily constants: requestCount 5, User/me ×2, the suffix
+  // the FIRST path segment RAW — /foo/bar → foo while the 404 TITLE
+  // family reads the LAST segment "Bar"; /MiXeD-cAsE → MiXeD-cAsE
+  // verbatim, never the title's camel-split), while OURS serves the
+  // designed TRUE 404 with zero api-like requests on every variant
+  // (the strictly cleaner posture — an error-shell-scoped beacon
+  // planted on an unusual spelling would arrive on the wire while
+  // every canonical-surface pin stays green).
+  const apiLike = /api|analytics|collect|track|beacon|telemetry|monitor|function/i;
+
+  test("the 404 surface /with_underscore fires zero api-like requests on load (the zero-request face holds on the underscore spelling)", async ({ page }) => {
+    const fired: string[] = [];
+    page.on("request", (r) => {
+      if (r.resourceType() === "document") return; // the document itself (the true-404 response)
+      if (r.url().match(apiLike) === null) return; // (never apiLike.test( — the count-ladder census counts bare test( blocks)
+      fired.push(`${r.method()} ${new URL(r.url()).pathname}`);
+    });
+    const resp = await page.goto("/with_underscore");
+    expect(resp?.status(), "the designed 404's TRUE status on the variant spelling").toBe(404);
+    await page.waitForTimeout(2500); // the settle window (the reference's shell family fires within ~4s)
+    expect(fired, "the api-like variant-surface request family (the zero-request posture)").toEqual([]);
+  });
+
+  test("the 404 surface /foo/bar fires zero api-like requests on load (the zero-request face holds on the multi-segment spelling)", async ({ page }) => {
+    const fired: string[] = [];
+    page.on("request", (r) => {
+      if (r.resourceType() === "document") return; // the document itself (the true-404 response)
+      if (r.url().match(apiLike) === null) return; // (never apiLike.test( — the count-ladder census counts bare test( blocks)
+      fired.push(`${r.method()} ${new URL(r.url()).pathname}`);
+    });
+    const resp = await page.goto("/foo/bar");
+    expect(resp?.status(), "the designed 404's TRUE status on the variant spelling").toBe(404);
+    await page.waitForTimeout(2500); // the settle window (the reference's shell family fires within ~4s)
+    expect(fired, "the api-like variant-surface request family (the zero-request posture)").toEqual([]);
+  });
+
+  test("the 404 surface /MiXeD-cAsE fires zero api-like requests on load (the zero-request face holds on the mixed-case spelling)", async ({ page }) => {
+    const fired: string[] = [];
+    page.on("request", (r) => {
+      if (r.resourceType() === "document") return; // the document itself (the true-404 response)
+      if (r.url().match(apiLike) === null) return; // (never apiLike.test( — the count-ladder census counts bare test( blocks)
+      fired.push(`${r.method()} ${new URL(r.url()).pathname}`);
+    });
+    const resp = await page.goto("/MiXeD-cAsE");
+    expect(resp?.status(), "the designed 404's TRUE status on the variant spelling").toBe(404);
+    await page.waitForTimeout(2500); // the settle window (the reference's shell family fires within ~4s)
+    expect(fired, "the api-like variant-surface request family (the zero-request posture)").toEqual([]);
+  });
+});

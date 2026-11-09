@@ -522,3 +522,94 @@ describe("round-44: the beacon path-suffix semantics (the suffix census + the 40
     expect(spec).toContain("404 surface");
   });
 });
+
+// ---------------------------------------------------------------------------
+// ⑤ round-45: the beacon-suffix SEPARATOR/MULTI-SEGMENT decode family
+// (F-45a/b/c — born RED: the leg extension/e2e/doc ship land with
+// R-3/R-5)
+// ---------------------------------------------------------------------------
+describe("round-45: the beacon-suffix separator/multi-segment family (the derivation's edge variants)", () => {
+  it("the drift [routes] leg captures the SEPARATOR-FAMILY variants — fresh contexts loading /with_underscore + /foo/bar + /MiXeD-cAsE, the suffix + the User/me count decoded per path (never the canonical shell alone)", () => {
+    // F-45a: the round-44 census pinned the suffix on three surfaces
+    // only; the derivation's EDGE variants rode no record — a
+    // multi-segment path, an underscore path, a mixed-case path (and
+    // the trailing-slash strip). The routesFace extension now loads the
+    // canonical variant family per app on fresh contexts
+    const drift = read("../scripts/drift-199.ts");
+    expect(drift, "the separator-family's face field").toContain(
+      "separatorFamily",
+    );
+    // decode-unique construction anchors (the round-42/44 born-red
+    // lesson: the app-log path split rides BOTH the [network] leg and
+    // the canonical shell404 capture — the separator pin anchors on
+    // ITS OWN holder construction: the per-variant loop + its recorded
+    // path set ride ONLY in the separatorFamily extension)
+    expect(drift, "the variant loop's canonical path set").toContain(
+      '"/with_underscore"',
+    );
+    expect(drift, "the multi-segment variant's path").toContain(
+      '"/foo/bar"',
+    );
+    expect(drift, "the mixed-case variant's path").toContain(
+      '"/MiXeD-cAsE"',
+    );
+    expect(drift, "the per-variant record construction").toContain(
+      "path: variant",
+    );
+  });
+
+  it("the recorded per-side separator constants — REF's FIRST-segment raw-case family with the ×2 User/me invariant vs OURS's zero-request true-404 face on every variant", () => {
+    // F-45b: the census (live 2026-11-09, twice, byte-stable) — the
+    // suffix reads the FIRST path segment RAW (/foo/bar → foo while the
+    // 404 TITLE reads the LAST segment "Bar" — two derivations off one
+    // pathname; /MiXeD-cAsE → MiXeD-cAsE verbatim, never the title's
+    // camel-split "Mi Xe D C As E") and every 404-shell variant fires
+    // User/me ×2 (the double-mount invariant)
+    const drift = read("../scripts/drift-199.ts");
+    expect(drift, "the REF first-segment-only constant").toContain(
+      'suffix: "foo"',
+    );
+    expect(drift, "the REF raw-mixed-case constant").toContain(
+      'suffix: "MiXeD-cAsE"',
+    );
+    expect(drift, "the REF underscore constant").toContain(
+      'suffix: "with_underscore"',
+    );
+    expect(drift, "the REF double-mount invariant constant").toContain(
+      "meCount: 2",
+    );
+    expect(drift, "the OURS zero-request variant face constant").toContain(
+      "meCount: 0",
+    );
+  });
+
+  it("AGENTS.md + the PAD name the first-segment-only rule + the raw-vs-derived contrast + the trailing-slash strip — the round-45 record", () => {
+    // a fresh agent must know the suffix is the RAW FIRST segment (never
+    // the full path, never the derived title's LAST-segment
+    // camel-split display form) before "fixing" a suffix pin or
+    // planting a load-time beacon on an uncensused variant surface
+    expect(agents, "the first-segment-only rule").toContain(
+      "the FIRST segment only",
+    );
+    expect(agents, "the raw-vs-derived contrast").toContain(
+      "never the title family's LAST-segment camel-split",
+    );
+    expect(agents, "the trailing-slash strip rule").toContain(
+      "trailing slashes strip",
+    );
+    const pad = read("../Project_Architecture_Document.md");
+    expect(pad, "the PAD §2 separator-record marker").toContain(
+      "separator/multi-segment record (round-45",
+    );
+  });
+
+  it("the e2e battery pins the ARTIFACT's 404-surface SEPARATOR-VARIANT zero-request family — the round-45 describe in landing.spec.ts (the variant surfaces' runtime twin)", () => {
+    // F-45c: the round-44 e2e leg pins ONE 404 surface
+    // (/nonexistent-e2e-probe); the separator variants ride no runtime
+    // leg — the artifact's zero-request face on the
+    // underscore/multi-segment spellings rides its own runtime twin
+    const spec = read("../tests/e2e/landing.spec.ts");
+    expect(spec).toContain("round-45");
+    expect(spec).toContain("separator variant");
+  });
+});

@@ -191,7 +191,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
 
 ## 7. The testing pyramid (the gate: lint → typecheck → test → build → smoke → e2e)
 
-- **Unit — Vitest, 669 checks / 58 files**: the seam batteries (auth,
+- **Unit — Vitest, 673 checks / 58 files**: the seam batteries (auth,
   password, rate-limit, parse-body, db-path, boot-env, census, schemas,
   coercion-guards, bounded-reader, http-headers, chunk-recovery,
   login-reset) + the source-contract pins (site-content,
@@ -578,7 +578,15 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   User/me TWICE (the double session check, a five-request family)
   vs OUR designed true-404 zero-request face — the drift [network]
   leg's beaconSuffix + the [routes] leg's shell404 constants + the
-  e2e 404-surface zero-request leg) — and
+  e2e 404-surface zero-request leg; the round-45 extension — the
+  suffix's SEPARATOR/MULTI-SEGMENT family: the FIRST segment only on
+  a multi-segment path (`/foo/bar` → `foo`, vs the title family's
+  LAST-segment camel-split — two derivations off one pathname), the
+  case RAW (`/MiXeD-cAsE` verbatim, never camel-split), the
+  underscore preserved, the trailing slash stripped, and the
+  five-request ×2-User/me double-mount invariant on every variant —
+  the drift [routes] leg's separatorFamily constants + the e2e
+  separator-variant zero-request legs) — and
   stack-faces — the round-39 battery that pins the COMBINATION-MATRIX
   census + the stack-a11y pin (the media-axis combinations no probe
   ever read: the pairwise forced+scheme-dark and the full triple stack
@@ -609,7 +617,7 @@ demo accounts). `bun run db:census` must print MATCH (3 + 4).
   boundaries' comments always claimed) —
   comment-stripped source reads; a
   literal pinned by a comment alone is vacuous.
-- **E2E — Playwright, 143 checks / 8 specs**: the standalone artifact on
+- **E2E — Playwright, 146 checks / 8 specs**: the standalone artifact on
   :3100 with `db/e2e.db`; ONE shared login (`auth.setup.ts` →
   storageState — the auth endpoints are rate-limited 10/IP/15-min); one
   worker; alphabetical file order → every spec SELF-SUFFICIENT (its own

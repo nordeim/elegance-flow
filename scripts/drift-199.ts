@@ -1389,8 +1389,63 @@ async function routesFace(url: string) {
     meCount: shellMeCount,
     beaconSuffix: shellBeaconSuffix,
   };
+  // Round-45 (F-45b) EXTENSION: the beacon-suffix SEPARATOR/MULTI-SEGMENT
+  // family — the derivation's edge variants the round-44 census never
+  // loaded (the canonical shell alone). A FRESH context per VARIANT per
+  // app (the same per-load isolation as the canonical shell capture) so
+  // the family is per-load; the census (live 2026-11-09, twice,
+  // byte-stable): the suffix reads the FIRST path segment RAW —
+  // /foo/bar → foo (while the 404 TITLE family reads the LAST segment
+  // "Bar" — two different derivations off ONE pathname, never
+  // contrasted before round-45), /MiXeD-cAsE → MiXeD-cAsE verbatim
+  // (never the title family's LAST-segment camel-split "Mi Xe D C As
+  // E"), /with_underscore → with_underscore (the separator family
+  // complete); trailing slashes strip before the read (the census's
+  // own /trailing/ probe; the recorded family carries the three
+  // canonical variants); every 404-shell variant fires User/me ×2
+  // (the round-44 double-mount invariant holds across the family).
+  const separatorFamily: Array<{
+    path: string;
+    meCount: number;
+    suffix: string;
+    requestCount: number;
+  }> = [];
+  for (const variant of ["/with_underscore", "/foo/bar", "/MiXeD-cAsE"]) {
+    const varCtx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+    const varPage = await varCtx.newPage();
+    let varMeCount = 0;
+    let varSuffix = "no-beacon";
+    let varRequestCount = 0;
+    varPage.on("request", (r) => {
+      if (r.resourceType() === "document") return;
+      const isApiLike = /api|analytics|collect|track|beacon|telemetry|monitor|function/i.test(
+        r.url(),
+      );
+      if (!isApiLike) return;
+      let pathname: string;
+      try {
+        pathname = new URL(r.url()).pathname;
+      } catch {
+        return;
+      }
+      varRequestCount += 1;
+      if (pathname.includes("/entities/User/me")) varMeCount += 1;
+      if (pathname.includes("log-user-in-app/")) {
+        varSuffix = pathname.split("log-user-in-app/")[1] ?? "no-beacon";
+      }
+    });
+    await probeLoad(varPage, `${url}${variant}`);
+    await varPage.waitForTimeout(4500); // the platform's shell family fires within ~4s of the load
+    await varCtx.close();
+    separatorFamily.push({
+      path: variant,
+      meCount: varMeCount,
+      suffix: varSuffix,
+      requestCount: varRequestCount,
+    });
+  }
   await context.close();
-  return { titles, statuses, quoted, slash, query, dash, goHome, shell404 };
+  return { titles, statuses, quoted, slash, query, dash, goHome, shell404, separatorFamily };
 }
 
 // The round-19 interact leg — sequential on ONE context per app (the
@@ -1773,6 +1828,27 @@ async function deepLinkFace(url: string) {
     meCount: 0,
     beaconSuffix: "no-beacon",
   }, oursRoutes.shell404, out);
+  // round-45: the SEPARATOR-FAMILY per-side constants — the variant
+  // surfaces' own face (live-censused 2026-11-09, twice, byte-stable):
+  // REF's FIRST-segment raw-case family (requestCount 5 per variant —
+  // the five-request double-mount family holds on every spelling, the
+  // ×2 User/me invariant) vs OURS's zero-request true-404 face on
+  // every variant (the designed 404 answers no api-like request
+  // whatever the path spelling)
+  expectConst("[routes]", "REF", {
+    variants: [
+      { path: "/with_underscore", meCount: 2, suffix: "with_underscore", requestCount: 5 },
+      { path: "/foo/bar", meCount: 2, suffix: "foo", requestCount: 5 },
+      { path: "/MiXeD-cAsE", meCount: 2, suffix: "MiXeD-cAsE", requestCount: 5 },
+    ],
+  }, { variants: refRoutes.separatorFamily }, out);
+  expectConst("[routes]", "OURS", {
+    variants: [
+      { path: "/with_underscore", meCount: 0, suffix: "no-beacon", requestCount: 0 },
+      { path: "/foo/bar", meCount: 0, suffix: "no-beacon", requestCount: 0 },
+      { path: "/MiXeD-cAsE", meCount: 0, suffix: "no-beacon", requestCount: 0 },
+    ],
+  }, { variants: oursRoutes.separatorFamily }, out);
 }
 
 // The round-26 [reset] leg — the PLATFORM RESET FAMILY census: the

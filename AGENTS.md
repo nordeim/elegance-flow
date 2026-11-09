@@ -26,8 +26,8 @@ bun run start                    # the standalone server (production)
 
 bun run lint                     # eslint --max-warnings 0 (the 0/0 standard)
 bun run typecheck                # tsc --noEmit
-bun run test                     # vitest run  (669 checks / 58 files)
-bun run test:e2e                 # playwright (143 checks / 8 specs; needs build)
+bun run test                     # vitest run  (673 checks / 58 files)
+bun run test:e2e                 # playwright (146 checks / 8 specs; needs build)
 CI=1 bun run test:e2e            # force a fresh server (never reuse stale)
 
 bun run db:push                  # prisma db push (SQLite at repo/db/custom.db)
@@ -270,7 +270,20 @@ family with a double session check
 once — the drift `[routes]` leg's `shell404` constants: the
 double-mount count + the shell's own path-derived suffix; OURS serves
 the designed true-404 with zero api-like requests — the round-44 e2e
-404-surface zero-request leg pins the runtime twin). Pinned
+404-surface zero-request leg pins the runtime twin). Extended
+round-45 (F-45a/b — the suffix's SEPARATOR/MULTI-SEGMENT family, the
+round-44 recorded candidate): on a multi-segment path the suffix reads
+the FIRST segment only (`/foo/bar` → `foo` — the derivation is
+never the title family's LAST-segment camel-split
+"Bar": two different derivations off one pathname), the case carries
+VERBATIM (`/MiXeD-cAsE` → `MiXeD-cAsE`, no camel-split, no case
+folding), underscores preserve (`/with_underscore` verbatim), and
+trailing slashes strip
+before the read (`/trailing/` → `trailing`); every 404-shell variant
+fires the SAME five-request double-mount family (the ×2 User/me
+invariant holds across spellings; the drift `[routes]` leg's
+`separatorFamily` constants + the round-45 e2e separator-variant
+zero-request legs pin the variant surfaces' runtime twins). Pinned
 by `tests/network-faces.test.ts` + `tests/http-headers.test.ts` (the
 config pin) + the round-40 e2e runtime zero-request legs + the
 round-41 e2e runtime zero-response leg; re-probed
